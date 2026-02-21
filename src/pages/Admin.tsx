@@ -110,7 +110,7 @@ export default function Admin() {
   const [users, setUsers] = useState<User[]>(initialUsers);
   const [search, setSearch] = useState("");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [activeTab, setActiveTab] = useState<"users" | "courses" | "requests" | "security" | "groups">("users");
+  const [activeTab, setActiveTab] = useState<"stp" | "groups" | "users" | "courses" | "reports" | "settings">("stp");
   const [showAddUser, setShowAddUser] = useState(false);
   const [newName, setNewName] = useState("");
   const [newEmail, setNewEmail] = useState("");
@@ -326,11 +326,12 @@ export default function Admin() {
         {/* Вкладки */}
         <div className="flex gap-2">
           {([
+            { key: "stp", icon: "ShieldAlert", label: "STP и безопасность" },
+            { key: "groups", icon: "UsersRound", label: "Обучение групп" },
             { key: "users", icon: "Users", label: "Пользователи" },
             { key: "courses", icon: "BookOpen", label: "Обзор курсов" },
-            { key: "requests", icon: "FileInput", label: "Заявки из STP" },
-            { key: "security", icon: "ShieldAlert", label: "Индекс безопасности" },
-            { key: "groups", icon: "UsersRound", label: "Обучение групп" },
+            { key: "reports", icon: "BarChart2", label: "Отчёты" },
+            { key: "settings", icon: "Settings", label: "Настройки" },
           ] as const).map((tab) => (
             <button
               key={tab.key}
@@ -499,38 +500,37 @@ export default function Admin() {
           </div>
         )}
 
-        {activeTab === "requests" && (
-          <div className="bg-white rounded-2xl border border-border p-10 flex flex-col items-center justify-center text-center min-h-[400px] space-y-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-violet-100 to-purple-200 rounded-2xl flex items-center justify-center">
-              <Icon name="FileInput" size={28} className="text-violet-500" />
+        {activeTab === "stp" && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="bg-white rounded-2xl border border-border p-8 flex flex-col items-center justify-center text-center space-y-4">
+              <div className="w-14 h-14 bg-gradient-to-br from-violet-100 to-purple-200 rounded-2xl flex items-center justify-center">
+                <Icon name="FileInput" size={26} className="text-violet-500" />
+              </div>
+              <div>
+                <p className="font-bold text-base">Заявки из STP</p>
+                <p className="text-muted-foreground text-sm mt-1">
+                  Заявки на обучение будут поступать автоматически после подключения интеграции с STP.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 rounded-xl">
+                <Icon name="Clock" size={14} className="text-amber-500" />
+                <span className="text-amber-700 text-sm font-medium">Ожидает интеграции</span>
+              </div>
             </div>
-            <div>
-              <p className="font-bold text-lg">Заявки из STP</p>
-              <p className="text-muted-foreground text-sm mt-1 max-w-sm">
-                Раздел появится после подключения интеграции с внешней системой STP. Заявки на обучение будут поступать автоматически.
-              </p>
-            </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 rounded-xl">
-              <Icon name="Clock" size={14} className="text-amber-500" />
-              <span className="text-amber-700 text-sm font-medium">Ожидает интеграции</span>
-            </div>
-          </div>
-        )}
-
-        {activeTab === "security" && (
-          <div className="bg-white rounded-2xl border border-border p-10 flex flex-col items-center justify-center text-center min-h-[400px] space-y-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-red-100 to-rose-200 rounded-2xl flex items-center justify-center">
-              <Icon name="ShieldAlert" size={28} className="text-rose-500" />
-            </div>
-            <div>
-              <p className="font-bold text-lg">Индекс безопасности</p>
-              <p className="text-muted-foreground text-sm mt-1 max-w-sm">
-                Сводный показатель уровня защищённости по каждому сотруднику и подразделению. Будет рассчитываться на основе данных из STP.
-              </p>
-            </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 rounded-xl">
-              <Icon name="Clock" size={14} className="text-amber-500" />
-              <span className="text-amber-700 text-sm font-medium">Ожидает интеграции</span>
+            <div className="bg-white rounded-2xl border border-border p-8 flex flex-col items-center justify-center text-center space-y-4">
+              <div className="w-14 h-14 bg-gradient-to-br from-red-100 to-rose-200 rounded-2xl flex items-center justify-center">
+                <Icon name="ShieldAlert" size={26} className="text-rose-500" />
+              </div>
+              <div>
+                <p className="font-bold text-base">Индекс безопасности</p>
+                <p className="text-muted-foreground text-sm mt-1">
+                  Сводный показатель защищённости по сотрудникам и подразделениям. Рассчитывается на основе данных из STP.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 rounded-xl">
+                <Icon name="Clock" size={14} className="text-amber-500" />
+                <span className="text-amber-700 text-sm font-medium">Ожидает интеграции</span>
+              </div>
             </div>
           </div>
         )}
@@ -587,6 +587,42 @@ export default function Admin() {
                   </div>
                 );
               })}
+            </div>
+          </div>
+        )}
+
+        {activeTab === "reports" && (
+          <div className="bg-white rounded-2xl border border-border p-10 flex flex-col items-center justify-center text-center min-h-[400px] space-y-4">
+            <div className="w-16 h-16 bg-gradient-to-br from-emerald-100 to-teal-200 rounded-2xl flex items-center justify-center">
+              <Icon name="BarChart2" size={28} className="text-emerald-600" />
+            </div>
+            <div>
+              <p className="font-bold text-lg">Отчёты</p>
+              <p className="text-muted-foreground text-sm mt-1 max-w-sm">
+                Сводные отчёты по обучению: прогресс сотрудников, выполнение планов, статистика по группам и курсам.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 rounded-xl">
+              <Icon name="Clock" size={14} className="text-amber-500" />
+              <span className="text-amber-700 text-sm font-medium">В разработке</span>
+            </div>
+          </div>
+        )}
+
+        {activeTab === "settings" && (
+          <div className="bg-white rounded-2xl border border-border p-10 flex flex-col items-center justify-center text-center min-h-[400px] space-y-4">
+            <div className="w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center">
+              <Icon name="Settings" size={28} className="text-slate-500" />
+            </div>
+            <div>
+              <p className="font-bold text-lg">Настройки</p>
+              <p className="text-muted-foreground text-sm mt-1 max-w-sm">
+                Настройки платформы: подключение интеграций, управление ролями, параметры уведомлений и безопасности.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 rounded-xl">
+              <Icon name="Clock" size={14} className="text-amber-500" />
+              <span className="text-amber-700 text-sm font-medium">В разработке</span>
             </div>
           </div>
         )}
