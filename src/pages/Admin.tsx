@@ -325,17 +325,21 @@ export default function Admin() {
 
         {/* Вкладки */}
         <div className="flex gap-2">
-          {(["users", "courses"] as const).map((tab) => (
+          {([
+            { key: "users", icon: "Users", label: "Пользователи" },
+            { key: "courses", icon: "BookOpen", label: "Обзор курсов" },
+          ] as const).map((tab) => (
             <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                activeTab === tab
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`flex flex-col items-center gap-1 px-6 py-3 rounded-xl text-xs font-medium transition-all ${
+                activeTab === tab.key
                   ? "gradient-primary text-white shadow-md shadow-purple-200"
-                  : "bg-white border border-border text-foreground hover:border-primary hover:text-primary"
+                  : "bg-white border border-border text-muted-foreground hover:border-primary hover:text-primary"
               }`}
             >
-              {tab === "users" ? "Пользователи" : "Обзор курсов"}
+              <Icon name={tab.icon} size={20} />
+              {tab.label}
             </button>
           ))}
         </div>
