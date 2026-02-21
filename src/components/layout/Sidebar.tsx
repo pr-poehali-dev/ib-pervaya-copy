@@ -8,6 +8,7 @@ const navItems = [
   { to: "/schedule", icon: "Calendar", label: "Расписание" },
   { to: "/achievements", icon: "Trophy", label: "Достижения" },
   { to: "/profile", icon: "User", label: "Профиль" },
+  { to: "/admin", icon: "ShieldCheck", label: "Администратор" },
 ];
 
 export default function Sidebar() {

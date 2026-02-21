@@ -9,6 +9,7 @@ import Lesson from "./pages/Lesson";
 import Profile from "./pages/Profile";
 import MyLearning from "./pages/MyLearning";
 import NotFound from "./pages/NotFound";
+import Admin from "./pages/Admin";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/lesson/:id" element={<Lesson />} />
           <Route path="/my-learning" element={<MyLearning />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
