@@ -3,6 +3,9 @@ import Layout from "@/components/layout/Layout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Icon from "@/components/ui/icon";
 
 const allCourses = [
@@ -94,11 +97,53 @@ const userColors = [
   "from-amber-400 to-orange-500",
 ];
 
+const groups = ["ИБ-301", "ИБ-302", "ИБ-303", "ИБ-401", "ИБ-402"];
+const roles = ["Студент", "Преподаватель", "Наблюдатель"];
+
+function getInitials(name: string) {
+  const parts = name.trim().split(" ");
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return name.slice(0, 2).toUpperCase();
+}
+
 export default function Admin() {
   const [users, setUsers] = useState<User[]>(initialUsers);
   const [search, setSearch] = useState("");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState<"users" | "courses">("users");
+  const [showAddUser, setShowAddUser] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [newGroup, setNewGroup] = useState("ИБ-301");
+  const [newRole, setNewRole] = useState("Студент");
+  const [nameError, setNameError] = useState("");
+  const [emailError, setEmailError] = useState("");
+
+  const handleAddUser = () => {
+    let valid = true;
+    if (!newName.trim()) { setNameError("Введите имя"); valid = false; } else setNameError("");
+    if (!newEmail.trim()) { setEmailError("Введите email"); valid = false; }
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) { setEmailError("Некорректный email"); valid = false; }
+    else setEmailError("");
+    if (!valid) return;
+
+    const newUser: User = {
+      id: Date.now(),
+      name: newName.trim(),
+      email: newEmail.trim(),
+      initials: getInitials(newName),
+      group: newGroup,
+      role: newRole,
+      assignments: [],
+    };
+    setUsers((prev) => [...prev, newUser]);
+    setShowAddUser(false);
+    setNewName("");
+    setNewEmail("");
+    setNewGroup("ИБ-301");
+    setNewRole("Студент");
+    setSelectedUser(newUser);
+  };
 
   const filteredUsers = users.filter(
     (u) =>
@@ -171,15 +216,94 @@ export default function Admin() {
   return (
     <Layout>
       <div className="max-w-6xl mx-auto space-y-6">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-700 rounded-xl flex items-center justify-center">
-            <Icon name="ShieldCheck" size={20} className="text-white" />
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-700 rounded-xl flex items-center justify-center">
+              <Icon name="ShieldCheck" size={20} className="text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold leading-tight">Панель администратора</h1>
+              <p className="text-muted-foreground text-sm">Управление пользователями и курсами</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl font-bold leading-tight">Панель администратора</h1>
-            <p className="text-muted-foreground text-sm">Управление пользователями и курсами</p>
-          </div>
+          <Button
+            className="gradient-primary text-white rounded-xl shadow-md shadow-purple-200 gap-2"
+            onClick={() => setShowAddUser(true)}
+          >
+            <Icon name="UserPlus" size={16} />
+            Добавить пользователя
+          </Button>
         </div>
+
+        <Dialog open={showAddUser} onOpenChange={setShowAddUser}>
+          <DialogContent className="rounded-2xl max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Icon name="UserPlus" size={18} className="text-primary" />
+                Новый пользователь
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 pt-1">
+              <div className="space-y-1.5">
+                <Label>Полное имя</Label>
+                <Input
+                  placeholder="Иванов Иван Иванович"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  className="rounded-xl"
+                />
+                {nameError && <p className="text-destructive text-xs">{nameError}</p>}
+              </div>
+              <div className="space-y-1.5">
+                <Label>Email</Label>
+                <Input
+                  placeholder="ivanov@company.ru"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  className="rounded-xl"
+                  type="email"
+                />
+                {emailError && <p className="text-destructive text-xs">{emailError}</p>}
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label>Группа</Label>
+                  <Select value={newGroup} onValueChange={setNewGroup}>
+                    <SelectTrigger className="rounded-xl">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {groups.map((g) => (
+                        <SelectItem key={g} value={g}>{g}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Роль</Label>
+                  <Select value={newRole} onValueChange={setNewRole}>
+                    <SelectTrigger className="rounded-xl">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {roles.map((r) => (
+                        <SelectItem key={r} value={r}>{r}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="flex gap-2 pt-1">
+                <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setShowAddUser(false)}>
+                  Отмена
+                </Button>
+                <Button className="flex-1 rounded-xl gradient-primary text-white" onClick={handleAddUser}>
+                  Создать
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Статистика */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
