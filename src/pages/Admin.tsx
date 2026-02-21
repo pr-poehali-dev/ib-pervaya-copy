@@ -110,7 +110,7 @@ export default function Admin() {
   const [users, setUsers] = useState<User[]>(initialUsers);
   const [search, setSearch] = useState("");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [activeTab, setActiveTab] = useState<"users" | "courses">("users");
+  const [activeTab, setActiveTab] = useState<"users" | "courses" | "requests" | "security" | "groups">("users");
   const [showAddUser, setShowAddUser] = useState(false);
   const [newName, setNewName] = useState("");
   const [newEmail, setNewEmail] = useState("");
@@ -328,6 +328,9 @@ export default function Admin() {
           {([
             { key: "users", icon: "Users", label: "Пользователи" },
             { key: "courses", icon: "BookOpen", label: "Обзор курсов" },
+            { key: "requests", icon: "FileInput", label: "Заявки из STP" },
+            { key: "security", icon: "ShieldAlert", label: "Индекс безопасности" },
+            { key: "groups", icon: "UsersRound", label: "Обучение групп" },
           ] as const).map((tab) => (
             <button
               key={tab.key}
@@ -492,6 +495,98 @@ export default function Admin() {
                   </p>
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === "requests" && (
+          <div className="bg-white rounded-2xl border border-border p-10 flex flex-col items-center justify-center text-center min-h-[400px] space-y-4">
+            <div className="w-16 h-16 bg-gradient-to-br from-violet-100 to-purple-200 rounded-2xl flex items-center justify-center">
+              <Icon name="FileInput" size={28} className="text-violet-500" />
+            </div>
+            <div>
+              <p className="font-bold text-lg">Заявки из STP</p>
+              <p className="text-muted-foreground text-sm mt-1 max-w-sm">
+                Раздел появится после подключения интеграции с внешней системой STP. Заявки на обучение будут поступать автоматически.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 rounded-xl">
+              <Icon name="Clock" size={14} className="text-amber-500" />
+              <span className="text-amber-700 text-sm font-medium">Ожидает интеграции</span>
+            </div>
+          </div>
+        )}
+
+        {activeTab === "security" && (
+          <div className="bg-white rounded-2xl border border-border p-10 flex flex-col items-center justify-center text-center min-h-[400px] space-y-4">
+            <div className="w-16 h-16 bg-gradient-to-br from-red-100 to-rose-200 rounded-2xl flex items-center justify-center">
+              <Icon name="ShieldAlert" size={28} className="text-rose-500" />
+            </div>
+            <div>
+              <p className="font-bold text-lg">Индекс безопасности</p>
+              <p className="text-muted-foreground text-sm mt-1 max-w-sm">
+                Сводный показатель уровня защищённости по каждому сотруднику и подразделению. Будет рассчитываться на основе данных из STP.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 rounded-xl">
+              <Icon name="Clock" size={14} className="text-amber-500" />
+              <span className="text-amber-700 text-sm font-medium">Ожидает интеграции</span>
+            </div>
+          </div>
+        )}
+
+        {activeTab === "groups" && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <p className="text-muted-foreground text-sm">Назначение курсов сразу для всей группы</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {groups.map((group, idx) => {
+                const members = users.filter((u) => u.group === group);
+                const activeAssignments = members.reduce((sum, u) => sum + u.assignments.filter((a) => a.active).length, 0);
+                return (
+                  <div key={group} className="bg-white rounded-2xl border border-border p-5 space-y-4">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-11 h-11 bg-gradient-to-br ${gradients[idx % gradients.length]} rounded-xl flex items-center justify-center`}>
+                        <Icon name="UsersRound" size={20} className="text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-bold text-base">Группа {group}</p>
+                        <p className="text-muted-foreground text-xs">{members.length} чел. · {activeAssignments} активных назначений</p>
+                      </div>
+                    </div>
+                    {members.length > 0 ? (
+                      <div className="flex flex-wrap gap-1.5">
+                        {members.map((u, i) => (
+                          <div key={u.id} title={u.name} className={`w-8 h-8 bg-gradient-to-br ${userColors[i % userColors.length]} rounded-lg flex items-center justify-center`}>
+                            <span className="text-white font-bold text-[10px]">{u.initials}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-muted-foreground text-xs">Нет участников</p>
+                    )}
+                    <div className="space-y-1.5">
+                      {allCourses.slice(0, 3).map((course, cidx) => {
+                        const assignedCount = members.filter((u) => u.assignments.some((a) => a.courseId === course.id && a.active)).length;
+                        return (
+                          <div key={course.id} className="flex items-center gap-2 text-sm">
+                            <span>{course.emoji}</span>
+                            <span className="flex-1 truncate text-xs text-muted-foreground">{course.title}</span>
+                            <Badge variant={assignedCount > 0 ? "secondary" : "outline"} className="text-xs">
+                              {assignedCount}/{members.length}
+                            </Badge>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <Button variant="outline" size="sm" className="w-full rounded-xl text-xs" disabled={members.length === 0}>
+                      <Icon name="Plus" size={14} className="mr-1.5" />
+                      Назначить курс группе
+                    </Button>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
