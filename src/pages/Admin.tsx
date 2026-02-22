@@ -17,6 +17,9 @@ export default function Admin() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState<"stp" | "groups" | "users" | "courses" | "reports" | "settings">("stp");
   const [showAddUser, setShowAddUser] = useState(false);
+  const [showAddGroup, setShowAddGroup] = useState(false);
+  const [newGroupName, setNewGroupName] = useState("");
+  const [newGroupError, setNewGroupError] = useState("");
   const [newName, setNewName] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [newGroup, setNewGroup] = useState("ИБ-301");
@@ -121,13 +124,23 @@ export default function Admin() {
               <p className="text-muted-foreground text-sm">Управление пользователями и курсами</p>
             </div>
           </div>
-          <Button
-            className="gradient-primary text-white rounded-xl shadow-md shadow-purple-200 gap-2"
-            onClick={() => setShowAddUser(true)}
-          >
-            <Icon name="UserPlus" size={16} />
-            Добавить пользователя
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              className="rounded-xl gap-2"
+              onClick={() => setShowAddGroup(true)}
+            >
+              <Icon name="FolderPlus" size={16} />
+              Добавить группу
+            </Button>
+            <Button
+              className="gradient-primary text-white rounded-xl shadow-md shadow-purple-200 gap-2"
+              onClick={() => setShowAddUser(true)}
+            >
+              <Icon name="UserPlus" size={16} />
+              Добавить пользователя
+            </Button>
+          </div>
         </div>
 
         <Dialog open={showAddUser} onOpenChange={setShowAddUser}>
@@ -192,6 +205,42 @@ export default function Admin() {
                   Отмена
                 </Button>
                 <Button className="flex-1 rounded-xl gradient-primary text-white" onClick={handleAddUser}>
+                  Создать
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={showAddGroup} onOpenChange={setShowAddGroup}>
+          <DialogContent className="rounded-2xl max-w-sm">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Icon name="FolderPlus" size={18} className="text-primary" />
+                Новая группа
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 pt-1">
+              <div className="space-y-1.5">
+                <Label>Название группы</Label>
+                <Input
+                  placeholder="ИБ-501"
+                  value={newGroupName}
+                  onChange={(e) => setNewGroupName(e.target.value)}
+                  className="rounded-xl"
+                />
+                {newGroupError && <p className="text-destructive text-xs">{newGroupError}</p>}
+              </div>
+              <div className="flex gap-2 pt-1">
+                <Button variant="outline" className="flex-1 rounded-xl" onClick={() => { setShowAddGroup(false); setNewGroupName(""); setNewGroupError(""); }}>
+                  Отмена
+                </Button>
+                <Button className="flex-1 rounded-xl gradient-primary text-white" onClick={() => {
+                  if (!newGroupName.trim()) { setNewGroupError("Введите название"); return; }
+                  setShowAddGroup(false);
+                  setNewGroupName("");
+                  setNewGroupError("");
+                }}>
                   Создать
                 </Button>
               </div>
