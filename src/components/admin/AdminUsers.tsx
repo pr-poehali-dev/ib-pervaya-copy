@@ -22,6 +22,8 @@ export default function AdminUsers({
   const [filterCourse, setFilterCourse] = useState("");
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
   const [copiedId, setCopiedId] = useState<number | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [actionsOpen, setActionsOpen] = useState(false);
 
   const statusOptions = ["Все", "Есть активные курсы", "Завершил курсы", "Без назначений"];
   const orgOptions = useMemo(() => [...new Set(users.map((u) => u.group))], [users]);
@@ -65,44 +67,108 @@ export default function AdminUsers({
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const allChecked = localFiltered.length > 0 && localFiltered.every((u) => selectedIds.has(u.id));
+  const someChecked = localFiltered.some((u) => selectedIds.has(u.id));
+
+  const toggleSelectAll = () => {
+    if (allChecked) {
+      setSelectedIds((prev) => { const next = new Set(prev); localFiltered.forEach((u) => next.delete(u.id)); return next; });
+    } else {
+      setSelectedIds((prev) => { const next = new Set(prev); localFiltered.forEach((u) => next.add(u.id)); return next; });
+    }
+  };
+
+  const toggleSelectOne = (id: number) => {
+    setSelectedIds((prev) => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
+  };
+
   return (
     <div className="space-y-4">
-      {/* Фильтры */}
-      <div className="bg-card rounded-2xl border border-border px-4 pt-3 pb-3 space-y-2.5">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">Статус обучения</p>
-            <SearchSelect options={statusOptions} value={filterStatus} onChange={setFilterStatus} placeholder="Все статусы" />
+      {/* Фильтры + кнопка действий */}
+      <div className="flex items-start gap-3">
+        <div className="flex-1 bg-card rounded-2xl border border-border px-4 pt-3 pb-3 space-y-2.5">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground">Статус обучения</p>
+              <SearchSelect options={statusOptions} value={filterStatus} onChange={setFilterStatus} placeholder="Все статусы" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground">Организация</p>
+              <MultiSelect options={orgOptions} selected={filterOrgs} onChange={setFilterOrgs} placeholder="Все организации" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground">ФИО обучающегося</p>
+              <MultiSelect options={fioOptions} selected={filterFio} onChange={setFilterFio} placeholder="Все слушатели" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground">Курс обучения</p>
+              <SearchSelect options={courseOptions} value={filterCourse} onChange={setFilterCourse} placeholder="Все курсы" />
+            </div>
           </div>
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">Организация</p>
-            <MultiSelect options={orgOptions} selected={filterOrgs} onChange={setFilterOrgs} placeholder="Все организации" />
-          </div>
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">ФИО обучающегося</p>
-            <MultiSelect options={fioOptions} selected={filterFio} onChange={setFilterFio} placeholder="Все слушатели" />
-          </div>
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">Курс обучения</p>
-            <SearchSelect options={courseOptions} value={filterCourse} onChange={setFilterCourse} placeholder="Все курсы" />
-          </div>
+          <FilterTags
+            filterStatus={filterStatus} setFilterStatus={setFilterStatus} defaultStatus="Все"
+            filterOrgs={filterOrgs} setFilterOrgs={setFilterOrgs}
+            filterFio={filterFio} setFilterFio={setFilterFio}
+            filterCourse={filterCourse} setFilterCourse={setFilterCourse}
+            onReset={resetFilters}
+          />
         </div>
-        <FilterTags
-          filterStatus={filterStatus} setFilterStatus={setFilterStatus} defaultStatus="Все"
-          filterOrgs={filterOrgs} setFilterOrgs={setFilterOrgs}
-          filterFio={filterFio} setFilterFio={setFilterFio}
-          filterCourse={filterCourse} setFilterCourse={setFilterCourse}
-          onReset={resetFilters}
-        />
+
+        {/* Кнопка действий */}
+        <div className="relative flex-shrink-0 pt-6">
+          <Button
+            variant="outline"
+            className="rounded-xl gap-2 h-9"
+            onClick={() => setActionsOpen((p) => !p)}
+            disabled={selectedIds.size === 0}
+          >
+            <Icon name="Zap" size={15} />
+            Действия
+            {selectedIds.size > 0 && (
+              <span className="bg-violet-600 text-white text-xs rounded-full px-1.5 py-0.5 leading-none">{selectedIds.size}</span>
+            )}
+            <Icon name="ChevronDown" size={14} />
+          </Button>
+          {actionsOpen && (
+            <div className="absolute right-0 top-full mt-1 z-30 bg-background border border-border rounded-xl shadow-xl w-52 overflow-hidden">
+              {[
+                { icon: "Send", label: "Отправить пароли" },
+                { icon: "Download", label: "Скачать пароли" },
+                { icon: "FileText", label: "Сформировать отчёт" },
+              ].map((item) => (
+                <button
+                  key={item.label}
+                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-muted/60 transition-colors text-left"
+                  onClick={() => setActionsOpen(false)}
+                >
+                  <Icon name={item.icon} size={15} className="text-muted-foreground" />
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
-      <p className="text-xs text-muted-foreground">Найдено: {localFiltered.length}</p>
+      <p className="text-xs text-muted-foreground">
+        Найдено: {localFiltered.length}
+        {selectedIds.size > 0 && <span className="ml-2 text-violet-600 font-medium">· Выбрано: {selectedIds.size}</span>}
+      </p>
 
       <div className="bg-card rounded-2xl border border-border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/40">
+                <th className="px-3 py-3 w-8" onClick={(e) => e.stopPropagation()}>
+                  <input
+                    type="checkbox"
+                    checked={allChecked}
+                    ref={(el) => { if (el) el.indeterminate = someChecked && !allChecked; }}
+                    onChange={toggleSelectAll}
+                    className="rounded border-border cursor-pointer accent-violet-600"
+                  />
+                </th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground w-8"></th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">ФИО</th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground whitespace-nowrap">Организация / Группа</th>
@@ -121,9 +187,19 @@ export default function AdminUsers({
                   <>
                     <tr
                       key={user.id}
-                      className={`border-b border-border transition-colors cursor-pointer hover:bg-muted/20 ${isExpanded ? "bg-violet-50/50 dark:bg-violet-900/10" : ""}`}
+                      className={`border-b border-border transition-colors cursor-pointer hover:bg-muted/20 ${isExpanded ? "bg-violet-50/50 dark:bg-violet-900/10" : ""} ${selectedIds.has(user.id) ? "bg-violet-50/30 dark:bg-violet-900/10" : ""}`}
                       onClick={() => toggleRow(user.id)}
                     >
+                      {/* Чекбокс */}
+                      <td className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(user.id)}
+                          onChange={() => toggleSelectOne(user.id)}
+                          className="rounded border-border cursor-pointer accent-violet-600"
+                        />
+                      </td>
+
                       {/* Expand toggle */}
                       <td className="px-4 py-3">
                         <Icon
@@ -198,7 +274,7 @@ export default function AdminUsers({
                     {/* Раскрытая строка — назначенные курсы */}
                     {isExpanded && (
                       <tr key={`${user.id}-expanded`} className="border-b border-border bg-violet-50/30 dark:bg-violet-900/5">
-                        <td colSpan={6} className="px-8 py-4">
+                        <td colSpan={7} className="px-8 py-4">
                           <div className="space-y-3">
                             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Назначенные курсы</p>
                             {user.assignments.length === 0 ? (
