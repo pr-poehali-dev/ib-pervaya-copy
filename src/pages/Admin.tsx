@@ -28,6 +28,7 @@ export default function Admin() {
   const [newFirstName, setNewFirstName] = useState("");
   const [newMiddleName, setNewMiddleName] = useState("");
   const [newOrg, setNewOrg] = useState("");
+  const [newInn, setNewInn] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [newGroup, setNewGroup] = useState("ИБ-301");
   const [newRole, setNewRole] = useState("Студент");
@@ -63,7 +64,7 @@ export default function Admin() {
     setUsers((prev) => [...prev, newUser]);
     setShowAddUser(false);
     setNewLastName(""); setNewFirstName(""); setNewMiddleName(""); setNewOrg("");
-    setNewEmail(""); setNewGroup("ИБ-301"); setNewRole("Студент"); setSelectedCourses([]);
+    setNewEmail(""); setNewInn(""); setNewGroup("ИБ-301"); setNewRole("Студент"); setSelectedCourses([]);
     setSelectedListenerGroup(""); setShowGroupDropdown(false);
     setSelectedUser(newUser);
   };
@@ -198,6 +199,15 @@ export default function Admin() {
                 <div className="space-y-1.5">
                   <Label>Наименование организации <span className="text-destructive">*</span></Label>
                   <Input className="rounded-xl" value={newOrg} onChange={(e) => setNewOrg(e.target.value)} />
+                </div>
+
+                {/* ИНН организации */}
+                <div className="space-y-1.5">
+                  <Label className="flex items-center gap-1.5">
+                    ИНН организации
+                    <span className="text-xs text-amber-600 dark:text-amber-400 font-normal">(рекомендуется заполнить)</span>
+                  </Label>
+                  <Input className="rounded-xl" placeholder="" value={newInn} onChange={(e) => setNewInn(e.target.value)} maxLength={12} />
                 </div>
 
                 {/* Email */}
