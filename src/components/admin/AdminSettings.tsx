@@ -66,7 +66,11 @@ function generatePassword() {
   return Array.from({ length: 12 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
 }
 
+type ActivePanel = null | "org" | "users";
+
 export default function AdminSettings() {
+  const [activePanel, setActivePanel] = useState<ActivePanel>(null);
+
   const [org, setOrg] = useState<OrgData>(defaultOrg);
   const [editOrg, setEditOrg] = useState(false);
   const [orgDraft, setOrgDraft] = useState<OrgData>(defaultOrg);
@@ -78,13 +82,6 @@ export default function AdminSettings() {
   const [showPassword, setShowPassword] = useState(false);
   const [copiedPassword, setCopiedPassword] = useState(false);
 
-  const handleCopyPassword = () => {
-    if (!form.password) return;
-    navigator.clipboard.writeText(form.password);
-    setCopiedPassword(true);
-    setTimeout(() => setCopiedPassword(false), 2000);
-  };
-
   const emptyForm = { lastName: "", firstName: "", middleName: "", email: "", role: "Администратор", department: "", password: "", status: "active" as const };
   const [form, setForm] = useState(emptyForm);
   const [errors, setErrors] = useState<Partial<typeof emptyForm>>({});
@@ -93,6 +90,13 @@ export default function AdminSettings() {
     navigator.clipboard.writeText(org.externalId);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleCopyPassword = () => {
+    if (!form.password) return;
+    navigator.clipboard.writeText(form.password);
+    setCopiedPassword(true);
+    setTimeout(() => setCopiedPassword(false), 2000);
   };
 
   const handleSaveOrg = () => { setOrg(orgDraft); setEditOrg(false); };
@@ -120,8 +124,6 @@ export default function AdminSettings() {
     if (!form.email.trim()) newErrors.email = "Введите email";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) newErrors.email = "Некорректный email";
     if (Object.keys(newErrors).length) { setErrors(newErrors); return; }
-
-    const fullName = `${form.lastName.trim()} ${form.firstName.trim()}${form.middleName.trim() ? " " + form.middleName.trim() : ""}`.toUpperCase();
 
     if (editUser) {
       setSystemUsers((prev) => prev.map((u) => u.id === editUser.id
@@ -151,91 +153,182 @@ export default function AdminSettings() {
 
   return (
     <div className="space-y-6">
-      {/* Данные организации */}
-      <div className="bg-card rounded-2xl border border-border overflow-hidden">
-        <div className="px-6 py-4 border-b border-border">
-          <h2 className="font-bold text-base">Данные учебного центра / организации</h2>
+      {/* Карточки — главный экран */}
+      {activePanel === null && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* Карточка: Данные организации */}
+          <div
+            className="bg-card rounded-2xl border border-border p-6 cursor-pointer hover:border-violet-400 hover:shadow-lg hover:shadow-violet-100 dark:hover:shadow-violet-900/20 transition-all duration-200 group"
+            onClick={() => setActivePanel("org")}
+          >
+            <div className="flex items-start justify-between mb-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-violet-500 to-purple-700 rounded-xl flex items-center justify-center">
+                <Icon name="Building2" size={22} className="text-white" />
+              </div>
+              <Icon name="ChevronRight" size={18} className="text-muted-foreground group-hover:text-violet-500 transition-colors mt-1" />
+            </div>
+            <h3 className="font-bold text-base mb-1">Данные учебного центра</h3>
+            <p className="text-muted-foreground text-sm mb-4">Реквизиты организации, лицензия, внешний ID</p>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground w-24 flex-shrink-0">Организация</span>
+                <span className="text-sm font-medium truncate">{org.name}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground w-24 flex-shrink-0">ИНН</span>
+                <span className="text-sm font-mono">{org.inn}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground w-24 flex-shrink-0">Лицензия №</span>
+                <span className="text-sm">{org.licenseNo} до {org.licenseDate}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Карточка: Пользователи системы */}
+          <div
+            className="bg-card rounded-2xl border border-border p-6 cursor-pointer hover:border-violet-400 hover:shadow-lg hover:shadow-violet-100 dark:hover:shadow-violet-900/20 transition-all duration-200 group"
+            onClick={() => setActivePanel("users")}
+          >
+            <div className="flex items-start justify-between mb-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center">
+                <Icon name="UserCog" size={22} className="text-white" />
+              </div>
+              <Icon name="ChevronRight" size={18} className="text-muted-foreground group-hover:text-violet-500 transition-colors mt-1" />
+            </div>
+            <h3 className="font-bold text-base mb-1">Пользователи системы</h3>
+            <p className="text-muted-foreground text-sm mb-4">Управление учётными записями администраторов</p>
+            <div className="flex items-center gap-4">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-violet-600">{systemUsers.length}</p>
+                <p className="text-xs text-muted-foreground">Всего</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-emerald-600">{systemUsers.filter((u) => u.status === "active").length}</p>
+                <p className="text-xs text-muted-foreground">Активных</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-muted-foreground">{systemUsers.filter((u) => u.status === "inactive").length}</p>
+                <p className="text-xs text-muted-foreground">Неактивных</p>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border bg-muted/40">
-                {["Тип организации", "ОПФ", "Наименование", "Внешний ID", "ИНН", "№ лицензии", "Дата лицензии", "Действия"].map((h) => (
-                  <th key={h} className="px-4 py-3 text-left font-medium text-muted-foreground whitespace-nowrap">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              <tr className="border-b border-border last:border-0">
-                <td className="px-4 py-3 whitespace-nowrap">{org.type}</td>
-                <td className="px-4 py-3 whitespace-nowrap">{org.opf}</td>
-                <td className="px-4 py-3 whitespace-nowrap font-medium">{org.name}</td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs text-muted-foreground truncate max-w-[180px]">{org.externalId}</span>
-                    <Button size="sm" variant="outline" className="h-7 px-2 text-xs rounded-lg flex-shrink-0 gap-1" onClick={handleCopy}>
-                      {copied ? <Icon name="Check" size={12} className="text-emerald-500" /> : <Icon name="Copy" size={12} />}
-                      {copied ? "Скопировано" : "Скопировать"}
+      )}
+
+      {/* Панель: Данные организации */}
+      {activePanel === "org" && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <button onClick={() => setActivePanel(null)} className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors text-sm">
+              <Icon name="ChevronLeft" size={16} />
+              Настройки
+            </button>
+            <span className="text-muted-foreground">/</span>
+            <span className="text-sm font-medium">Данные учебного центра</span>
+          </div>
+
+          <div className="bg-card rounded-2xl border border-border overflow-hidden">
+            <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-gradient-to-br from-violet-500 to-purple-700 rounded-xl flex items-center justify-center">
+                  <Icon name="Building2" size={16} className="text-white" />
+                </div>
+                <h2 className="font-bold text-base">Данные учебного центра / организации</h2>
+              </div>
+              <Button variant="outline" className="rounded-xl gap-2" onClick={() => { setOrgDraft(org); setEditOrg(true); }}>
+                <Icon name="Pencil" size={15} />
+                Редактировать
+              </Button>
+            </div>
+            <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+              {[
+                { label: "Тип организации", value: org.type },
+                { label: "ОПФ", value: org.opf },
+                { label: "Наименование", value: org.name },
+                { label: "ИНН", value: org.inn },
+                { label: "№ лицензии", value: org.licenseNo },
+                { label: "Дата лицензии", value: org.licenseDate },
+              ].map((item) => (
+                <div key={item.label} className="space-y-1">
+                  <p className="text-xs text-muted-foreground">{item.label}</p>
+                  <p className="font-medium text-sm">{item.value}</p>
+                </div>
+              ))}
+              <div className="md:col-span-2 space-y-1">
+                <p className="text-xs text-muted-foreground">Внешний ID</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-mono text-sm text-muted-foreground">{org.externalId}</p>
+                  <Button size="sm" variant="outline" className="h-7 px-2 text-xs rounded-lg gap-1 flex-shrink-0" onClick={handleCopy}>
+                    {copied ? <Icon name="Check" size={12} className="text-emerald-500" /> : <Icon name="Copy" size={12} />}
+                    {copied ? "Скопировано" : "Скопировать"}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Панель: Пользователи системы */}
+      {activePanel === "users" && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <button onClick={() => setActivePanel(null)} className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors text-sm">
+              <Icon name="ChevronLeft" size={16} />
+              Настройки
+            </button>
+            <span className="text-muted-foreground">/</span>
+            <span className="text-sm font-medium">Пользователи системы</span>
+          </div>
+
+          <div className="bg-card rounded-2xl border border-border overflow-hidden">
+            <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center">
+                  <Icon name="UserCog" size={16} className="text-white" />
+                </div>
+                <h2 className="font-bold text-base">Пользователи системы</h2>
+              </div>
+              <Button className="gradient-primary text-white rounded-xl gap-2 shadow-md shadow-purple-200" onClick={openAddUser}>
+                <Icon name="Plus" size={15} />
+                Добавить пользователя
+              </Button>
+            </div>
+
+            {/* Карточки пользователей */}
+            <div className="p-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+              {systemUsers.map((u) => (
+                <div key={u.id} className="bg-background border border-border rounded-xl p-4 flex flex-col gap-3 hover:border-violet-300 dark:hover:border-violet-700 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-700 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <span className="text-white font-bold text-sm">
+                        {(u.firstName[0] || "") + (u.lastName[0] || "")}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-sm truncate">{`${u.lastName} ${u.firstName} ${u.middleName}`.trim()}</p>
+                      <p className="text-muted-foreground text-xs truncate">{u.email}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-0.5 bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 rounded-md text-xs font-medium">{u.role}</span>
+                      <span className={`px-2 py-0.5 rounded-md text-xs font-medium ${u.status === "active" ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300" : "bg-muted text-muted-foreground"}`}>
+                        {u.status === "active" ? "Активен" : "Неактивен"}
+                      </span>
+                    </div>
+                    <Button size="sm" variant="outline" className="h-7 w-7 p-0 rounded-lg" onClick={() => openEditUser(u)}>
+                      <Icon name="Pencil" size={13} />
                     </Button>
                   </div>
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap font-mono">{org.inn}</td>
-                <td className="px-4 py-3 whitespace-nowrap">{org.licenseNo}</td>
-                <td className="px-4 py-3 whitespace-nowrap">{org.licenseDate}</td>
-                <td className="px-4 py-3">
-                  <Button size="sm" variant="outline" className="h-8 w-8 p-0 rounded-lg" onClick={() => { setOrgDraft(org); setEditOrg(true); }}>
-                    <Icon name="Pencil" size={14} />
-                  </Button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Пользователи системы */}
-      <div className="bg-card rounded-2xl border border-border overflow-hidden">
-        <div className="px-6 py-4 border-b border-border flex items-center justify-between">
-          <h2 className="font-bold text-base">Пользователи системы</h2>
-          <Button className="gradient-primary text-white rounded-xl gap-2 shadow-md shadow-purple-200" onClick={openAddUser}>
-            <Icon name="Plus" size={15} />
-            Добавить пользователя
-          </Button>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border bg-muted/40">
-                {["ФИО", "Email", "Роль", "Статус", "Дата регистрации", "Действия"].map((h) => (
-                  <th key={h} className="px-4 py-3 text-left font-medium text-muted-foreground whitespace-nowrap">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {systemUsers.map((u) => (
-                <tr key={u.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
-                  <td className="px-4 py-3 font-medium">{`${u.lastName} ${u.firstName} ${u.middleName}`.trim()}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{u.email}</td>
-                  <td className="px-4 py-3">
-                    <span className="px-2.5 py-1 bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 rounded-lg text-xs font-medium">{u.role}</span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`px-2.5 py-1 rounded-lg text-xs font-medium ${u.status === "active" ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300" : "bg-muted text-muted-foreground"}`}>
-                      {u.status === "active" ? "Активен" : "Неактивен"}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">{u.registeredAt}</td>
-                  <td className="px-4 py-3">
-                    <Button size="sm" variant="outline" className="h-8 w-8 p-0 rounded-lg" onClick={() => openEditUser(u)}>
-                      <Icon name="Pencil" size={14} />
-                    </Button>
-                  </td>
-                </tr>
+                  <p className="text-xs text-muted-foreground">Зарегистрирован: {u.registeredAt}</p>
+                </div>
               ))}
-            </tbody>
-          </table>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Диалог редактирования организации */}
       <Dialog open={editOrg} onOpenChange={setEditOrg}>
@@ -299,7 +392,6 @@ export default function AdminSettings() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-1">
-            {/* ФИО */}
             <div className="grid grid-cols-3 gap-3">
               <div className="space-y-1.5">
                 <Label>Фамилия <span className="text-destructive">*</span></Label>
@@ -316,21 +408,15 @@ export default function AdminSettings() {
                 <Input className="rounded-xl" placeholder="Иванович" value={form.middleName} onChange={f("middleName")} />
               </div>
             </div>
-
-            {/* Email */}
             <div className="space-y-1.5">
               <Label>Email <span className="text-destructive">*</span></Label>
               <Input className="rounded-xl" placeholder="user@isp.ru" value={form.email} onChange={f("email")} />
               {errors.email && <p className="text-destructive text-xs">{errors.email}</p>}
             </div>
-
-            {/* Подразделение */}
             <div className="space-y-1.5">
               <Label>Подразделение</Label>
               <Input className="rounded-xl" placeholder="Отдел информационной безопасности" value={form.department} onChange={f("department")} />
             </div>
-
-            {/* Роль и статус */}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label>Роль</Label>
@@ -350,8 +436,6 @@ export default function AdminSettings() {
                 </Select>
               </div>
             </div>
-
-            {/* Пароль */}
             <div className="space-y-1.5">
               <Label>Пароль</Label>
               <div className="flex gap-2">
@@ -371,29 +455,15 @@ export default function AdminSettings() {
                     <Icon name={showPassword ? "EyeOff" : "Eye"} size={16} />
                   </button>
                 </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="rounded-xl gap-1.5 flex-shrink-0"
-                  onClick={handleCopyPassword}
-                  disabled={!form.password}
-                  title="Скопировать пароль"
-                >
+                <Button type="button" variant="outline" className="rounded-xl gap-1.5 flex-shrink-0" onClick={handleCopyPassword} disabled={!form.password} title="Скопировать пароль">
                   {copiedPassword ? <Icon name="Check" size={14} className="text-emerald-500" /> : <Icon name="Copy" size={14} />}
                 </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="rounded-xl gap-1.5 flex-shrink-0"
-                  onClick={() => setForm((p) => ({ ...p, password: generatePassword() }))}
-                >
+                <Button type="button" variant="outline" className="rounded-xl gap-1.5 flex-shrink-0" onClick={() => setForm((p) => ({ ...p, password: generatePassword() }))}>
                   <Icon name="RefreshCw" size={14} />
                   Сгенерировать
                 </Button>
               </div>
             </div>
-
-            {/* Кнопки */}
             <div className="flex gap-2 pt-1">
               <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setShowAddUser(false)}>Отменить</Button>
               <Button className="flex-1 rounded-xl gradient-primary text-white gap-2" onClick={handleSaveUser}>
