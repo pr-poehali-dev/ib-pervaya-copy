@@ -250,7 +250,7 @@ export default function Admin() {
 
             {/* Боковая панель выбора курсов */}
             <div
-              className={`absolute right-0 top-0 h-full w-80 bg-background shadow-2xl z-20 flex flex-col transition-transform duration-300 ${showCoursesPicker ? "translate-x-0" : "translate-x-full"}`}
+              className={`absolute right-0 top-0 h-full w-[640px] bg-background shadow-2xl z-20 flex flex-col transition-transform duration-300 ${showCoursesPicker ? "translate-x-0" : "translate-x-full"}`}
             >
               <div className="flex items-center justify-between px-6 py-4 border-b border-border flex-shrink-0">
                 <h3 className="font-semibold text-base">Выбор курсов</h3>
