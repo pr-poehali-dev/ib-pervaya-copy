@@ -517,21 +517,6 @@ export default function Admin() {
                 <span className="text-amber-700 dark:text-amber-400 text-sm font-medium">Ожидает интеграции</span>
               </div>
             </div>
-            <div className="bg-card rounded-2xl border border-border p-8 flex flex-col items-center justify-center text-center space-y-4">
-              <div className="w-14 h-14 icon-bg-rose rounded-2xl flex items-center justify-center">
-                <Icon name="ShieldAlert" size={26} className="text-rose-500" />
-              </div>
-              <div>
-                <p className="font-bold text-base">Индекс безопасности</p>
-                <p className="text-muted-foreground text-sm mt-1">
-                  Сводный показатель защищённости по сотрудникам и подразделениям. Рассчитывается на основе данных из STP.
-                </p>
-              </div>
-              <div className="flex items-center gap-2 px-4 py-2 icon-bg-amber border border-amber-200 dark:border-amber-800 rounded-xl">
-                <Icon name="Clock" size={14} className="text-amber-500" />
-                <span className="text-amber-700 dark:text-amber-400 text-sm font-medium">Ожидает интеграции</span>
-              </div>
-            </div>
           </div>
         )}
 
