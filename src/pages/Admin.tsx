@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Icon from "@/components/ui/icon";
-import { User, initialUsers, groups, roles, getInitials } from "@/components/admin/types";
+import { User, initialUsers, groups, roles, getInitials, allCourses } from "@/components/admin/types";
 import AdminUsers from "@/components/admin/AdminUsers";
 import AdminGroups from "@/components/admin/AdminGroups";
 import AdminCourses from "@/components/admin/AdminCourses";
@@ -21,36 +21,40 @@ export default function Admin() {
   const [showAddGroup, setShowAddGroup] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupError, setNewGroupError] = useState("");
-  const [newName, setNewName] = useState("");
+  const [newLastName, setNewLastName] = useState("");
+  const [newFirstName, setNewFirstName] = useState("");
+  const [newMiddleName, setNewMiddleName] = useState("");
+  const [newOrg, setNewOrg] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [newGroup, setNewGroup] = useState("ИБ-301");
   const [newRole, setNewRole] = useState("Студент");
+  const [selectedCourses, setSelectedCourses] = useState<number[]>([]);
+  const [showCoursesPicker, setShowCoursesPicker] = useState(false);
   const [nameError, setNameError] = useState("");
   const [emailError, setEmailError] = useState("");
 
   const handleAddUser = () => {
     let valid = true;
-    if (!newName.trim()) { setNameError("Введите имя"); valid = false; } else setNameError("");
+    if (!newLastName.trim()) { setNameError("Введите фамилию"); valid = false; } else setNameError("");
     if (!newEmail.trim()) { setEmailError("Введите email"); valid = false; }
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) { setEmailError("Некорректный email"); valid = false; }
     else setEmailError("");
     if (!valid) return;
 
+    const fullName = [newLastName.trim(), newFirstName.trim(), newMiddleName.trim()].filter(Boolean).join(" ");
     const newUser: User = {
       id: Date.now(),
-      name: newName.trim(),
+      name: fullName,
       email: newEmail.trim(),
-      initials: getInitials(newName),
+      initials: getInitials(fullName),
       group: newGroup,
       role: newRole,
-      assignments: [],
+      assignments: selectedCourses.map((courseId) => ({ courseId, active: true, progress: 0, assignedAt: new Date().toLocaleDateString("ru-RU") })),
     };
     setUsers((prev) => [...prev, newUser]);
     setShowAddUser(false);
-    setNewName("");
-    setNewEmail("");
-    setNewGroup("ИБ-301");
-    setNewRole("Студент");
+    setNewLastName(""); setNewFirstName(""); setNewMiddleName(""); setNewOrg("");
+    setNewEmail(""); setNewGroup("ИБ-301"); setNewRole("Студент"); setSelectedCourses([]);
     setSelectedUser(newUser);
   };
 
@@ -139,74 +143,110 @@ export default function Admin() {
               onClick={() => setShowAddUser(true)}
             >
               <Icon name="UserPlus" size={16} />
-              Добавить пользователя
+              Добавить слушателя
             </Button>
           </div>
         </div>
 
-        <Dialog open={showAddUser} onOpenChange={setShowAddUser}>
-          <DialogContent className="rounded-2xl max-w-md">
+        <Dialog open={showAddUser} onOpenChange={(open) => { setShowAddUser(open); if (!open) setShowCoursesPicker(false); }}>
+          <DialogContent className="rounded-2xl max-w-lg">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Icon name="UserPlus" size={18} className="text-primary" />
-                Новый пользователь
-              </DialogTitle>
+              <DialogTitle>Создание/редактирование слушателя</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 pt-1">
-              <div className="space-y-1.5">
-                <Label>Полное имя</Label>
-                <Input
-                  placeholder="Иван Иванов"
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  className="rounded-xl"
-                />
-                {nameError && <p className="text-destructive text-xs">{nameError}</p>}
+              {/* ФИО */}
+              <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-1.5">
+                  <Label>Фамилия <span className="text-destructive">*</span></Label>
+                  <Input className="rounded-xl" placeholder="Иванов" value={newLastName} onChange={(e) => { setNewLastName(e.target.value); setNameError(""); }} />
+                  {nameError && <p className="text-destructive text-xs">{nameError}</p>}
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Имя <span className="text-destructive">*</span></Label>
+                  <Input className="rounded-xl" placeholder="Иван" value={newFirstName} onChange={(e) => setNewFirstName(e.target.value)} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Отчество</Label>
+                  <Input className="rounded-xl" placeholder="Иванович" value={newMiddleName} onChange={(e) => setNewMiddleName(e.target.value)} />
+                </div>
               </div>
+
+              {/* Наименование организации */}
               <div className="space-y-1.5">
-                <Label>Email</Label>
-                <Input
-                  placeholder="ivan@company.ru"
-                  value={newEmail}
-                  onChange={(e) => setNewEmail(e.target.value)}
-                  className="rounded-xl"
-                />
+                <Label>Наименование организации <span className="text-destructive">*</span></Label>
+                <Input className="rounded-xl" placeholder="" value={newOrg} onChange={(e) => setNewOrg(e.target.value)} />
+              </div>
+
+              {/* Email */}
+              <div className="space-y-1.5">
+                <Label>Электронная почта пользователя <span className="text-destructive">*</span></Label>
+                <Input className="rounded-xl" placeholder="" value={newEmail} onChange={(e) => { setNewEmail(e.target.value); setEmailError(""); }} />
                 {emailError && <p className="text-destructive text-xs">{emailError}</p>}
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label>Группа</Label>
-                  <Select value={newGroup} onValueChange={setNewGroup}>
-                    <SelectTrigger className="rounded-xl">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {groups.map((g) => (
-                        <SelectItem key={g} value={g}>{g}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Роль</Label>
-                  <Select value={newRole} onValueChange={setNewRole}>
-                    <SelectTrigger className="rounded-xl">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {roles.map((r) => (
-                        <SelectItem key={r} value={r}>{r}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+
+              {/* Кнопки действий */}
+              <div className="flex gap-2 flex-wrap">
+                <Button
+                  type="button"
+                  className="gradient-primary text-white rounded-xl gap-2"
+                  onClick={() => setShowCoursesPicker((p) => !p)}
+                >
+                  <Icon name="BookOpen" size={15} />
+                  Добавить/редактировать курсы
+                </Button>
+                <div className="relative">
+                  <Button type="button" className="gradient-primary text-white rounded-xl gap-2" onClick={() => {}}>
+                    <Icon name="Users" size={15} />
+                    Добавить к группе обучения
+                    <Icon name="ChevronDown" size={14} />
+                  </Button>
                 </div>
               </div>
-              <div className="flex gap-2 pt-1">
-                <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setShowAddUser(false)}>
-                  Отмена
-                </Button>
-                <Button className="flex-1 rounded-xl gradient-primary text-white" onClick={handleAddUser}>
-                  Создать
+
+              {/* Выбор курсов */}
+              {showCoursesPicker && (
+                <div className="border border-border rounded-xl p-3 space-y-2">
+                  {allCourses.map((c) => (
+                    <label key={c.id} className="flex items-center gap-2 cursor-pointer hover:bg-muted/40 px-2 py-1.5 rounded-lg transition-colors">
+                      <input
+                        type="checkbox"
+                        className="accent-violet-600 w-4 h-4"
+                        checked={selectedCourses.includes(c.id)}
+                        onChange={() => setSelectedCourses((prev) => prev.includes(c.id) ? prev.filter((id) => id !== c.id) : [...prev, c.id])}
+                      />
+                      <span className="text-sm">{c.emoji} {c.title}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+
+              {/* Выбранные курсы */}
+              <div className="space-y-1.5">
+                <p className="font-semibold text-sm">Выбранные курсы:</p>
+                <div className="border border-border rounded-xl px-4 py-3 min-h-[52px]">
+                  {selectedCourses.length === 0
+                    ? <p className="text-muted-foreground text-sm">Пока не выбрано ни одного курса.</p>
+                    : <div className="flex flex-wrap gap-1.5">
+                        {selectedCourses.map((id) => {
+                          const c = allCourses.find((c) => c.id === id);
+                          return c ? (
+                            <span key={id} className="flex items-center gap-1 px-2.5 py-1 bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 rounded-lg text-xs font-medium">
+                              {c.emoji} {c.title}
+                              <button onClick={() => setSelectedCourses((p) => p.filter((i) => i !== id))} className="hover:text-destructive ml-0.5">×</button>
+                            </span>
+                          ) : null;
+                        })}
+                      </div>
+                  }
+                </div>
+              </div>
+
+              {/* Кнопки */}
+              <div className="flex gap-2 justify-end pt-1">
+                <Button variant="outline" className="rounded-xl px-6" onClick={() => setShowAddUser(false)}>Отмена</Button>
+                <Button className="rounded-xl gradient-primary text-white gap-2 px-6" onClick={handleAddUser}>
+                  <Icon name="Save" size={15} />
+                  Сохранить
                 </Button>
               </div>
             </div>
