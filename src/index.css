@@ -148,6 +148,6 @@
     @apply bg-indigo-50 dark:bg-indigo-950/40;
   }
   .sidebar-gradient {
-    background: linear-gradient(180deg, hsl(240 15% 13%), hsl(258 30% 18%));
+    background: linear-gradient(180deg, hsl(220 38% 12%), hsl(225 35% 15%));
   }
 }
