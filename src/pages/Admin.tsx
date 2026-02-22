@@ -223,7 +223,7 @@ export default function Admin() {
             { key: "stp", icon: "ShieldAlert", label: "STP Индекс Безопасности" },
             { key: "groups", icon: "UsersRound", label: "Обучение групп" },
             { key: "users", icon: "Users", label: "Пользователи" },
-            { key: "courses", icon: "BookOpen", label: "Обзор курсов" },
+            { key: "courses", icon: "BookOpen", label: "Курсы платформы" },
             { key: "reports", icon: "BarChart2", label: "Отчёты" },
             { key: "settings", icon: "Settings", label: "Настройки" },
           ] as const).map((tab) => (
