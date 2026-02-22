@@ -76,6 +76,14 @@ export default function AdminSettings() {
   const [showAddUser, setShowAddUser] = useState(false);
   const [editUser, setEditUser] = useState<SystemUser | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [copiedPassword, setCopiedPassword] = useState(false);
+
+  const handleCopyPassword = () => {
+    if (!form.password) return;
+    navigator.clipboard.writeText(form.password);
+    setCopiedPassword(true);
+    setTimeout(() => setCopiedPassword(false), 2000);
+  };
 
   const emptyForm = { lastName: "", firstName: "", middleName: "", email: "", role: "Администратор", department: "", password: "", status: "active" as const };
   const [form, setForm] = useState(emptyForm);
@@ -363,6 +371,16 @@ export default function AdminSettings() {
                     <Icon name={showPassword ? "EyeOff" : "Eye"} size={16} />
                   </button>
                 </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="rounded-xl gap-1.5 flex-shrink-0"
+                  onClick={handleCopyPassword}
+                  disabled={!form.password}
+                  title="Скопировать пароль"
+                >
+                  {copiedPassword ? <Icon name="Check" size={14} className="text-emerald-500" /> : <Icon name="Copy" size={14} />}
+                </Button>
                 <Button
                   type="button"
                   variant="outline"
