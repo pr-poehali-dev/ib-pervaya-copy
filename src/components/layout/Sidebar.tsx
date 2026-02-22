@@ -1,6 +1,7 @@
 import { NavLink, useLocation } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useStats } from "@/contexts/StatsContext";
 
 const navItems = [
   { to: "/", icon: "LayoutDashboard", label: "Главная" },
@@ -20,6 +21,14 @@ interface SidebarProps {
 export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
+  const { stats } = useStats();
+
+  const statItems = [
+    { icon: "Users", value: stats.users, label: "Слушателей", color: "from-violet-500 to-purple-700" },
+    { icon: "BookOpen", value: stats.courses, label: "Курсов", color: "from-cyan-500 to-blue-600" },
+    { icon: "CheckCircle", value: stats.assignments, label: "Назначений", color: "from-emerald-500 to-teal-600" },
+    { icon: "Trophy", value: stats.completed, label: "Завершено", color: "from-amber-500 to-orange-600" },
+  ];
 
   return (
     <aside
@@ -86,6 +95,37 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
           );
         })}
       </nav>
+
+      {/* Статистика */}
+      {!collapsed && (
+        <div className="px-3 pb-2">
+          <div className="grid grid-cols-2 gap-1.5">
+            {statItems.map((s) => (
+              <div key={s.label} className="bg-white/5 rounded-xl px-2.5 py-2 flex items-center gap-2">
+                <div className={`w-6 h-6 bg-gradient-to-br ${s.color} rounded-md flex items-center justify-center flex-shrink-0`}>
+                  <Icon name={s.icon} size={12} className="text-white" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-white font-bold text-sm leading-none">{s.value}</p>
+                  <p className="text-white/40 text-[10px] leading-tight truncate">{s.label}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      {collapsed && (
+        <div className="px-2 pb-2 space-y-1">
+          {statItems.map((s) => (
+            <div key={s.label} title={`${s.label}: ${s.value}`} className="bg-white/5 rounded-xl p-1.5 flex flex-col items-center">
+              <div className={`w-6 h-6 bg-gradient-to-br ${s.color} rounded-md flex items-center justify-center`}>
+                <Icon name={s.icon} size={11} className="text-white" />
+              </div>
+              <p className="text-white font-bold text-[10px] mt-0.5">{s.value}</p>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Переключатель темы */}
       <div className="px-2 pb-1">

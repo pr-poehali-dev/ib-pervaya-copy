@@ -11,10 +11,12 @@ import MyLearning from "./pages/MyLearning";
 import NotFound from "./pages/NotFound";
 import Admin from "./pages/Admin";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { StatsProvider } from "./contexts/StatsContext";
 
 const queryClient = new QueryClient();
 
 const App = () => (
+  <StatsProvider>
   <ThemeProvider>
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -34,6 +36,7 @@ const App = () => (
     </TooltipProvider>
   </QueryClientProvider>
   </ThemeProvider>
+  </StatsProvider>
 );
 
 export default App;

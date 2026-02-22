@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useStats } from "@/contexts/StatsContext";
 import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -126,6 +127,11 @@ export default function Admin() {
     (sum, u) => sum + u.assignments.filter((a) => a.progress === 100).length,
     0
   );
+
+  const { setStats } = useStats();
+  useEffect(() => {
+    setStats({ users: users.length, courses: 6, assignments: totalAssignments, completed: totalCompleted });
+  }, [users, totalAssignments, totalCompleted]);
 
   return (
     <Layout>
@@ -489,25 +495,6 @@ export default function Admin() {
             </div>
           </DialogContent>
         </Dialog>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            { label: "Пользователей", value: users.length, icon: "Users", color: "from-violet-500 to-purple-700" },
-            { label: "Курсов доступно", value: 6, icon: "BookOpen", color: "from-cyan-500 to-blue-600" },
-            { label: "Назначений активно", value: totalAssignments, icon: "CheckCircle", color: "from-emerald-500 to-teal-600" },
-            { label: "Курсов завершено", value: totalCompleted, icon: "Trophy", color: "from-amber-500 to-orange-600" },
-          ].map((stat) => (
-            <div key={stat.label} className="bg-card rounded-xl px-4 py-3 border border-border shadow-sm flex items-center gap-3">
-              <div className={`w-8 h-8 bg-gradient-to-br ${stat.color} rounded-lg flex items-center justify-center flex-shrink-0`}>
-                <Icon name={stat.icon} size={16} className="text-white" />
-              </div>
-              <div>
-                <p className="text-xl font-bold leading-none">{stat.value}</p>
-                <p className="text-muted-foreground text-xs mt-0.5">{stat.label}</p>
-              </div>
-            </div>
-          ))}
-        </div>
 
         <div className="flex gap-2">
           {([
