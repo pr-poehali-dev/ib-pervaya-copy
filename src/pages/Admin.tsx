@@ -32,6 +32,10 @@ export default function Admin() {
   const [showCoursesPicker, setShowCoursesPicker] = useState(false);
   const [openDirections, setOpenDirections] = useState<number[]>([1]);
   const toggleDirection = (id: number) => setOpenDirections((p) => p.includes(id) ? p.filter((d) => d !== id) : [...p, id]);
+  const [showGroupDropdown, setShowGroupDropdown] = useState(false);
+  const [selectedListenerGroup, setSelectedListenerGroup] = useState<string>("");
+  const [newGroupForListener, setNewGroupForListener] = useState("");
+  const [availableGroups, setAvailableGroups] = useState<string[]>([...groups]);
   const [nameError, setNameError] = useState("");
   const [emailError, setEmailError] = useState("");
 
@@ -57,6 +61,7 @@ export default function Admin() {
     setShowAddUser(false);
     setNewLastName(""); setNewFirstName(""); setNewMiddleName(""); setNewOrg("");
     setNewEmail(""); setNewGroup("ИБ-301"); setNewRole("Студент"); setSelectedCourses([]);
+    setSelectedListenerGroup(""); setShowGroupDropdown(false);
     setSelectedUser(newUser);
   };
 
@@ -209,11 +214,78 @@ export default function Admin() {
                     <Icon name="BookOpen" size={15} />
                     Добавить/редактировать курсы
                   </Button>
-                  <Button type="button" className="gradient-primary text-white rounded-xl gap-2">
-                    <Icon name="Users" size={15} />
-                    Добавить к группе обучения
-                    <Icon name="ChevronDown" size={14} />
-                  </Button>
+                  <div className="relative">
+                    <Button
+                      type="button"
+                      className={`rounded-xl gap-2 text-white ${showGroupDropdown ? "bg-violet-700" : "gradient-primary"}`}
+                      onClick={() => { setShowGroupDropdown((p) => !p); setShowCoursesPicker(false); }}
+                    >
+                      <Icon name="Users" size={15} />
+                      {selectedListenerGroup ? selectedListenerGroup : "Добавить к группе обучения"}
+                      <Icon name={showGroupDropdown ? "ChevronUp" : "ChevronDown"} size={14} />
+                    </Button>
+
+                    {showGroupDropdown && (
+                      <div className="absolute left-0 top-full mt-1 z-30 bg-background border border-border rounded-xl shadow-xl w-72 overflow-hidden">
+                        {/* Существующие группы */}
+                        <div className="px-3 py-2 border-b border-border">
+                          <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Существующие группы</p>
+                        </div>
+                        <div className="max-h-44 overflow-y-auto">
+                          {availableGroups.map((g) => (
+                            <button
+                              key={g}
+                              type="button"
+                              className={`w-full text-left px-4 py-2.5 text-sm hover:bg-muted/60 transition-colors flex items-center justify-between ${selectedListenerGroup === g ? "text-violet-600 font-medium" : ""}`}
+                              onClick={() => { setSelectedListenerGroup(g); setNewGroup(g); setShowGroupDropdown(false); }}
+                            >
+                              {g}
+                              {selectedListenerGroup === g && <Icon name="Check" size={14} className="text-violet-600" />}
+                            </button>
+                          ))}
+                        </div>
+                        {/* Создать новую группу */}
+                        <div className="border-t border-border px-3 py-2.5 space-y-2">
+                          <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Создать новую группу</p>
+                          <div className="flex gap-2">
+                            <Input
+                              className="rounded-lg h-8 text-sm"
+                              placeholder="Название группы"
+                              value={newGroupForListener}
+                              onChange={(e) => setNewGroupForListener(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" && newGroupForListener.trim()) {
+                                  const g = newGroupForListener.trim();
+                                  setAvailableGroups((p) => [...p, g]);
+                                  setSelectedListenerGroup(g);
+                                  setNewGroup(g);
+                                  setNewGroupForListener("");
+                                  setShowGroupDropdown(false);
+                                }
+                              }}
+                            />
+                            <Button
+                              type="button"
+                              size="sm"
+                              className="gradient-primary text-white rounded-lg h-8 px-3"
+                              disabled={!newGroupForListener.trim()}
+                              onClick={() => {
+                                const g = newGroupForListener.trim();
+                                if (!g) return;
+                                setAvailableGroups((p) => [...p, g]);
+                                setSelectedListenerGroup(g);
+                                setNewGroup(g);
+                                setNewGroupForListener("");
+                                setShowGroupDropdown(false);
+                              }}
+                            >
+                              <Icon name="Plus" size={14} />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Выбранные курсы */}
