@@ -148,110 +148,138 @@ export default function Admin() {
           </div>
         </div>
 
-        <Dialog open={showAddUser} onOpenChange={(open) => { setShowAddUser(open); if (!open) setShowCoursesPicker(false); }}>
-          <DialogContent className="rounded-2xl max-w-lg">
-            <DialogHeader>
-              <DialogTitle>Создание/редактирование слушателя</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 pt-1">
-              {/* ФИО */}
-              <div className="grid grid-cols-3 gap-3">
-                <div className="space-y-1.5">
-                  <Label>Фамилия <span className="text-destructive">*</span></Label>
-                  <Input className="rounded-xl" placeholder="Иванов" value={newLastName} onChange={(e) => { setNewLastName(e.target.value); setNameError(""); }} />
-                  {nameError && <p className="text-destructive text-xs">{nameError}</p>}
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Имя <span className="text-destructive">*</span></Label>
-                  <Input className="rounded-xl" placeholder="Иван" value={newFirstName} onChange={(e) => setNewFirstName(e.target.value)} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Отчество</Label>
-                  <Input className="rounded-xl" placeholder="Иванович" value={newMiddleName} onChange={(e) => setNewMiddleName(e.target.value)} />
-                </div>
+        {/* Оверлей для диалога добавления слушателя */}
+        {showAddUser && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            {/* Затемнение */}
+            <div className="absolute inset-0 bg-black/50" onClick={() => { setShowAddUser(false); setShowCoursesPicker(false); }} />
+
+            {/* Основное окно — сдвигается влево при открытии панели курсов */}
+            <div
+              className={`relative bg-background rounded-2xl shadow-2xl z-10 w-full max-w-lg mx-4 flex flex-col max-h-[90vh] overflow-y-auto transition-all duration-300 ${showCoursesPicker ? "-translate-x-[220px]" : ""}`}
+            >
+              {/* Заголовок */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-border flex-shrink-0">
+                <h2 className="font-semibold text-base">Создание/редактирование слушателя</h2>
+                <button onClick={() => { setShowAddUser(false); setShowCoursesPicker(false); }} className="text-muted-foreground hover:text-foreground transition-colors">
+                  <Icon name="X" size={18} />
+                </button>
               </div>
 
-              {/* Наименование организации */}
-              <div className="space-y-1.5">
-                <Label>Наименование организации <span className="text-destructive">*</span></Label>
-                <Input className="rounded-xl" placeholder="" value={newOrg} onChange={(e) => setNewOrg(e.target.value)} />
-              </div>
+              <div className="p-6 space-y-4">
+                {/* ФИО */}
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="space-y-1.5">
+                    <Label>Фамилия <span className="text-destructive">*</span></Label>
+                    <Input className="rounded-xl" placeholder="Иванов" value={newLastName} onChange={(e) => { setNewLastName(e.target.value); setNameError(""); }} />
+                    {nameError && <p className="text-destructive text-xs">{nameError}</p>}
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Имя <span className="text-destructive">*</span></Label>
+                    <Input className="rounded-xl" placeholder="Иван" value={newFirstName} onChange={(e) => setNewFirstName(e.target.value)} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Отчество</Label>
+                    <Input className="rounded-xl" placeholder="Иванович" value={newMiddleName} onChange={(e) => setNewMiddleName(e.target.value)} />
+                  </div>
+                </div>
 
-              {/* Email */}
-              <div className="space-y-1.5">
-                <Label>Электронная почта пользователя <span className="text-destructive">*</span></Label>
-                <Input className="rounded-xl" placeholder="" value={newEmail} onChange={(e) => { setNewEmail(e.target.value); setEmailError(""); }} />
-                {emailError && <p className="text-destructive text-xs">{emailError}</p>}
-              </div>
+                {/* Наименование организации */}
+                <div className="space-y-1.5">
+                  <Label>Наименование организации <span className="text-destructive">*</span></Label>
+                  <Input className="rounded-xl" value={newOrg} onChange={(e) => setNewOrg(e.target.value)} />
+                </div>
 
-              {/* Кнопки действий */}
-              <div className="flex gap-2 flex-wrap">
-                <Button
-                  type="button"
-                  className="gradient-primary text-white rounded-xl gap-2"
-                  onClick={() => setShowCoursesPicker((p) => !p)}
-                >
-                  <Icon name="BookOpen" size={15} />
-                  Добавить/редактировать курсы
-                </Button>
-                <div className="relative">
-                  <Button type="button" className="gradient-primary text-white rounded-xl gap-2" onClick={() => {}}>
+                {/* Email */}
+                <div className="space-y-1.5">
+                  <Label>Электронная почта пользователя <span className="text-destructive">*</span></Label>
+                  <Input className="rounded-xl" value={newEmail} onChange={(e) => { setNewEmail(e.target.value); setEmailError(""); }} />
+                  {emailError && <p className="text-destructive text-xs">{emailError}</p>}
+                </div>
+
+                {/* Кнопки действий */}
+                <div className="flex gap-2 flex-wrap">
+                  <Button
+                    type="button"
+                    className={`rounded-xl gap-2 text-white ${showCoursesPicker ? "bg-violet-700" : "gradient-primary"}`}
+                    onClick={() => setShowCoursesPicker((p) => !p)}
+                  >
+                    <Icon name="BookOpen" size={15} />
+                    Добавить/редактировать курсы
+                  </Button>
+                  <Button type="button" className="gradient-primary text-white rounded-xl gap-2">
                     <Icon name="Users" size={15} />
                     Добавить к группе обучения
                     <Icon name="ChevronDown" size={14} />
                   </Button>
                 </div>
-              </div>
 
-              {/* Выбор курсов */}
-              {showCoursesPicker && (
-                <div className="border border-border rounded-xl p-3 space-y-2">
-                  {allCourses.map((c) => (
-                    <label key={c.id} className="flex items-center gap-2 cursor-pointer hover:bg-muted/40 px-2 py-1.5 rounded-lg transition-colors">
-                      <input
-                        type="checkbox"
-                        className="accent-violet-600 w-4 h-4"
-                        checked={selectedCourses.includes(c.id)}
-                        onChange={() => setSelectedCourses((prev) => prev.includes(c.id) ? prev.filter((id) => id !== c.id) : [...prev, c.id])}
-                      />
-                      <span className="text-sm">{c.emoji} {c.title}</span>
-                    </label>
-                  ))}
+                {/* Выбранные курсы */}
+                <div className="space-y-1.5">
+                  <p className="font-semibold text-sm">Выбранные курсы:</p>
+                  <div className="border border-border rounded-xl px-4 py-3 min-h-[52px]">
+                    {selectedCourses.length === 0
+                      ? <p className="text-muted-foreground text-sm">Пока не выбрано ни одного курса.</p>
+                      : <div className="flex flex-wrap gap-1.5">
+                          {selectedCourses.map((id) => {
+                            const c = allCourses.find((c) => c.id === id);
+                            return c ? (
+                              <span key={id} className="flex items-center gap-1 px-2.5 py-1 bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 rounded-lg text-xs font-medium">
+                                {c.emoji} {c.title}
+                                <button onClick={() => setSelectedCourses((p) => p.filter((i) => i !== id))} className="hover:text-destructive ml-0.5">×</button>
+                              </span>
+                            ) : null;
+                          })}
+                        </div>
+                    }
+                  </div>
                 </div>
-              )}
 
-              {/* Выбранные курсы */}
-              <div className="space-y-1.5">
-                <p className="font-semibold text-sm">Выбранные курсы:</p>
-                <div className="border border-border rounded-xl px-4 py-3 min-h-[52px]">
-                  {selectedCourses.length === 0
-                    ? <p className="text-muted-foreground text-sm">Пока не выбрано ни одного курса.</p>
-                    : <div className="flex flex-wrap gap-1.5">
-                        {selectedCourses.map((id) => {
-                          const c = allCourses.find((c) => c.id === id);
-                          return c ? (
-                            <span key={id} className="flex items-center gap-1 px-2.5 py-1 bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 rounded-lg text-xs font-medium">
-                              {c.emoji} {c.title}
-                              <button onClick={() => setSelectedCourses((p) => p.filter((i) => i !== id))} className="hover:text-destructive ml-0.5">×</button>
-                            </span>
-                          ) : null;
-                        })}
-                      </div>
-                  }
+                {/* Кнопки */}
+                <div className="flex gap-2 justify-end pt-1">
+                  <Button variant="outline" className="rounded-xl px-6" onClick={() => { setShowAddUser(false); setShowCoursesPicker(false); }}>Отмена</Button>
+                  <Button className="rounded-xl gradient-primary text-white gap-2 px-6" onClick={handleAddUser}>
+                    <Icon name="Save" size={15} />
+                    Сохранить
+                  </Button>
                 </div>
               </div>
+            </div>
 
-              {/* Кнопки */}
-              <div className="flex gap-2 justify-end pt-1">
-                <Button variant="outline" className="rounded-xl px-6" onClick={() => setShowAddUser(false)}>Отмена</Button>
-                <Button className="rounded-xl gradient-primary text-white gap-2 px-6" onClick={handleAddUser}>
-                  <Icon name="Save" size={15} />
-                  Сохранить
+            {/* Боковая панель выбора курсов */}
+            <div
+              className={`absolute right-0 top-0 h-full w-80 bg-background shadow-2xl z-20 flex flex-col transition-transform duration-300 ${showCoursesPicker ? "translate-x-0" : "translate-x-full"}`}
+            >
+              <div className="flex items-center justify-between px-6 py-4 border-b border-border flex-shrink-0">
+                <h3 className="font-semibold text-base">Выбор курсов</h3>
+                <button onClick={() => setShowCoursesPicker(false)} className="text-muted-foreground hover:text-foreground transition-colors">
+                  <Icon name="X" size={18} />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto px-4 py-3 space-y-1">
+                {allCourses.map((c) => (
+                  <label key={c.id} className="flex items-center justify-between cursor-pointer hover:bg-muted/40 px-3 py-3.5 rounded-lg transition-colors border-b border-border last:border-0">
+                    <span className="text-sm font-medium">{c.title}</span>
+                    <input
+                      type="checkbox"
+                      className="accent-violet-600 w-4 h-4 flex-shrink-0"
+                      checked={selectedCourses.includes(c.id)}
+                      onChange={() => setSelectedCourses((prev) => prev.includes(c.id) ? prev.filter((id) => id !== c.id) : [...prev, c.id])}
+                    />
+                  </label>
+                ))}
+              </div>
+
+              <div className="p-4 border-t border-border flex-shrink-0">
+                <Button className="w-full gradient-primary text-white rounded-xl gap-2" onClick={() => setShowCoursesPicker(false)}>
+                  <Icon name="CheckCircle" size={16} />
+                  Завершить выбор курсов
                 </Button>
               </div>
             </div>
-          </DialogContent>
-        </Dialog>
+          </div>
+        )}
 
         <Dialog open={showAddGroup} onOpenChange={setShowAddGroup}>
           <DialogContent className="rounded-2xl max-w-sm">
