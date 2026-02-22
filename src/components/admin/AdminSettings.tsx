@@ -66,7 +66,7 @@ function generatePassword() {
   return Array.from({ length: 12 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
 }
 
-type ActivePanel = null | "org" | "users";
+type ActivePanel = null | "org" | "users" | "email";
 
 export default function AdminSettings() {
   const [activePanel, setActivePanel] = useState<ActivePanel>(null);
@@ -85,6 +85,35 @@ export default function AdminSettings() {
   const emptyForm = { lastName: "", firstName: "", middleName: "", email: "", role: "Администратор", department: "", password: "", status: "active" as const };
   const [form, setForm] = useState(emptyForm);
   const [errors, setErrors] = useState<Partial<typeof emptyForm>>({});
+
+  // Email настройки
+  const [emailSettings, setEmailSettings] = useState({
+    hrEmail: "gts@supmin.ru",
+    senderEmail: "admin@supmin.ru",
+    copyToAdmin: true,
+    smtpHost: "smtp.yandex.ru",
+    smtpPort: "587",
+    smtpUser: "admin@supmin.ru",
+    smtpPassword: "",
+    smtpFromEmail: "admin@supmin.ru",
+    smtpTimeout: "30",
+    useTls: true,
+    useSsl: false,
+  });
+  const [emailSaved, setEmailSaved] = useState(false);
+  const [smtpSaved, setSmtpSaved] = useState(false);
+  const [showSmtpPassword, setShowSmtpPassword] = useState(false);
+  const [testEmail, setTestEmail] = useState("");
+  const [testSubject, setTestSubject] = useState("Тест SMTP");
+  const [testSent, setTestSent] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState<string | null>(null);
+
+  const emailTemplates = [
+    { id: "90days", title: "За 90 дней до истечения", desc: "Первое напоминание о плановой аттестации" },
+    { id: "30days", title: "За 30 дней до истечения", desc: "Второе напоминание о плановой аттестации" },
+    { id: "7days", title: "За 7 дней до истечения", desc: "Срочное напоминание об аттестации" },
+    { id: "expired", title: "Истечение срока", desc: "Уведомление об истечении срока аттестации" },
+  ];
 
   const handleCopy = () => {
     navigator.clipboard.writeText(org.externalId);
@@ -213,6 +242,35 @@ export default function AdminSettings() {
               </div>
             </div>
           </div>
+
+          {/* Карточка: Настройка электронной почты */}
+          <div
+            className="bg-card rounded-2xl border border-border p-6 cursor-pointer hover:border-violet-400 hover:shadow-lg hover:shadow-violet-100 dark:hover:shadow-violet-900/20 transition-all duration-200 group"
+            onClick={() => setActivePanel("email")}
+          >
+            <div className="flex items-start justify-between mb-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
+                <Icon name="Mail" size={22} className="text-white" />
+              </div>
+              <Icon name="ChevronRight" size={18} className="text-muted-foreground group-hover:text-violet-500 transition-colors mt-1" />
+            </div>
+            <h3 className="font-bold text-base mb-1">Настройка электронной почты</h3>
+            <p className="text-muted-foreground text-sm mb-4">SMTP, уведомления и шаблоны писем</p>
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground w-28 flex-shrink-0">SMTP-хост</span>
+                <span className="text-sm font-medium truncate">{emailSettings.smtpHost}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground w-28 flex-shrink-0">Email HR</span>
+                <span className="text-sm truncate">{emailSettings.hrEmail}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground w-28 flex-shrink-0">Шаблонов</span>
+                <span className="text-sm font-medium">{emailTemplates.length}</span>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -325,6 +383,172 @@ export default function AdminSettings() {
                   <p className="text-xs text-muted-foreground">Зарегистрирован: {u.registeredAt}</p>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Панель: Настройка электронной почты */}
+      {activePanel === "email" && (
+        <div className="space-y-5">
+          <div className="flex items-center gap-3">
+            <button onClick={() => setActivePanel(null)} className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors text-sm">
+              <Icon name="ChevronLeft" size={16} />
+              Настройки
+            </button>
+            <span className="text-muted-foreground">/</span>
+            <span className="text-sm font-medium">Настройка электронной почты</span>
+          </div>
+
+          {/* Секция 1: Email уведомлений */}
+          <div className="bg-card rounded-2xl border border-border p-6 space-y-5">
+            <h3 className="font-bold text-base">Настройки email уведомлений</h3>
+
+            <div className="space-y-1.5">
+              <Label>Email отдела кадров (HR)</Label>
+              <Input className="rounded-xl" value={emailSettings.hrEmail} onChange={(e) => setEmailSettings((p) => ({ ...p, hrEmail: e.target.value }))} />
+              <p className="text-xs text-emerald-600 dark:text-emerald-400">На этот адрес будут приходить все критичные уведомления</p>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Email отправителя</Label>
+              <Input className="rounded-xl" value={emailSettings.senderEmail} onChange={(e) => setEmailSettings((p) => ({ ...p, senderEmail: e.target.value }))} />
+              <p className="text-xs text-muted-foreground">От имени этого адреса отправляются уведомления</p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setEmailSettings((p) => ({ ...p, copyToAdmin: !p.copyToAdmin }))}
+                className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${emailSettings.copyToAdmin ? "bg-emerald-500" : "bg-muted-foreground/30"}`}
+              >
+                <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${emailSettings.copyToAdmin ? "translate-x-5" : ""}`} />
+              </button>
+              <div>
+                <p className="text-sm font-medium">Копия администратору</p>
+                <p className="text-xs text-muted-foreground">Отправлять копию всех уведомлений администратору системы</p>
+              </div>
+            </div>
+
+            <div className="border-t border-border pt-5 space-y-3">
+              <h4 className="font-semibold text-sm">Шаблоны писем</h4>
+              <div className="border border-border rounded-xl overflow-hidden">
+                {emailTemplates.map((t, i) => (
+                  <div key={t.id} className={`flex items-center justify-between px-4 py-3.5 hover:bg-muted/30 transition-colors ${i > 0 ? "border-t border-border" : ""}`}>
+                    <div>
+                      <p className="text-sm font-medium">{t.title}</p>
+                      <p className="text-xs text-muted-foreground">{t.desc}</p>
+                    </div>
+                    <button
+                      className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                      onClick={() => setEditingTemplate(t.id)}
+                    >
+                      <Icon name="SquarePen" size={14} />
+                      Изменить
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <Button
+              className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl gap-2"
+              onClick={() => { setEmailSaved(true); setTimeout(() => setEmailSaved(false), 2000); }}
+            >
+              {emailSaved ? <Icon name="Check" size={15} /> : <Icon name="Save" size={15} />}
+              {emailSaved ? "Сохранено!" : "Сохранить настройки"}
+            </Button>
+          </div>
+
+          {/* Секция 2: SMTP */}
+          <div className="bg-card rounded-2xl border border-border p-6 space-y-5">
+            <h3 className="font-bold text-base">Исходящая почта (SMTP)</h3>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label>SMTP-хост</Label>
+                <Input className="rounded-xl" value={emailSettings.smtpHost} onChange={(e) => setEmailSettings((p) => ({ ...p, smtpHost: e.target.value }))} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>SMTP-порт</Label>
+                <Input className="rounded-xl" value={emailSettings.smtpPort} onChange={(e) => setEmailSettings((p) => ({ ...p, smtpPort: e.target.value }))} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Пользователь SMTP</Label>
+                <Input className="rounded-xl" value={emailSettings.smtpUser} onChange={(e) => setEmailSettings((p) => ({ ...p, smtpUser: e.target.value }))} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Пароль SMTP</Label>
+                <div className="relative">
+                  <Input className="rounded-xl pr-10" type={showSmtpPassword ? "text" : "password"} value={emailSettings.smtpPassword} onChange={(e) => setEmailSettings((p) => ({ ...p, smtpPassword: e.target.value }))} />
+                  <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" onClick={() => setShowSmtpPassword((p) => !p)}>
+                    <Icon name={showSmtpPassword ? "EyeOff" : "Eye"} size={16} />
+                  </button>
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Email отправителя</Label>
+                <Input className="rounded-xl" value={emailSettings.smtpFromEmail} onChange={(e) => setEmailSettings((p) => ({ ...p, smtpFromEmail: e.target.value }))} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Таймаут (сек.)</Label>
+                <Input className="rounded-xl" value={emailSettings.smtpTimeout} onChange={(e) => setEmailSettings((p) => ({ ...p, smtpTimeout: e.target.value }))} />
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              {[
+                { key: "useTls" as const, label: "Использовать TLS", desc: "TLS применяется для шифрования соединения." },
+                { key: "useSsl" as const, label: "Использовать SSL", desc: "При включённом SSL TLS не используется автоматически." },
+              ].map((item) => (
+                <div key={item.key} className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setEmailSettings((p) => ({ ...p, [item.key]: !p[item.key] }))}
+                    className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${emailSettings[item.key] ? "bg-emerald-500" : "bg-muted-foreground/30"}`}
+                  >
+                    <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${emailSettings[item.key] ? "translate-x-5" : ""}`} />
+                  </button>
+                  <div>
+                    <p className="text-sm font-medium">{item.label}</p>
+                    <p className="text-xs text-muted-foreground">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <Button
+              className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl gap-2"
+              onClick={() => { setSmtpSaved(true); setTimeout(() => setSmtpSaved(false), 2000); }}
+            >
+              {smtpSaved ? <Icon name="Check" size={15} /> : <Icon name="Save" size={15} />}
+              {smtpSaved ? "Сохранено!" : "Сохранить настройки"}
+            </Button>
+
+            {/* Тестовое письмо */}
+            <div className="border-t border-border pt-5 space-y-4">
+              <div>
+                <h4 className="font-semibold text-sm">Тестовое письмо</h4>
+                <p className="text-xs text-muted-foreground mt-0.5">Отправьте пробное письмо, чтобы проверить SMTP-настройки.</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label>Email получателя</Label>
+                  <Input className="rounded-xl" placeholder="test@company.ru" value={testEmail} onChange={(e) => setTestEmail(e.target.value)} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Тема (опционально)</Label>
+                  <Input className="rounded-xl" placeholder="Тест SMTP" value={testSubject} onChange={(e) => setTestSubject(e.target.value)} />
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                className="rounded-xl gap-2"
+                onClick={() => { setTestSent(true); setTimeout(() => setTestSent(false), 3000); }}
+              >
+                {testSent ? <Icon name="CheckCircle" size={15} className="text-emerald-500" /> : <Icon name="Send" size={15} />}
+                {testSent ? "Письмо отправлено!" : "Отправить тестовое письмо"}
+              </Button>
             </div>
           </div>
         </div>
