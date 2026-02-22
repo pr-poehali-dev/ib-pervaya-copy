@@ -228,16 +228,7 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
       </div>
 
       {/* Фильтры */}
-      <div className="bg-card rounded-2xl border border-border p-4 space-y-3">
-        <div className="flex items-center justify-between">
-          <p className="text-sm font-medium flex items-center gap-1.5"><Icon name="Filter" size={14} className="text-muted-foreground" />Фильтры</p>
-          {hasFilters && (
-            <button onClick={resetFilters} className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
-              <Icon name="X" size={12} />
-              Сбросить всё
-            </button>
-          )}
-        </div>
+      <div className="bg-card rounded-2xl border border-border px-4 pt-3 pb-3 space-y-2.5">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {/* Статус обучения */}
           <div className="space-y-1">
@@ -263,7 +254,11 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
 
         {/* Активные фильтры — теги */}
         {hasFilters && (
-          <div className="flex flex-wrap gap-1.5 pt-1">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <button onClick={resetFilters} className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+              <Icon name="X" size={11} />
+              Сбросить
+            </button>
             {filterStatus !== "Все" && (
               <span className="flex items-center gap-1 px-2 py-0.5 bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 rounded-lg text-xs font-medium">
                 {filterStatus}
