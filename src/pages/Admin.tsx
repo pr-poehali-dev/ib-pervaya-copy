@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Icon from "@/components/ui/icon";
-import { User, initialUsers, groups, roles, getInitials, allCourses } from "@/components/admin/types";
+import { User, initialUsers, groups, roles, getInitials, allCourses, courseDirections } from "@/components/admin/types";
 import AdminUsers from "@/components/admin/AdminUsers";
 import AdminGroups from "@/components/admin/AdminGroups";
 import AdminCourses from "@/components/admin/AdminCourses";
@@ -30,6 +30,8 @@ export default function Admin() {
   const [newRole, setNewRole] = useState("Студент");
   const [selectedCourses, setSelectedCourses] = useState<number[]>([]);
   const [showCoursesPicker, setShowCoursesPicker] = useState(false);
+  const [openDirections, setOpenDirections] = useState<number[]>([1]);
+  const toggleDirection = (id: number) => setOpenDirections((p) => p.includes(id) ? p.filter((d) => d !== id) : [...p, id]);
   const [nameError, setNameError] = useState("");
   const [emailError, setEmailError] = useState("");
 
@@ -222,10 +224,10 @@ export default function Admin() {
                       ? <p className="text-muted-foreground text-sm">Пока не выбрано ни одного курса.</p>
                       : <div className="flex flex-wrap gap-1.5">
                           {selectedCourses.map((id) => {
-                            const c = allCourses.find((c) => c.id === id);
-                            return c ? (
+                            const found = courseDirections.flatMap((d) => d.courses).find((c) => c.id === id);
+                            return found ? (
                               <span key={id} className="flex items-center gap-1 px-2.5 py-1 bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 rounded-lg text-xs font-medium">
-                                {c.emoji} {c.title}
+                                {found.code} {found.title}
                                 <button onClick={() => setSelectedCourses((p) => p.filter((i) => i !== id))} className="hover:text-destructive ml-0.5">×</button>
                               </span>
                             ) : null;
@@ -257,18 +259,44 @@ export default function Admin() {
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto px-4 py-3 space-y-1">
-                {allCourses.map((c) => (
-                  <label key={c.id} className="flex items-center justify-between cursor-pointer hover:bg-muted/40 px-3 py-3.5 rounded-lg transition-colors border-b border-border last:border-0">
-                    <span className="text-sm font-medium">{c.title}</span>
-                    <input
-                      type="checkbox"
-                      className="accent-violet-600 w-4 h-4 flex-shrink-0"
-                      checked={selectedCourses.includes(c.id)}
-                      onChange={() => setSelectedCourses((prev) => prev.includes(c.id) ? prev.filter((id) => id !== c.id) : [...prev, c.id])}
-                    />
-                  </label>
-                ))}
+              <div className="flex-1 overflow-y-auto">
+                {courseDirections.map((dir) => {
+                  const isOpen = openDirections.includes(dir.id);
+                  return (
+                    <div key={dir.id} className="border-b border-border last:border-0">
+                      {/* Заголовок направления */}
+                      <button
+                        className={`w-full flex items-center justify-between px-5 py-3.5 text-left transition-colors ${isOpen ? "bg-violet-50 dark:bg-violet-900/20" : "hover:bg-muted/40"}`}
+                        onClick={() => toggleDirection(dir.id)}
+                      >
+                        <span className={`font-semibold text-sm ${isOpen ? "text-violet-700 dark:text-violet-300" : ""}`}>{dir.title}</span>
+                        <Icon name={isOpen ? "ChevronUp" : "ChevronDown"} size={16} className={isOpen ? "text-violet-600" : "text-muted-foreground"} />
+                      </button>
+                      {/* Курсы направления */}
+                      {isOpen && (
+                        <div>
+                          {dir.courses.map((c) => (
+                            <div key={c.id} className="flex items-center justify-between px-5 py-3 border-t border-border/60 hover:bg-muted/30 transition-colors">
+                              <span className="text-sm text-foreground leading-snug pr-3">
+                                <span className="font-medium">{c.code}</span> {c.title}
+                              </span>
+                              {selectedCourses.includes(c.id)
+                                ? <button
+                                    className="flex-shrink-0 px-3 py-1 text-xs font-medium rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 hover:bg-red-100 hover:text-red-600 hover:border-red-300 transition-colors"
+                                    onClick={() => setSelectedCourses((p) => p.filter((id) => id !== c.id))}
+                                  >Выбрано</button>
+                                : <button
+                                    className="flex-shrink-0 px-3 py-1 text-xs font-medium rounded-lg gradient-primary text-white hover:opacity-90 transition-opacity"
+                                    onClick={() => setSelectedCourses((p) => [...p, c.id])}
+                                  >Выбрать</button>
+                              }
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
 
               <div className="p-4 border-t border-border flex-shrink-0">
