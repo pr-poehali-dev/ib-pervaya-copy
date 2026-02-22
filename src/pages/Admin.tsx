@@ -536,10 +536,6 @@ export default function Admin() {
           <AdminUsers
             users={users}
             filteredUsers={filteredUsers}
-            search={search}
-            setSearch={setSearch}
-            selectedUser={selectedUser}
-            setSelectedUser={setSelectedUser}
             toggleCourse={toggleCourse}
           />
         )}
