@@ -48,20 +48,7 @@ export default function AdminCourses({ users }: AdminCoursesProps) {
                 <span>Завершили</span>
                 <span className="font-medium text-foreground">{completed.length}</span>
               </div>
-              <div className="flex justify-between text-muted-foreground">
-                <span>Средний прогресс</span>
-                <span className="font-medium text-foreground">{avgProgress}%</span>
-              </div>
             </div>
-
-            {enrolled.length > 0 && (
-              <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                <div
-                  className={`h-full bg-gradient-to-r ${gradients[idx]} rounded-full`}
-                  style={{ width: `${avgProgress}%` }}
-                />
-              </div>
-            )}
 
             {enrolled.length > 0 && (
               <div className="flex flex-wrap gap-1">
