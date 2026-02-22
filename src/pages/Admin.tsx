@@ -20,6 +20,9 @@ export default function Admin() {
   const [showAddUser, setShowAddUser] = useState(false);
   const [showAddGroup, setShowAddGroup] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
+  const [newGroupOrgName, setNewGroupOrgName] = useState("");
+  const [newGroupInn, setNewGroupInn] = useState("");
+  const [newGroupFile, setNewGroupFile] = useState<File | null>(null);
   const [newGroupError, setNewGroupError] = useState("");
   const [newLastName, setNewLastName] = useState("");
   const [newFirstName, setNewFirstName] = useState("");
@@ -381,36 +384,96 @@ export default function Admin() {
           </div>
         )}
 
-        <Dialog open={showAddGroup} onOpenChange={setShowAddGroup}>
-          <DialogContent className="rounded-2xl max-w-sm">
+        <Dialog open={showAddGroup} onOpenChange={(open) => { setShowAddGroup(open); if (!open) { setNewGroupName(""); setNewGroupOrgName(""); setNewGroupInn(""); setNewGroupFile(null); setNewGroupError(""); } }}>
+          <DialogContent className="rounded-2xl max-w-lg">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Icon name="FolderPlus" size={18} className="text-primary" />
-                Новая группа
-              </DialogTitle>
+              <DialogTitle>Добавление новой группы</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 pt-1">
+              {/* Название группы */}
               <div className="space-y-1.5">
-                <Label>Название группы</Label>
+                <Label>Название группы <span className="text-destructive">*</span></Label>
                 <Input
-                  placeholder="ИБ-501"
+                  placeholder=""
                   value={newGroupName}
-                  onChange={(e) => setNewGroupName(e.target.value)}
+                  onChange={(e) => { setNewGroupName(e.target.value); setNewGroupError(""); }}
                   className="rounded-xl"
                 />
                 {newGroupError && <p className="text-destructive text-xs">{newGroupError}</p>}
               </div>
-              <div className="flex gap-2 pt-1">
-                <Button variant="outline" className="flex-1 rounded-xl" onClick={() => { setShowAddGroup(false); setNewGroupName(""); setNewGroupError(""); }}>
-                  Отмена
+
+              {/* Наименование организации */}
+              <div className="space-y-1.5">
+                <Label>Наименование организации</Label>
+                <Input
+                  placeholder=""
+                  value={newGroupOrgName}
+                  onChange={(e) => setNewGroupOrgName(e.target.value)}
+                  className="rounded-xl"
+                />
+              </div>
+
+              {/* ИНН */}
+              <div className="space-y-1.5">
+                <Label>ИНН</Label>
+                <Input
+                  placeholder=""
+                  value={newGroupInn}
+                  onChange={(e) => setNewGroupInn(e.target.value)}
+                  className="rounded-xl"
+                  maxLength={12}
+                />
+              </div>
+
+              {/* Шаблон реестра */}
+              <div className="flex items-center gap-3">
+                <Label className="flex-shrink-0">Шаблон реестра группы:</Label>
+                <Button
+                  type="button"
+                  className="gradient-primary text-white rounded-xl gap-2"
+                  onClick={() => {
+                    const a = document.createElement("a");
+                    a.href = "#";
+                    a.download = "registry_template.xlsx";
+                    a.click();
+                  }}
+                >
+                  <Icon name="Download" size={15} />
+                  Скачать шаблон реестра
                 </Button>
-                <Button className="flex-1 rounded-xl gradient-primary text-white" onClick={() => {
-                  if (!newGroupName.trim()) { setNewGroupError("Введите название"); return; }
+              </div>
+
+              {/* Загрузить реестр */}
+              <div className="space-y-1.5">
+                <Label>Загрузить реестр группы <span className="text-destructive">*</span></Label>
+                <div className="flex items-center border border-border rounded-xl overflow-hidden">
+                  <label className="cursor-pointer px-4 py-2.5 bg-muted hover:bg-muted/80 border-r border-border text-sm font-medium flex-shrink-0 transition-colors">
+                    Выберите файл
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept=".xlsx,.xls,.csv"
+                      onChange={(e) => setNewGroupFile(e.target.files?.[0] ?? null)}
+                    />
+                  </label>
+                  <span className="px-4 text-sm text-muted-foreground truncate">
+                    {newGroupFile ? newGroupFile.name : "Файл не выбран"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Кнопки */}
+              <div className="flex gap-2 justify-end pt-1">
+                <Button variant="outline" className="rounded-xl px-6" onClick={() => setShowAddGroup(false)}>
+                  Отменить
+                </Button>
+                <Button className="rounded-xl gradient-primary text-white gap-2 px-5" onClick={() => {
+                  if (!newGroupName.trim()) { setNewGroupError("Введите название группы"); return; }
                   setShowAddGroup(false);
-                  setNewGroupName("");
-                  setNewGroupError("");
+                  setNewGroupName(""); setNewGroupOrgName(""); setNewGroupInn(""); setNewGroupFile(null); setNewGroupError("");
                 }}>
-                  Создать
+                  <Icon name="Save" size={15} />
+                  Сохранить и продолжить
                 </Button>
               </div>
             </div>
