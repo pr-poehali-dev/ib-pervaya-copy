@@ -1,110 +1,15 @@
 import { useState } from "react";
 import Layout from "@/components/layout/Layout";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Icon from "@/components/ui/icon";
-
-const allCourses = [
-  { id: 1, title: "Основы информационной безопасности", category: "ИБ", emoji: "🔐", lessons: 18, duration: "24 ч" },
-  { id: 2, title: "Сетевая безопасность и протоколы", category: "Сети", emoji: "🌐", lessons: 14, duration: "18 ч" },
-  { id: 3, title: "Этичный хакинг и пентест", category: "Пентест", emoji: "🎯", lessons: 22, duration: "30 ч" },
-  { id: 4, title: "Управление рисками ИБ", category: "Менеджмент", emoji: "📊", lessons: 12, duration: "16 ч" },
-  { id: 5, title: "Криптография и шифрование", category: "Криптография", emoji: "🔑", lessons: 16, duration: "20 ч" },
-  { id: 6, title: "SOC и мониторинг безопасности", category: "SOC", emoji: "🛡️", lessons: 20, duration: "28 ч" },
-];
-
-type CourseAssignment = {
-  courseId: number;
-  active: boolean;
-  progress: number;
-  assignedAt: string;
-};
-
-type User = {
-  id: number;
-  name: string;
-  email: string;
-  initials: string;
-  group: string;
-  role: string;
-  assignments: CourseAssignment[];
-};
-
-const initialUsers: User[] = [
-  {
-    id: 1,
-    name: "Алина Иванова",
-    email: "alina.ivanova@company.ru",
-    initials: "АИ",
-    group: "ИБ-301",
-    role: "Студент",
-    assignments: [
-      { courseId: 1, active: true, progress: 65, assignedAt: "01.01.2025" },
-      { courseId: 2, active: true, progress: 30, assignedAt: "15.01.2025" },
-    ],
-  },
-  {
-    id: 2,
-    name: "Дмитрий Смирнов",
-    email: "d.smirnov@company.ru",
-    initials: "ДС",
-    group: "ИБ-301",
-    role: "Студент",
-    assignments: [
-      { courseId: 1, active: true, progress: 100, assignedAt: "01.01.2025" },
-      { courseId: 3, active: false, progress: 0, assignedAt: "10.02.2025" },
-    ],
-  },
-  {
-    id: 3,
-    name: "Мария Козлова",
-    email: "m.kozlova@company.ru",
-    initials: "МК",
-    group: "ИБ-302",
-    role: "Студент",
-    assignments: [
-      { courseId: 4, active: true, progress: 45, assignedAt: "05.02.2025" },
-    ],
-  },
-  {
-    id: 4,
-    name: "Иван Петров",
-    email: "i.petrov@company.ru",
-    initials: "ИП",
-    group: "ИБ-302",
-    role: "Студент",
-    assignments: [],
-  },
-];
-
-const gradients = [
-  "from-violet-500 to-purple-700",
-  "from-cyan-500 to-blue-600",
-  "from-red-500 to-rose-700",
-  "from-emerald-500 to-teal-600",
-  "from-amber-500 to-orange-600",
-  "from-indigo-500 to-blue-700",
-];
-
-const userColors = [
-  "from-violet-400 to-purple-600",
-  "from-cyan-400 to-blue-500",
-  "from-emerald-400 to-teal-500",
-  "from-amber-400 to-orange-500",
-];
-
-const groups = ["ИБ-301", "ИБ-302", "ИБ-303", "ИБ-401", "ИБ-402"];
-const roles = ["Студент", "Преподаватель", "Наблюдатель"];
-
-function getInitials(name: string) {
-  const parts = name.trim().split(" ");
-  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-  return name.slice(0, 2).toUpperCase();
-}
+import { User, initialUsers, groups, roles, getInitials } from "@/components/admin/types";
+import AdminUsers from "@/components/admin/AdminUsers";
+import AdminGroups from "@/components/admin/AdminGroups";
+import AdminCourses from "@/components/admin/AdminCourses";
 
 export default function Admin() {
   const [users, setUsers] = useState<User[]>(initialUsers);
@@ -169,12 +74,7 @@ export default function Admin() {
             ...u,
             assignments: [
               ...u.assignments,
-              {
-                courseId,
-                active: true,
-                progress: 0,
-                assignedAt: new Date().toLocaleDateString("ru-RU"),
-              },
+              { courseId, active: true, progress: 0, assignedAt: new Date().toLocaleDateString("ru-RU") },
             ],
           };
         }
@@ -195,12 +95,7 @@ export default function Admin() {
           ...prev,
           assignments: [
             ...prev.assignments,
-            {
-              courseId,
-              active: true,
-              progress: 0,
-              assignedAt: new Date().toLocaleDateString("ru-RU"),
-            },
+            { courseId, active: true, progress: 0, assignedAt: new Date().toLocaleDateString("ru-RU") },
           ],
         };
       }
@@ -247,7 +142,7 @@ export default function Admin() {
               <div className="space-y-1.5">
                 <Label>Полное имя</Label>
                 <Input
-                  placeholder="Иванов Иван Иванович"
+                  placeholder="Иван Иванов"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   className="rounded-xl"
@@ -257,11 +152,10 @@ export default function Admin() {
               <div className="space-y-1.5">
                 <Label>Email</Label>
                 <Input
-                  placeholder="ivanov@company.ru"
+                  placeholder="ivan@company.ru"
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
                   className="rounded-xl"
-                  type="email"
                 />
                 {emailError && <p className="text-destructive text-xs">{emailError}</p>}
               </div>
@@ -305,11 +199,10 @@ export default function Admin() {
           </DialogContent>
         </Dialog>
 
-        {/* Статистика */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: "Пользователей", value: users.length, icon: "Users", color: "from-violet-500 to-purple-700" },
-            { label: "Курсов доступно", value: allCourses.length, icon: "BookOpen", color: "from-cyan-500 to-blue-600" },
+            { label: "Курсов доступно", value: 6, icon: "BookOpen", color: "from-cyan-500 to-blue-600" },
             { label: "Назначений активно", value: totalAssignments, icon: "CheckCircle", color: "from-emerald-500 to-teal-600" },
             { label: "Курсов завершено", value: totalCompleted, icon: "Trophy", color: "from-amber-500 to-orange-600" },
           ].map((stat) => (
@@ -323,7 +216,6 @@ export default function Admin() {
           ))}
         </div>
 
-        {/* Вкладки */}
         <div className="flex gap-2">
           {([
             { key: "stp", icon: "ShieldAlert", label: "STP Индекс Безопасности" },
@@ -349,155 +241,15 @@ export default function Admin() {
         </div>
 
         {activeTab === "users" && (
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
-            {/* Список пользователей */}
-            <div className="lg:col-span-2 space-y-3">
-              <div className="relative">
-                <Icon name="Search" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Поиск пользователей..."
-                  className="pl-9 rounded-xl text-sm"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                {filteredUsers.map((user, idx) => (
-                  <div
-                    key={user.id}
-                    onClick={() => setSelectedUser(user)}
-                    className={`bg-card rounded-2xl p-4 border cursor-pointer transition-all hover:shadow-md ${
-                      selectedUser?.id === user.id
-                        ? "border-primary shadow-md shadow-purple-100"
-                        : "border-border"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`w-10 h-10 bg-gradient-to-br ${userColors[idx % userColors.length]} rounded-xl flex items-center justify-center flex-shrink-0`}
-                      >
-                        <span className="text-white font-bold text-xs">{user.initials}</span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-sm truncate">{user.name}</p>
-                        <p className="text-muted-foreground text-xs truncate">{user.email}</p>
-                      </div>
-                      <div className="text-right flex-shrink-0">
-                        <Badge variant="secondary" className="text-xs">{user.group}</Badge>
-                        <p className="text-muted-foreground text-xs mt-1">
-                          {user.assignments.filter((a) => a.active).length} курс.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Детали пользователя */}
-            <div className="lg:col-span-3">
-              {selectedUser ? (
-                <div className="bg-card rounded-2xl border border-border p-5 space-y-5">
-                  <div className="flex items-center gap-4">
-                    <div className={`w-14 h-14 bg-gradient-to-br ${userColors[users.findIndex(u => u.id === selectedUser.id) % userColors.length]} rounded-2xl flex items-center justify-center`}>
-                      <span className="text-white font-bold text-lg">{selectedUser.initials}</span>
-                    </div>
-                    <div>
-                      <p className="font-bold text-lg">{selectedUser.name}</p>
-                      <p className="text-muted-foreground text-sm">{selectedUser.email}</p>
-                      <div className="flex gap-2 mt-1">
-                        <Badge variant="secondary">{selectedUser.group}</Badge>
-                        <Badge variant="outline">{selectedUser.role}</Badge>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <p className="font-semibold text-sm mb-3 text-muted-foreground uppercase tracking-wide">
-                      Назначение курсов
-                    </p>
-                    <div className="space-y-2">
-                      {allCourses.map((course, idx) => {
-                        const assignment = selectedUser.assignments.find((a) => a.courseId === course.id);
-                        const isAssigned = !!assignment;
-                        const isActive = assignment?.active ?? false;
-
-                        return (
-                          <div
-                            key={course.id}
-                            className="flex items-center gap-3 p-3 rounded-xl border border-border hover:bg-muted/30 transition-all"
-                          >
-                            <div
-                              className={`w-9 h-9 bg-gradient-to-br ${gradients[idx]} rounded-xl flex items-center justify-center flex-shrink-0 text-base`}
-                            >
-                              {course.emoji}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium text-sm truncate">{course.title}</p>
-                              {isAssigned && (
-                                <div className="flex items-center gap-2 mt-0.5">
-                                  <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                                    <div
-                                      className="h-full bg-gradient-to-r from-violet-500 to-purple-600 rounded-full transition-all"
-                                      style={{ width: `${assignment!.progress}%` }}
-                                    />
-                                  </div>
-                                  <span className="text-xs text-muted-foreground">{assignment!.progress}%</span>
-                                </div>
-                              )}
-                            </div>
-                            <div className="flex-shrink-0">
-                              {!isAssigned ? (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="h-8 text-xs rounded-lg"
-                                  onClick={() => toggleCourse(selectedUser.id, course.id)}
-                                >
-                                  <Icon name="Plus" size={14} className="mr-1" />
-                                  Назначить
-                                </Button>
-                              ) : isActive ? (
-                                <Button
-                                  size="sm"
-                                  className="h-8 text-xs rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white"
-                                  onClick={() => toggleCourse(selectedUser.id, course.id)}
-                                >
-                                  <Icon name="CheckCircle" size={14} className="mr-1" />
-                                  Активен
-                                </Button>
-                              ) : (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="h-8 text-xs rounded-lg text-muted-foreground"
-                                  onClick={() => toggleCourse(selectedUser.id, course.id)}
-                                >
-                                  <Icon name="PauseCircle" size={14} className="mr-1" />
-                                  Отключён
-                                </Button>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="bg-card rounded-2xl border border-border p-10 flex flex-col items-center justify-center text-center h-full min-h-[300px]">
-                  <div className="w-14 h-14 bg-muted rounded-2xl flex items-center justify-center mb-4">
-                    <Icon name="UserSearch" size={24} className="text-muted-foreground" />
-                  </div>
-                  <p className="font-semibold text-foreground">Выберите пользователя</p>
-                  <p className="text-muted-foreground text-sm mt-1">
-                    Нажмите на пользователя слева, чтобы управлять его курсами
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
+          <AdminUsers
+            users={users}
+            filteredUsers={filteredUsers}
+            search={search}
+            setSearch={setSearch}
+            selectedUser={selectedUser}
+            setSelectedUser={setSelectedUser}
+            toggleCourse={toggleCourse}
+          />
         )}
 
         {activeTab === "stp" && (
@@ -520,61 +272,9 @@ export default function Admin() {
           </div>
         )}
 
-        {activeTab === "groups" && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <p className="text-muted-foreground text-sm">Назначение курсов сразу для всей группы</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {groups.map((group, idx) => {
-                const members = users.filter((u) => u.group === group);
-                const activeAssignments = members.reduce((sum, u) => sum + u.assignments.filter((a) => a.active).length, 0);
-                return (
-                  <div key={group} className="bg-card rounded-2xl border border-border p-5 space-y-4">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-11 h-11 bg-gradient-to-br ${gradients[idx % gradients.length]} rounded-xl flex items-center justify-center`}>
-                        <Icon name="UsersRound" size={20} className="text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-bold text-base">Группа {group}</p>
-                        <p className="text-muted-foreground text-xs">{members.length} чел. · {activeAssignments} активных назначений</p>
-                      </div>
-                    </div>
-                    {members.length > 0 ? (
-                      <div className="flex flex-wrap gap-1.5">
-                        {members.map((u, i) => (
-                          <div key={u.id} title={u.name} className={`w-8 h-8 bg-gradient-to-br ${userColors[i % userColors.length]} rounded-lg flex items-center justify-center`}>
-                            <span className="text-white font-bold text-[10px]">{u.initials}</span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-muted-foreground text-xs">Нет участников</p>
-                    )}
-                    <div className="space-y-1.5">
-                      {allCourses.slice(0, 3).map((course, cidx) => {
-                        const assignedCount = members.filter((u) => u.assignments.some((a) => a.courseId === course.id && a.active)).length;
-                        return (
-                          <div key={course.id} className="flex items-center gap-2 text-sm">
-                            <span>{course.emoji}</span>
-                            <span className="flex-1 truncate text-xs text-muted-foreground">{course.title}</span>
-                            <Badge variant={assignedCount > 0 ? "secondary" : "outline"} className="text-xs">
-                              {assignedCount}/{members.length}
-                            </Badge>
-                          </div>
-                        );
-                      })}
-                    </div>
-                    <Button variant="outline" size="sm" className="w-full rounded-xl text-xs" disabled={members.length === 0}>
-                      <Icon name="Plus" size={14} className="mr-1.5" />
-                      Назначить курс группе
-                    </Button>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
+        {activeTab === "groups" && <AdminGroups users={users} />}
+
+        {activeTab === "courses" && <AdminCourses users={users} />}
 
         {activeTab === "reports" && (
           <div className="bg-card rounded-2xl border border-border p-10 flex flex-col items-center justify-center text-center min-h-[400px] space-y-4">
@@ -609,82 +309,6 @@ export default function Admin() {
               <Icon name="Clock" size={14} className="text-amber-500" />
               <span className="text-amber-700 dark:text-amber-400 text-sm font-medium">В разработке</span>
             </div>
-          </div>
-        )}
-
-        {activeTab === "courses" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {allCourses.map((course, idx) => {
-              const enrolled = users.filter((u) =>
-                u.assignments.some((a) => a.courseId === course.id && a.active)
-              );
-              const completed = users.filter((u) =>
-                u.assignments.some((a) => a.courseId === course.id && a.progress === 100)
-              );
-              const avgProgress =
-                enrolled.length > 0
-                  ? Math.round(
-                      enrolled.reduce((sum, u) => {
-                        const a = u.assignments.find((a) => a.courseId === course.id);
-                        return sum + (a?.progress ?? 0);
-                      }, 0) / enrolled.length
-                    )
-                  : 0;
-
-              return (
-                <div key={course.id} className="bg-card rounded-2xl border border-border p-4 space-y-3">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`w-11 h-11 bg-gradient-to-br ${gradients[idx]} rounded-xl flex items-center justify-center text-xl`}
-                    >
-                      {course.emoji}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm leading-tight truncate">{course.title}</p>
-                      <Badge variant="secondary" className="text-xs mt-0.5">{course.category}</Badge>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5 text-sm">
-                    <div className="flex justify-between text-muted-foreground">
-                      <span>Слушателей</span>
-                      <span className="font-medium text-foreground">{enrolled.length}</span>
-                    </div>
-                    <div className="flex justify-between text-muted-foreground">
-                      <span>Завершили</span>
-                      <span className="font-medium text-foreground">{completed.length}</span>
-                    </div>
-                    <div className="flex justify-between text-muted-foreground">
-                      <span>Средний прогресс</span>
-                      <span className="font-medium text-foreground">{avgProgress}%</span>
-                    </div>
-                  </div>
-
-                  {enrolled.length > 0 && (
-                    <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                      <div
-                        className={`h-full bg-gradient-to-r ${gradients[idx]} rounded-full`}
-                        style={{ width: `${avgProgress}%` }}
-                      />
-                    </div>
-                  )}
-
-                  {enrolled.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      {enrolled.map((u, i) => (
-                        <div
-                          key={u.id}
-                          title={u.name}
-                          className={`w-7 h-7 bg-gradient-to-br ${userColors[i % userColors.length]} rounded-lg flex items-center justify-center`}
-                        >
-                          <span className="text-white font-bold text-[10px]">{u.initials}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
           </div>
         )}
       </div>
