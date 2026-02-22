@@ -10,6 +10,7 @@ import { User, initialUsers, groups, roles, getInitials } from "@/components/adm
 import AdminUsers from "@/components/admin/AdminUsers";
 import AdminGroups from "@/components/admin/AdminGroups";
 import AdminCourses from "@/components/admin/AdminCourses";
+import AdminSettings from "@/components/admin/AdminSettings";
 
 export default function Admin() {
   const [users, setUsers] = useState<User[]>(initialUsers);
@@ -345,23 +346,7 @@ export default function Admin() {
           </div>
         )}
 
-        {activeTab === "settings" && (
-          <div className="bg-card rounded-2xl border border-border p-10 flex flex-col items-center justify-center text-center min-h-[400px] space-y-4">
-            <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center">
-              <Icon name="Settings" size={28} className="text-muted-foreground" />
-            </div>
-            <div>
-              <p className="font-bold text-lg">Настройки</p>
-              <p className="text-muted-foreground text-sm mt-1 max-w-sm">
-                Настройки платформы: подключение интеграций, управление ролями, параметры уведомлений и безопасности.
-              </p>
-            </div>
-            <div className="flex items-center gap-2 px-4 py-2 icon-bg-amber border border-amber-200 dark:border-amber-800 rounded-xl">
-              <Icon name="Clock" size={14} className="text-amber-500" />
-              <span className="text-amber-700 dark:text-amber-400 text-sm font-medium">В разработке</span>
-            </div>
-          </div>
-        )}
+        {activeTab === "settings" && <AdminSettings />}
       </div>
     </Layout>
   );
