@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Icon from "@/components/ui/icon";
 import { User, initialUsers, groups, roles, getInitials, allCourses, courseDirections } from "@/components/admin/types";
+import { MultiSelect, SearchSelect, FilterTags } from "@/components/admin/FilterControls";
 import AdminUsers from "@/components/admin/AdminUsers";
 import AdminGroups from "@/components/admin/AdminGroups";
 import AdminCourses from "@/components/admin/AdminCourses";
@@ -127,6 +128,17 @@ export default function Admin() {
     (sum, u) => sum + u.assignments.filter((a) => a.progress === 100).length,
     0
   );
+
+  // Фильтры STP
+  const [stpFilterStatus, setStpFilterStatus] = useState("Все");
+  const [stpFilterOrgs, setStpFilterOrgs] = useState<string[]>([]);
+  const [stpFilterFio, setStpFilterFio] = useState<string[]>([]);
+  const [stpFilterCourse, setStpFilterCourse] = useState("");
+  const stpStatusOptions = ["Все", "Ожидает", "В обработке", "Завершена"];
+  const stpOrgOptions = [...new Set(users.map((u) => u.group))];
+  const stpFioOptions = users.map((u) => u.name);
+  const stpCourseOptions = allCourses.map((c) => c.title);
+  const stpHasFilters = stpFilterStatus !== "Все" || stpFilterOrgs.length > 0 || stpFilterFio.length > 0 || stpFilterCourse;
 
   const { setStats } = useStats();
   useEffect(() => {
@@ -533,7 +545,36 @@ export default function Admin() {
         )}
 
         {activeTab === "stp" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="space-y-4">
+            {/* Фильтры STP */}
+            <div className="bg-card rounded-2xl border border-border px-4 pt-3 pb-3 space-y-2.5">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground">Статус заявки</p>
+                  <SearchSelect options={stpStatusOptions} value={stpFilterStatus} onChange={setStpFilterStatus} placeholder="Все статусы" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground">Организация</p>
+                  <MultiSelect options={stpOrgOptions} selected={stpFilterOrgs} onChange={setStpFilterOrgs} placeholder="Все организации" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground">ФИО обучающегося</p>
+                  <MultiSelect options={stpFioOptions} selected={stpFilterFio} onChange={setStpFilterFio} placeholder="Все слушатели" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground">Курс обучения</p>
+                  <SearchSelect options={stpCourseOptions} value={stpFilterCourse} onChange={setStpFilterCourse} placeholder="Все курсы" />
+                </div>
+              </div>
+              <FilterTags
+                filterStatus={stpFilterStatus} setFilterStatus={setStpFilterStatus} defaultStatus="Все"
+                filterOrgs={stpFilterOrgs} setFilterOrgs={setStpFilterOrgs}
+                filterFio={stpFilterFio} setFilterFio={setStpFilterFio}
+                filterCourse={stpFilterCourse} setFilterCourse={setStpFilterCourse}
+                onReset={() => { setStpFilterStatus("Все"); setStpFilterOrgs([]); setStpFilterFio([]); setStpFilterCourse(""); }}
+              />
+            </div>
+
             <div className="bg-card rounded-2xl border border-border p-8 flex flex-col items-center justify-center text-center space-y-4">
               <div className="w-14 h-14 icon-bg-violet rounded-2xl flex items-center justify-center">
                 <Icon name="FileInput" size={26} className="text-violet-500" />
