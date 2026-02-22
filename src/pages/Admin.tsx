@@ -206,12 +206,14 @@ export default function Admin() {
             { label: "Назначений активно", value: totalAssignments, icon: "CheckCircle", color: "from-emerald-500 to-teal-600" },
             { label: "Курсов завершено", value: totalCompleted, icon: "Trophy", color: "from-amber-500 to-orange-600" },
           ].map((stat) => (
-            <div key={stat.label} className="bg-card rounded-2xl p-4 border border-border shadow-sm">
-              <div className={`w-9 h-9 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center mb-3`}>
-                <Icon name={stat.icon} size={18} className="text-white" />
+            <div key={stat.label} className="bg-card rounded-xl px-4 py-3 border border-border shadow-sm flex items-center gap-3">
+              <div className={`w-8 h-8 bg-gradient-to-br ${stat.color} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                <Icon name={stat.icon} size={16} className="text-white" />
               </div>
-              <p className="text-2xl font-bold">{stat.value}</p>
-              <p className="text-muted-foreground text-xs mt-0.5">{stat.label}</p>
+              <div>
+                <p className="text-xl font-bold leading-none">{stat.value}</p>
+                <p className="text-muted-foreground text-xs mt-0.5">{stat.label}</p>
+              </div>
             </div>
           ))}
         </div>
