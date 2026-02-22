@@ -326,7 +326,7 @@ export default function Admin() {
         {/* Вкладки */}
         <div className="flex gap-2">
           {([
-            { key: "stp", icon: "ShieldAlert", label: "STP и безопасность" },
+            { key: "stp", icon: "ShieldAlert", label: "STP Индекс Безопасности" },
             { key: "groups", icon: "UsersRound", label: "Обучение групп" },
             { key: "users", icon: "Users", label: "Пользователи" },
             { key: "courses", icon: "BookOpen", label: "Обзор курсов" },
