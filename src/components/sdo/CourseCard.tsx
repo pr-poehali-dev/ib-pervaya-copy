@@ -35,7 +35,7 @@ export default function CourseCard({
   return (
     <div
       onClick={() => navigate(`/lesson/${id}`)}
-      className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer group hover:-translate-y-1 border border-border"
+      className="bg-card rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer group hover:-translate-y-1 border border-border"
     >
       <div className={`h-36 ${color} flex items-center justify-center relative overflow-hidden`}>
         <span className="text-5xl group-hover:scale-110 transition-transform duration-300">{emoji}</span>

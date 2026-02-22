@@ -33,10 +33,10 @@ const enrolledCourses = [
 ];
 
 const stats = [
-  { label: "Курсов пройдено", value: "3", icon: "Trophy", color: "text-amber-500", bg: "bg-amber-50" },
-  { label: "Часов обучения", value: "42", icon: "Clock", color: "text-violet-600", bg: "bg-violet-50" },
-  { label: "Сертификатов", value: "2", icon: "Award", color: "text-emerald-600", bg: "bg-emerald-50" },
-  { label: "Текущий streak", value: "7 дней", icon: "Flame", color: "text-orange-500", bg: "bg-orange-50" },
+  { label: "Курсов пройдено", value: "3", icon: "Trophy", color: "text-amber-500", bg: "icon-bg-amber" },
+  { label: "Часов обучения", value: "42", icon: "Clock", color: "text-violet-600", bg: "icon-bg-violet" },
+  { label: "Сертификатов", value: "2", icon: "Award", color: "text-emerald-600", bg: "icon-bg-emerald" },
+  { label: "Текущий streak", value: "7 дней", icon: "Flame", color: "text-orange-500", bg: "icon-bg-orange" },
 ];
 
 export default function Dashboard() {
@@ -56,7 +56,7 @@ export default function Dashboard() {
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {stats.map((stat) => (
-            <div key={stat.label} className="bg-white rounded-2xl p-5 border border-border shadow-sm">
+            <div key={stat.label} className="bg-card rounded-2xl p-5 border border-border shadow-sm">
               <div className={`w-10 h-10 ${stat.bg} rounded-xl flex items-center justify-center mb-3`}>
                 <Icon name={stat.icon} size={20} className={stat.color} />
               </div>
@@ -66,7 +66,7 @@ export default function Dashboard() {
           ))}
         </div>
 
-        <div className="bg-white rounded-2xl p-6 border border-border shadow-sm">
+        <div className="bg-card rounded-2xl p-6 border border-border shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold">Общий прогресс</h2>
             <span className="text-sm text-muted-foreground">48% выполнено</span>

@@ -45,10 +45,10 @@ export default function MyLearning() {
           <p className="text-muted-foreground">Курсы, на которые вы записаны</p>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 border border-border shadow-sm">
+        <div className="bg-card rounded-2xl p-6 border border-border shadow-sm">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-violet-50 rounded-xl flex items-center justify-center">
+              <div className="w-10 h-10 icon-bg-violet rounded-xl flex items-center justify-center">
                 <Icon name="Target" size={20} className="text-violet-600" />
               </div>
               <div>

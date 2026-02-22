@@ -121,7 +121,7 @@ export default function Courses() {
               className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                 activeCategory === cat
                   ? "gradient-primary text-white shadow-md shadow-purple-200"
-                  : "bg-white border border-border text-foreground hover:border-primary hover:text-primary"
+                  : "bg-card border border-border text-foreground hover:border-primary hover:text-primary"
               }`}
             >
               {cat}

@@ -50,7 +50,7 @@ export default function Lesson() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white rounded-2xl overflow-hidden border border-border shadow-sm">
+            <div className="bg-card rounded-2xl overflow-hidden border border-border shadow-sm">
               <div className="bg-gradient-to-r from-violet-600 to-purple-700 aspect-video flex items-center justify-center relative">
                 <div className="text-center">
                   <span className="text-6xl block mb-4">🎬</span>
@@ -96,10 +96,10 @@ export default function Lesson() {
                 {tab === "content" && (
                   <div className="prose prose-sm max-w-none text-foreground">
                     <p className="leading-relaxed whitespace-pre-line text-sm text-muted-foreground">{lessonData.content}</p>
-                    <div className="bg-violet-50 border border-violet-200 rounded-xl p-4 mt-4">
+                    <div className="icon-bg-violet border border-violet-200 dark:border-violet-800 rounded-xl p-4 mt-4">
                       <div className="flex gap-2">
                         <Icon name="Lightbulb" size={18} className="text-violet-600 shrink-0 mt-0.5" />
-                        <p className="text-sm text-violet-800">
+                        <p className="text-sm text-violet-800 dark:text-violet-300">
                           <strong>Ключевой момент:</strong> TLS используется в 95% веб-сайтов для защиты данных пользователей при передаче.
                         </p>
                       </div>
@@ -112,7 +112,7 @@ export default function Lesson() {
                     {["Презентация урока.pdf", "Схемы протоколов.zip", "Дополнительная литература.pdf"].map((file) => (
                       <div key={file} className="flex items-center justify-between p-3 bg-muted rounded-xl">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                          <div className="w-8 h-8 bg-card rounded-lg flex items-center justify-center border border-border">
                             <Icon name="FileText" size={15} className="text-muted-foreground" />
                           </div>
                           <span className="text-sm font-medium">{file}</span>
@@ -139,7 +139,7 @@ export default function Lesson() {
             </div>
 
             <div className="flex gap-3">
-              <button className="flex-1 border border-border bg-white text-foreground px-5 py-3 rounded-xl font-medium hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2">
+              <button className="flex-1 border border-border bg-card text-foreground px-5 py-3 rounded-xl font-medium hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2">
                 <Icon name="ChevronLeft" size={18} />
                 Предыдущий урок
               </button>
@@ -151,20 +151,20 @@ export default function Lesson() {
           </div>
 
           <div className="space-y-5">
-            <div className="bg-white rounded-2xl p-5 border border-border shadow-sm">
+            <div className="bg-card rounded-2xl p-5 border border-border shadow-sm">
               <h3 className="font-bold mb-3">Прогресс курса</h3>
               <Progress value={lessonData.progress} className="h-2 mb-2" />
               <p className="text-sm text-muted-foreground">{lessonData.progress}% завершено</p>
             </div>
 
-            <div className="bg-white rounded-2xl p-5 border border-border shadow-sm">
+            <div className="bg-card rounded-2xl p-5 border border-border shadow-sm">
               <h3 className="font-bold mb-4">Содержание курса</h3>
               <div className="space-y-1">
                 {lessonData.lessons.map((l) => (
                   <div
                     key={l.id}
                     className={`flex items-center gap-3 p-2.5 rounded-xl text-sm transition-colors ${
-                      l.active ? "bg-violet-50 text-violet-700" : "text-muted-foreground hover:bg-muted"
+                      l.active ? "icon-bg-violet text-violet-700 dark:text-violet-300" : "text-muted-foreground hover:bg-muted"
                     }`}
                   >
                     <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${

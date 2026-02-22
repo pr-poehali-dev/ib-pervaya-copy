@@ -313,7 +313,7 @@ export default function Admin() {
             { label: "Назначений активно", value: totalAssignments, icon: "CheckCircle", color: "from-emerald-500 to-teal-600" },
             { label: "Курсов завершено", value: totalCompleted, icon: "Trophy", color: "from-amber-500 to-orange-600" },
           ].map((stat) => (
-            <div key={stat.label} className="bg-white rounded-2xl p-4 border border-border shadow-sm">
+            <div key={stat.label} className="bg-card rounded-2xl p-4 border border-border shadow-sm">
               <div className={`w-9 h-9 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center mb-3`}>
                 <Icon name={stat.icon} size={18} className="text-white" />
               </div>
@@ -339,7 +339,7 @@ export default function Admin() {
               className={`flex flex-col items-center gap-1 px-6 py-3 rounded-xl text-xs font-medium transition-all ${
                 activeTab === tab.key
                   ? "gradient-primary text-white shadow-md shadow-purple-200"
-                  : "bg-white border border-border text-muted-foreground hover:border-primary hover:text-primary"
+                  : "bg-card border border-border text-muted-foreground hover:border-primary hover:text-primary"
               }`}
             >
               <Icon name={tab.icon} size={20} />
@@ -367,7 +367,7 @@ export default function Admin() {
                   <div
                     key={user.id}
                     onClick={() => setSelectedUser(user)}
-                    className={`bg-white rounded-2xl p-4 border cursor-pointer transition-all hover:shadow-md ${
+                    className={`bg-card rounded-2xl p-4 border cursor-pointer transition-all hover:shadow-md ${
                       selectedUser?.id === user.id
                         ? "border-primary shadow-md shadow-purple-100"
                         : "border-border"
@@ -398,7 +398,7 @@ export default function Admin() {
             {/* Детали пользователя */}
             <div className="lg:col-span-3">
               {selectedUser ? (
-                <div className="bg-white rounded-2xl border border-border p-5 space-y-5">
+                <div className="bg-card rounded-2xl border border-border p-5 space-y-5">
                   <div className="flex items-center gap-4">
                     <div className={`w-14 h-14 bg-gradient-to-br ${userColors[users.findIndex(u => u.id === selectedUser.id) % userColors.length]} rounded-2xl flex items-center justify-center`}>
                       <span className="text-white font-bold text-lg">{selectedUser.initials}</span>
@@ -486,7 +486,7 @@ export default function Admin() {
                   </div>
                 </div>
               ) : (
-                <div className="bg-white rounded-2xl border border-border p-10 flex flex-col items-center justify-center text-center h-full min-h-[300px]">
+                <div className="bg-card rounded-2xl border border-border p-10 flex flex-col items-center justify-center text-center h-full min-h-[300px]">
                   <div className="w-14 h-14 bg-muted rounded-2xl flex items-center justify-center mb-4">
                     <Icon name="UserSearch" size={24} className="text-muted-foreground" />
                   </div>
@@ -502,8 +502,8 @@ export default function Admin() {
 
         {activeTab === "stp" && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="bg-white rounded-2xl border border-border p-8 flex flex-col items-center justify-center text-center space-y-4">
-              <div className="w-14 h-14 bg-gradient-to-br from-violet-100 to-purple-200 rounded-2xl flex items-center justify-center">
+            <div className="bg-card rounded-2xl border border-border p-8 flex flex-col items-center justify-center text-center space-y-4">
+              <div className="w-14 h-14 icon-bg-violet rounded-2xl flex items-center justify-center">
                 <Icon name="FileInput" size={26} className="text-violet-500" />
               </div>
               <div>
@@ -512,13 +512,13 @@ export default function Admin() {
                   Заявки на обучение будут поступать автоматически после подключения интеграции с STP.
                 </p>
               </div>
-              <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 rounded-xl">
+              <div className="flex items-center gap-2 px-4 py-2 icon-bg-amber border border-amber-200 dark:border-amber-800 rounded-xl">
                 <Icon name="Clock" size={14} className="text-amber-500" />
-                <span className="text-amber-700 text-sm font-medium">Ожидает интеграции</span>
+                <span className="text-amber-700 dark:text-amber-400 text-sm font-medium">Ожидает интеграции</span>
               </div>
             </div>
-            <div className="bg-white rounded-2xl border border-border p-8 flex flex-col items-center justify-center text-center space-y-4">
-              <div className="w-14 h-14 bg-gradient-to-br from-red-100 to-rose-200 rounded-2xl flex items-center justify-center">
+            <div className="bg-card rounded-2xl border border-border p-8 flex flex-col items-center justify-center text-center space-y-4">
+              <div className="w-14 h-14 icon-bg-rose rounded-2xl flex items-center justify-center">
                 <Icon name="ShieldAlert" size={26} className="text-rose-500" />
               </div>
               <div>
@@ -527,9 +527,9 @@ export default function Admin() {
                   Сводный показатель защищённости по сотрудникам и подразделениям. Рассчитывается на основе данных из STP.
                 </p>
               </div>
-              <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 rounded-xl">
+              <div className="flex items-center gap-2 px-4 py-2 icon-bg-amber border border-amber-200 dark:border-amber-800 rounded-xl">
                 <Icon name="Clock" size={14} className="text-amber-500" />
-                <span className="text-amber-700 text-sm font-medium">Ожидает интеграции</span>
+                <span className="text-amber-700 dark:text-amber-400 text-sm font-medium">Ожидает интеграции</span>
               </div>
             </div>
           </div>
@@ -545,7 +545,7 @@ export default function Admin() {
                 const members = users.filter((u) => u.group === group);
                 const activeAssignments = members.reduce((sum, u) => sum + u.assignments.filter((a) => a.active).length, 0);
                 return (
-                  <div key={group} className="bg-white rounded-2xl border border-border p-5 space-y-4">
+                  <div key={group} className="bg-card rounded-2xl border border-border p-5 space-y-4">
                     <div className="flex items-center gap-3">
                       <div className={`w-11 h-11 bg-gradient-to-br ${gradients[idx % gradients.length]} rounded-xl flex items-center justify-center`}>
                         <Icon name="UsersRound" size={20} className="text-white" />
@@ -592,8 +592,8 @@ export default function Admin() {
         )}
 
         {activeTab === "reports" && (
-          <div className="bg-white rounded-2xl border border-border p-10 flex flex-col items-center justify-center text-center min-h-[400px] space-y-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-emerald-100 to-teal-200 rounded-2xl flex items-center justify-center">
+          <div className="bg-card rounded-2xl border border-border p-10 flex flex-col items-center justify-center text-center min-h-[400px] space-y-4">
+            <div className="w-16 h-16 icon-bg-emerald rounded-2xl flex items-center justify-center">
               <Icon name="BarChart2" size={28} className="text-emerald-600" />
             </div>
             <div>
@@ -602,17 +602,17 @@ export default function Admin() {
                 Сводные отчёты по обучению: прогресс сотрудников, выполнение планов, статистика по группам и курсам.
               </p>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 rounded-xl">
+            <div className="flex items-center gap-2 px-4 py-2 icon-bg-amber border border-amber-200 dark:border-amber-800 rounded-xl">
               <Icon name="Clock" size={14} className="text-amber-500" />
-              <span className="text-amber-700 text-sm font-medium">В разработке</span>
+              <span className="text-amber-700 dark:text-amber-400 text-sm font-medium">В разработке</span>
             </div>
           </div>
         )}
 
         {activeTab === "settings" && (
-          <div className="bg-white rounded-2xl border border-border p-10 flex flex-col items-center justify-center text-center min-h-[400px] space-y-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center">
-              <Icon name="Settings" size={28} className="text-slate-500" />
+          <div className="bg-card rounded-2xl border border-border p-10 flex flex-col items-center justify-center text-center min-h-[400px] space-y-4">
+            <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center">
+              <Icon name="Settings" size={28} className="text-muted-foreground" />
             </div>
             <div>
               <p className="font-bold text-lg">Настройки</p>
@@ -620,9 +620,9 @@ export default function Admin() {
                 Настройки платформы: подключение интеграций, управление ролями, параметры уведомлений и безопасности.
               </p>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 rounded-xl">
+            <div className="flex items-center gap-2 px-4 py-2 icon-bg-amber border border-amber-200 dark:border-amber-800 rounded-xl">
               <Icon name="Clock" size={14} className="text-amber-500" />
-              <span className="text-amber-700 text-sm font-medium">В разработке</span>
+              <span className="text-amber-700 dark:text-amber-400 text-sm font-medium">В разработке</span>
             </div>
           </div>
         )}
@@ -647,7 +647,7 @@ export default function Admin() {
                   : 0;
 
               return (
-                <div key={course.id} className="bg-white rounded-2xl border border-border p-4 space-y-3">
+                <div key={course.id} className="bg-card rounded-2xl border border-border p-4 space-y-3">
                   <div className="flex items-center gap-3">
                     <div
                       className={`w-11 h-11 bg-gradient-to-br ${gradients[idx]} rounded-xl flex items-center justify-center text-xl`}

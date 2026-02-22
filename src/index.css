@@ -106,12 +106,46 @@
     background: linear-gradient(135deg, hsl(190 80% 50%), hsl(210 90% 55%));
   }
   .gradient-card {
-    background: linear-gradient(145deg, #ffffff, hsl(240 20% 98%));
+    background: linear-gradient(
+      145deg,
+      hsl(var(--card)),
+      hsl(var(--background))
+    );
   }
   .glass {
     background: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.8);
+  }
+
+  .dark .glass {
+    background: rgba(30, 32, 48, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .icon-bg-amber {
+    @apply bg-amber-50 dark:bg-amber-950/40;
+  }
+  .icon-bg-violet {
+    @apply bg-violet-50 dark:bg-violet-950/40;
+  }
+  .icon-bg-emerald {
+    @apply bg-emerald-50 dark:bg-emerald-950/40;
+  }
+  .icon-bg-orange {
+    @apply bg-orange-50 dark:bg-orange-950/40;
+  }
+  .icon-bg-blue {
+    @apply bg-blue-50 dark:bg-blue-950/40;
+  }
+  .icon-bg-cyan {
+    @apply bg-cyan-50 dark:bg-cyan-950/40;
+  }
+  .icon-bg-rose {
+    @apply bg-rose-50 dark:bg-rose-950/40;
+  }
+  .icon-bg-indigo {
+    @apply bg-indigo-50 dark:bg-indigo-950/40;
   }
   .sidebar-gradient {
     background: linear-gradient(180deg, hsl(240 15% 13%), hsl(258 30% 18%));

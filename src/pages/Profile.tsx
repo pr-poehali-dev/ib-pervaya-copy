@@ -22,7 +22,7 @@ export default function Profile() {
   return (
     <Layout>
       <div className="max-w-4xl mx-auto space-y-8">
-        <div className="bg-white rounded-2xl p-8 border border-border shadow-sm">
+        <div className="bg-card rounded-2xl p-8 border border-border shadow-sm">
           <div className="flex items-start gap-6">
             <div className="w-20 h-20 gradient-primary rounded-2xl flex items-center justify-center shrink-0">
               <span className="text-white text-2xl font-bold">АИ</span>
@@ -50,7 +50,7 @@ export default function Profile() {
             { label: "Сертификатов", value: "2", icon: "Award", color: "text-amber-500" },
             { label: "Средний балл", value: "91%", icon: "TrendingUp", color: "text-emerald-600" },
           ].map((s) => (
-            <div key={s.label} className="bg-white rounded-2xl p-5 border border-border shadow-sm text-center">
+            <div key={s.label} className="bg-card rounded-2xl p-5 border border-border shadow-sm text-center">
               <Icon name={s.icon} size={24} className={`${s.color} mx-auto mb-2`} />
               <p className="text-2xl font-bold">{s.value}</p>
               <p className="text-muted-foreground text-xs mt-1">{s.label}</p>
@@ -59,13 +59,13 @@ export default function Profile() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white rounded-2xl p-6 border border-border shadow-sm">
+          <div className="bg-card rounded-2xl p-6 border border-border shadow-sm">
             <h2 className="text-lg font-bold mb-5">Завершённые курсы</h2>
             <div className="space-y-4">
               {completedCourses.map((c) => (
                 <div key={c.title} className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 bg-emerald-50 rounded-xl flex items-center justify-center">
+                    <div className="icon-bg-emerald w-9 h-9 rounded-xl flex items-center justify-center">
                       <Icon name="CheckCircle2" size={18} className="text-emerald-600" />
                     </div>
                     <div>
@@ -73,13 +73,13 @@ export default function Profile() {
                       <p className="text-xs text-muted-foreground">{c.date}</p>
                     </div>
                   </div>
-                  <Badge className="bg-emerald-50 text-emerald-700 border-0">{c.grade}%</Badge>
+                  <Badge className="icon-bg-emerald text-emerald-700 dark:text-emerald-400 border-0">{c.grade}%</Badge>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 border border-border shadow-sm">
+          <div className="bg-card rounded-2xl p-6 border border-border shadow-sm">
             <h2 className="text-lg font-bold mb-5">Достижения</h2>
             <div className="grid grid-cols-3 gap-3">
               {achievements.map((a) => (
@@ -87,7 +87,7 @@ export default function Profile() {
                   key={a.title}
                   className={`text-center p-3 rounded-xl border transition-all ${
                     a.earned
-                      ? "border-violet-200 bg-violet-50"
+                      ? "border-violet-300 dark:border-violet-700 icon-bg-violet"
                       : "border-border bg-muted/30 opacity-50 grayscale"
                   }`}
                   title={a.desc}
@@ -100,15 +100,15 @@ export default function Profile() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 border border-border shadow-sm">
+        <div className="bg-card rounded-2xl p-6 border border-border shadow-sm">
           <h2 className="text-lg font-bold mb-5">Активность за последний месяц</h2>
           <div className="grid grid-cols-7 gap-1.5">
             {Array.from({ length: 28 }).map((_, i) => {
               const intensity = Math.random();
               const cls =
                 intensity > 0.7 ? "bg-violet-600" :
-                intensity > 0.4 ? "bg-violet-300" :
-                intensity > 0.2 ? "bg-violet-100" : "bg-muted";
+                intensity > 0.4 ? "bg-violet-400 dark:bg-violet-700" :
+                intensity > 0.2 ? "bg-violet-200 dark:bg-violet-900" : "bg-muted";
               return (
                 <div key={i} className={`h-8 rounded-md ${cls}`} title={`День ${i + 1}`} />
               );
@@ -117,7 +117,7 @@ export default function Profile() {
           <div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
             <span>Меньше</span>
             <div className="flex gap-1">
-              {["bg-muted", "bg-violet-100", "bg-violet-300", "bg-violet-600"].map((c) => (
+              {["bg-muted", "bg-violet-200 dark:bg-violet-900", "bg-violet-400 dark:bg-violet-700", "bg-violet-600"].map((c) => (
                 <div key={c} className={`w-4 h-4 rounded-sm ${c}`} />
               ))}
             </div>
