@@ -35,7 +35,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
               <Icon name="Zap" size={18} className="text-white" />
             </div>
             <div>
-              <p className="text-white font-bold text-lg leading-tight font-['Manrope']">EduFlow</p>
+              <p className="text-white font-bold text-lg leading-tight font-['Manrope']">ИСП</p>
               <p className="text-white/40 text-xs">Платформа обучения</p>
             </div>
           </div>
