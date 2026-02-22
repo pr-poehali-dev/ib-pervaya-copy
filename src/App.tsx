@@ -10,10 +10,12 @@ import Profile from "./pages/Profile";
 import MyLearning from "./pages/MyLearning";
 import NotFound from "./pages/NotFound";
 import Admin from "./pages/Admin";
+import { ThemeProvider } from "./contexts/ThemeContext";
 
 const queryClient = new QueryClient();
 
 const App = () => (
+  <ThemeProvider>
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
@@ -31,6 +33,7 @@ const App = () => (
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
+  </ThemeProvider>
 );
 
 export default App;

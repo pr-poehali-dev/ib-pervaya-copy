@@ -1,5 +1,6 @@
 import { NavLink, useLocation } from "react-router-dom";
 import Icon from "@/components/ui/icon";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const navItems = [
   { to: "/", icon: "LayoutDashboard", label: "Главная" },
@@ -18,6 +19,7 @@ interface SidebarProps {
 
 export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const location = useLocation();
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <aside
@@ -84,6 +86,22 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
           );
         })}
       </nav>
+
+      {/* Переключатель темы */}
+      <div className="px-2 pb-1">
+        <button
+          onClick={toggleTheme}
+          title={theme === "dark" ? "Светлая тема" : "Тёмная тема"}
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-white/10 transition-all ${collapsed ? "justify-center" : ""}`}
+        >
+          <Icon name={theme === "dark" ? "Sun" : "Moon"} size={18} className="flex-shrink-0" />
+          {!collapsed && (
+            <span className="text-sm font-medium">
+              {theme === "dark" ? "Светлая тема" : "Тёмная тема"}
+            </span>
+          )}
+        </button>
+      </div>
 
       {/* Пользователь */}
       <div className="p-2 border-t border-white/10">
