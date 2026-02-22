@@ -222,7 +222,7 @@ export default function Admin() {
           {([
             { key: "stp", icon: "ShieldAlert", label: "STP Индекс Безопасности" },
             { key: "groups", icon: "UsersRound", label: "Обучение групп" },
-            { key: "users", icon: "Users", label: "Пользователи" },
+            { key: "users", icon: "Users", label: "Индивидуальное обучение" },
             { key: "courses", icon: "BookOpen", label: "Курсы платформы" },
             { key: "reports", icon: "BarChart2", label: "Отчёты" },
             { key: "settings", icon: "Settings", label: "Настройки" },
