@@ -557,19 +557,63 @@ export default function Admin() {
         {activeTab === "courses" && <AdminCourses users={users} />}
 
         {activeTab === "reports" && (
-          <div className="bg-card rounded-2xl border border-border p-10 flex flex-col items-center justify-center text-center min-h-[400px] space-y-4">
-            <div className="w-16 h-16 icon-bg-emerald rounded-2xl flex items-center justify-center">
-              <Icon name="BarChart2" size={28} className="text-emerald-600" />
-            </div>
-            <div>
-              <p className="font-bold text-lg">Отчёты</p>
-              <p className="text-muted-foreground text-sm mt-1 max-w-sm">
-                Сводные отчёты по обучению: прогресс сотрудников, выполнение планов, статистика по группам и курсам.
-              </p>
-            </div>
-            <div className="flex items-center gap-2 px-4 py-2 icon-bg-amber border border-amber-200 dark:border-amber-800 rounded-xl">
-              <Icon name="Clock" size={14} className="text-amber-500" />
-              <span className="text-amber-700 dark:text-amber-400 text-sm font-medium">В разработке</span>
+          <div className="space-y-5">
+            <p className="text-muted-foreground text-sm">Выберите отчёт для формирования</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {[
+                {
+                  num: "1",
+                  title: "Списание подписок за период",
+                  desc: "Детализация списаний по организациям, группам и пользователям за выбранный период",
+                  icon: "CreditCard",
+                  color: "from-violet-500 to-purple-700",
+                  bg: "bg-violet-50 dark:bg-violet-900/10",
+                  border: "border-violet-200 dark:border-violet-800",
+                },
+                {
+                  num: "2",
+                  title: "Статистика обучения",
+                  desc: "Прогресс слушателей, процент завершения курсов, активность по группам",
+                  icon: "BarChart2",
+                  color: "from-cyan-500 to-blue-600",
+                  bg: "bg-cyan-50 dark:bg-cyan-900/10",
+                  border: "border-cyan-200 dark:border-cyan-800",
+                },
+                {
+                  num: "3",
+                  title: "Реестр выданных удостоверений",
+                  desc: "Список всех выданных удостоверений с датами, курсами и данными слушателей",
+                  icon: "Award",
+                  color: "from-emerald-500 to-teal-600",
+                  bg: "bg-emerald-50 dark:bg-emerald-900/10",
+                  border: "border-emerald-200 dark:border-emerald-800",
+                },
+              ].map((report) => (
+                <div key={report.num} className={`bg-card rounded-2xl border ${report.border} p-6 flex flex-col gap-4 hover:shadow-md transition-shadow cursor-pointer group`}>
+                  <div className="flex items-start justify-between">
+                    <div className={`w-12 h-12 bg-gradient-to-br ${report.color} rounded-xl flex items-center justify-center`}>
+                      <Icon name={report.icon} size={22} className="text-white" />
+                    </div>
+                    <span className={`text-xs font-medium px-2.5 py-1 rounded-lg ${report.bg} text-muted-foreground`}>
+                      Отчёт {report.num}
+                    </span>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-base leading-tight">{report.title}</h3>
+                    <p className="text-muted-foreground text-sm mt-1.5 leading-relaxed">{report.desc}</p>
+                  </div>
+                  <div className="flex items-center gap-2 pt-1">
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-muted rounded-lg text-xs text-muted-foreground">
+                      <Icon name="Clock" size={12} className="text-amber-500" />
+                      В разработке
+                    </div>
+                    <button className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground group-hover:text-primary transition-colors font-medium">
+                      Открыть
+                      <Icon name="ChevronRight" size={14} />
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
