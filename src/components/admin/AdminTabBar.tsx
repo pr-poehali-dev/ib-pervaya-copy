@@ -22,7 +22,7 @@ export default function AdminTabBar({ activeTab, setActiveTab }: AdminTabBarProp
         <button
           key={tab.key}
           onClick={() => setActiveTab(tab.key)}
-          className={`flex flex-col items-center gap-1 px-6 py-3 rounded-xl text-xs font-medium transition-all ${
+          className={`flex flex-col items-center gap-1 flex-1 py-3 rounded-xl text-xs font-medium transition-all ${
             activeTab === tab.key
               ? "gradient-primary text-white shadow-md shadow-purple-200"
               : "bg-card border border-border text-muted-foreground hover:border-primary hover:text-primary"
