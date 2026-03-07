@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
+import Tip from "@/components/ui/tip";
 import { User, CourseAssignment, CourseStatus, allCourses, gradients, userColors, courseDirections } from "./types";
 import { MultiSelect, SearchSelect, FilterTags } from "./FilterControls";
 
@@ -427,25 +428,24 @@ export default function AdminUsers({
                       {/* Управление */}
                       <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center gap-1.5">
-                          <button
-                            className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-                            title="Редактировать"
-                          >
-                            <Icon name="Pencil" size={16} />
-                          </button>
-                          <button
-                            className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-emerald-600"
-                            title="Активен / Неактивен"
-                          >
-                            <Icon name="ToggleRight" size={16} />
-                          </button>
-                          <button
-                            className="p-2 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors text-violet-600 dark:text-violet-400"
-                            title="Добавить курс"
-                            onClick={() => { setAddCourseForUser(user.id); if (!isExpanded) toggleRow(user.id); }}
-                          >
-                            <Icon name="BookPlus" size={16} />
-                          </button>
+                          <Tip text="Редактировать слушателя">
+                            <button className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
+                              <Icon name="Pencil" size={16} />
+                            </button>
+                          </Tip>
+                          <Tip text="Активен / Неактивен">
+                            <button className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-emerald-600">
+                              <Icon name="ToggleRight" size={16} />
+                            </button>
+                          </Tip>
+                          <Tip text="Добавить курс">
+                            <button
+                              className="p-2 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors text-violet-600 dark:text-violet-400"
+                              onClick={() => { setAddCourseForUser(user.id); if (!isExpanded) toggleRow(user.id); }}
+                            >
+                              <Icon name="BookPlus" size={16} />
+                            </button>
+                          </Tip>
                         </div>
                       </td>
                     </tr>
@@ -543,27 +543,30 @@ export default function AdminUsers({
                                           {/* Действия */}
                                           <td className="px-4 py-2.5">
                                             <div className="flex items-center gap-0.5">
-                                              <button
-                                                className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-destructive"
-                                                title={a.active ? "Отключить" : "Включить"}
-                                                onClick={() => handleToggleCourse(user.id, a.courseId)}
-                                              >
-                                                <Icon name={a.active ? "ToggleRight" : "ToggleLeft"} size={15} />
-                                              </button>
-                                              <button
-                                                className="p-1.5 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400"
-                                                title="Продлить курс"
-                                                onClick={() => extendCourse(user.id, a.courseId)}
-                                              >
-                                                <Icon name="RefreshCw" size={14} />
-                                              </button>
-                                              <button
-                                                className={`p-1.5 rounded-lg transition-colors ${a.status === "certified" ? "text-violet-400 cursor-default" : "text-muted-foreground hover:bg-violet-100 dark:hover:bg-violet-900/30 hover:text-violet-600 dark:hover:text-violet-400"}`}
-                                                title={a.status === "certified" ? "Удостоверение уже выдано" : "Выдать удостоверение"}
-                                                onClick={() => a.status !== "certified" && issueCertificate(user.id, a.courseId)}
-                                              >
-                                                <Icon name="Award" size={15} />
-                                              </button>
+                                              <Tip text={a.active ? "Отключить курс" : "Включить курс"} side="top">
+                                                <button
+                                                  className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-destructive"
+                                                  onClick={() => handleToggleCourse(user.id, a.courseId)}
+                                                >
+                                                  <Icon name={a.active ? "ToggleRight" : "ToggleLeft"} size={15} />
+                                                </button>
+                                              </Tip>
+                                              <Tip text="Продлить курс" side="top">
+                                                <button
+                                                  className="p-1.5 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400"
+                                                  onClick={() => extendCourse(user.id, a.courseId)}
+                                                >
+                                                  <Icon name="RefreshCw" size={14} />
+                                                </button>
+                                              </Tip>
+                                              <Tip text={a.status === "certified" ? "Удостоверение уже выдано" : "Выдать удостоверение"} side="top">
+                                                <button
+                                                  className={`p-1.5 rounded-lg transition-colors ${a.status === "certified" ? "text-violet-400 cursor-default" : "text-muted-foreground hover:bg-violet-100 dark:hover:bg-violet-900/30 hover:text-violet-600 dark:hover:text-violet-400"}`}
+                                                  onClick={() => a.status !== "certified" && issueCertificate(user.id, a.courseId)}
+                                                >
+                                                  <Icon name="Award" size={15} />
+                                                </button>
+                                              </Tip>
                                             </div>
                                           </td>
                                         </tr>
