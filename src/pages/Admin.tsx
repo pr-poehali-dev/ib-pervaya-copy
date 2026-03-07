@@ -7,7 +7,7 @@ import AddUserDialog from "@/components/admin/AddUserDialog";
 import AdminTabBar from "@/components/admin/AdminTabBar";
 import AdminTabContent from "@/components/admin/AdminTabContent";
 
-type ActiveTab = "stp" | "groups" | "users" | "courses" | "reports" | "settings";
+type ActiveTab = "stp" | "groups" | "users" | "reports" | "settings";
 
 export default function Admin() {
   const [users, setUsers] = useState<User[]>(initialUsers);

@@ -3,10 +3,9 @@ import { User, allCourses } from "@/components/admin/types";
 import { MultiSelect, SearchSelect, FilterTags } from "@/components/admin/FilterControls";
 import AdminUsers from "@/components/admin/AdminUsers";
 import AdminGroups from "@/components/admin/AdminGroups";
-import AdminCourses from "@/components/admin/AdminCourses";
 import AdminSettings from "@/components/admin/AdminSettings";
 
-type ActiveTab = "stp" | "groups" | "users" | "courses" | "reports" | "settings";
+type ActiveTab = "stp" | "groups" | "users" | "reports" | "settings";
 
 interface AdminTabContentProps {
   activeTab: ActiveTab;
@@ -125,10 +124,6 @@ export default function AdminTabContent({
 
   if (activeTab === "groups") {
     return <AdminGroups users={users} />;
-  }
-
-  if (activeTab === "courses") {
-    return <AdminCourses users={users} />;
   }
 
   if (activeTab === "reports") {

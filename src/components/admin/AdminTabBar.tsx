@@ -1,6 +1,6 @@
 import Icon from "@/components/ui/icon";
 
-type ActiveTab = "stp" | "groups" | "users" | "courses" | "reports" | "settings";
+type ActiveTab = "stp" | "groups" | "users" | "reports" | "settings";
 
 interface AdminTabBarProps {
   activeTab: ActiveTab;
@@ -11,7 +11,6 @@ const tabs = [
   { key: "stp", icon: "ShieldAlert", label: "STP Индекс Безопасности" },
   { key: "groups", icon: "UsersRound", label: "Обучение групп" },
   { key: "users", icon: "Users", label: "Индивидуальное обучение" },
-  { key: "courses", icon: "BookOpen", label: "Курсы платформы" },
   { key: "reports", icon: "BarChart2", label: "Отчёты" },
   { key: "settings", icon: "Settings", label: "Настройки" },
 ] as const;
