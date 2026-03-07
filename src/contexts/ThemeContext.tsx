@@ -10,7 +10,9 @@ export type ThemeId =
   | "dark-blue"
   | "dark-emerald"
   | "dark-rose"
-  | "dark-amber";
+  | "dark-amber"
+  | "a11y-light"
+  | "a11y-dark";
 
 export interface ThemeOption {
   id: ThemeId;
@@ -31,6 +33,8 @@ export const themes: ThemeOption[] = [
   { id: "dark-emerald", label: "Тёмная · Изумрудный",  dark: true,  primary: "#34d399", preview: "#059669" },
   { id: "dark-rose",    label: "Тёмная · Розовый",      dark: true,  primary: "#fb7185", preview: "#e11d48" },
   { id: "dark-amber",   label: "Тёмная · Янтарный",    dark: true,  primary: "#fbbf24", preview: "#d97706" },
+  { id: "a11y-light",  label: "Доступная · Светлая",  dark: false, primary: "#0055cc", preview: "#0055cc" },
+  { id: "a11y-dark",   label: "Доступная · Тёмная",   dark: true,  primary: "#4d9fff", preview: "#0055cc" },
 ];
 
 interface ThemeContextType {
@@ -162,6 +166,30 @@ const themeVars: Record<ThemeId, Record<string, string>> = {
     "--destructive": "0 84% 55%", "--destructive-foreground": "0 0% 100%",
     "--border": "25 20% 23%", "--input": "25 20% 23%", "--ring": "38 92% 60%",
     "--gradient-from": "38 92% 50%", "--gradient-to": "25 95% 53%",
+  },
+  "a11y-light": {
+    "--background": "0 0% 100%", "--foreground": "0 0% 7%",
+    "--card": "0 0% 98%", "--card-foreground": "0 0% 7%",
+    "--popover": "0 0% 100%", "--popover-foreground": "0 0% 7%",
+    "--primary": "217 100% 40%", "--primary-foreground": "0 0% 100%",
+    "--secondary": "45 100% 45%", "--secondary-foreground": "0 0% 0%",
+    "--muted": "0 0% 93%", "--muted-foreground": "0 0% 30%",
+    "--accent": "45 100% 45%", "--accent-foreground": "0 0% 0%",
+    "--destructive": "0 84% 40%", "--destructive-foreground": "0 0% 100%",
+    "--border": "0 0% 80%", "--input": "0 0% 80%", "--ring": "217 100% 40%",
+    "--gradient-from": "217 100% 40%", "--gradient-to": "217 100% 28%",
+  },
+  "a11y-dark": {
+    "--background": "0 0% 8%", "--foreground": "0 0% 95%",
+    "--card": "0 0% 13%", "--card-foreground": "0 0% 95%",
+    "--popover": "0 0% 13%", "--popover-foreground": "0 0% 95%",
+    "--primary": "210 100% 65%", "--primary-foreground": "0 0% 0%",
+    "--secondary": "45 100% 55%", "--secondary-foreground": "0 0% 0%",
+    "--muted": "0 0% 18%", "--muted-foreground": "0 0% 60%",
+    "--accent": "45 100% 55%", "--accent-foreground": "0 0% 0%",
+    "--destructive": "0 84% 60%", "--destructive-foreground": "0 0% 100%",
+    "--border": "0 0% 22%", "--input": "0 0% 22%", "--ring": "210 100% 65%",
+    "--gradient-from": "210 100% 55%", "--gradient-to": "210 100% 38%",
   },
 };
 
