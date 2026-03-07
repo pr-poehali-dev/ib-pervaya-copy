@@ -1,9 +1,11 @@
+import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import { User, allCourses } from "@/components/admin/types";
 import { MultiSelect, SearchSelect, FilterTags } from "@/components/admin/FilterControls";
 import AdminUsers from "@/components/admin/AdminUsers";
 import AdminGroups from "@/components/admin/AdminGroups";
 import AdminSettings from "@/components/admin/AdminSettings";
+import StatsModal from "@/components/admin/StatsModal";
 
 type ActiveTab = "stp" | "groups" | "users" | "reports" | "settings";
 
@@ -58,6 +60,7 @@ export default function AdminTabContent({
   stpFilterFio, setStpFilterFio,
   stpFilterCourse, setStpFilterCourse,
 }: AdminTabContentProps) {
+  const [showStatsModal, setShowStatsModal] = useState(false);
   const stpOrgOptions = [...new Set(users.map((u) => u.group))];
   const stpFioOptions = users.map((u) => u.name);
   const stpCourseOptions = allCourses.map((c) => c.title);
@@ -128,37 +131,58 @@ export default function AdminTabContent({
 
   if (activeTab === "reports") {
     return (
-      <div className="space-y-5">
-        <p className="text-muted-foreground text-sm">Выберите отчёт для формирования</p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {reportItems.map((report) => (
-            <div key={report.num} className={`bg-card rounded-2xl border ${report.border} p-6 flex flex-col gap-4 hover:shadow-md transition-shadow cursor-pointer group`}>
-              <div className="flex items-start justify-between">
-                <div className={`w-12 h-12 bg-gradient-to-br ${report.color} rounded-xl flex items-center justify-center`}>
-                  <Icon name={report.icon} size={22} className="text-white" />
+      <>
+        <StatsModal open={showStatsModal} onClose={() => setShowStatsModal(false)} users={users} />
+        <div className="space-y-5">
+          <p className="text-muted-foreground text-sm">Выберите отчёт для формирования</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {reportItems.map((report) => {
+              const isStats = report.num === "2";
+              const handleOpen = isStats ? () => setShowStatsModal(true) : undefined;
+              return (
+                <div
+                  key={report.num}
+                  className={`bg-card rounded-2xl border ${report.border} p-6 flex flex-col gap-4 hover:shadow-md transition-shadow ${isStats ? "cursor-pointer" : "cursor-default"} group`}
+                  onClick={handleOpen}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className={`w-12 h-12 bg-gradient-to-br ${report.color} rounded-xl flex items-center justify-center`}>
+                      <Icon name={report.icon} size={22} className="text-white" />
+                    </div>
+                    <span className={`text-xs font-medium px-2.5 py-1 rounded-lg ${report.bg} text-muted-foreground`}>
+                      Отчёт {report.num}
+                    </span>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-base leading-tight">{report.title}</h3>
+                    <p className="text-muted-foreground text-sm mt-1.5 leading-relaxed">{report.desc}</p>
+                  </div>
+                  <div className="flex items-center gap-2 pt-1">
+                    {isStats ? (
+                      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800 rounded-lg text-xs text-cyan-600 dark:text-cyan-400 font-medium">
+                        <Icon name="BarChart2" size={12} />
+                        Доступен
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-muted rounded-lg text-xs text-muted-foreground">
+                        <Icon name="Clock" size={12} className="text-amber-500" />
+                        В разработке
+                      </div>
+                    )}
+                    <button
+                      className={`ml-auto flex items-center gap-1.5 text-xs font-medium transition-colors ${isStats ? "text-cyan-500 group-hover:text-cyan-600" : "text-muted-foreground"}`}
+                      onClick={handleOpen}
+                    >
+                      Открыть
+                      <Icon name="ChevronRight" size={14} />
+                    </button>
+                  </div>
                 </div>
-                <span className={`text-xs font-medium px-2.5 py-1 rounded-lg ${report.bg} text-muted-foreground`}>
-                  Отчёт {report.num}
-                </span>
-              </div>
-              <div className="flex-1">
-                <h3 className="font-bold text-base leading-tight">{report.title}</h3>
-                <p className="text-muted-foreground text-sm mt-1.5 leading-relaxed">{report.desc}</p>
-              </div>
-              <div className="flex items-center gap-2 pt-1">
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-muted rounded-lg text-xs text-muted-foreground">
-                  <Icon name="Clock" size={12} className="text-amber-500" />
-                  В разработке
-                </div>
-                <button className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground group-hover:text-primary transition-colors font-medium">
-                  Открыть
-                  <Icon name="ChevronRight" size={14} />
-                </button>
-              </div>
-            </div>
-          ))}
+              );
+            })}
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
