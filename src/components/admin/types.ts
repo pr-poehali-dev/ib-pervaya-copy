@@ -1,8 +1,13 @@
+export type CourseStatus = "pending" | "active" | "completed" | "certified";
+
 export type CourseAssignment = {
   courseId: number;
   active: boolean;
   progress: number;
   assignedAt: string;
+  activatedAt?: string;
+  completedAt?: string;
+  status: CourseStatus;
 };
 
 export type User = {
@@ -110,8 +115,8 @@ export const initialUsers: User[] = [
     group: "ИБ-301",
     role: "Студент",
     assignments: [
-      { courseId: 1, active: true, progress: 65, assignedAt: "01.01.2025" },
-      { courseId: 2, active: true, progress: 30, assignedAt: "15.01.2025" },
+      { courseId: 1, active: true, progress: 65, assignedAt: "01.01.2025", activatedAt: "03.01.2025", status: "active" },
+      { courseId: 2, active: true, progress: 30, assignedAt: "15.01.2025", status: "pending" },
     ],
   },
   {
@@ -122,8 +127,8 @@ export const initialUsers: User[] = [
     group: "ИБ-301",
     role: "Студент",
     assignments: [
-      { courseId: 1, active: true, progress: 100, assignedAt: "01.01.2025" },
-      { courseId: 3, active: false, progress: 0, assignedAt: "10.02.2025" },
+      { courseId: 1, active: true, progress: 100, assignedAt: "01.01.2025", activatedAt: "02.01.2025", completedAt: "20.02.2025", status: "certified" },
+      { courseId: 3, active: false, progress: 0, assignedAt: "10.02.2025", status: "pending" },
     ],
   },
   {
@@ -134,7 +139,7 @@ export const initialUsers: User[] = [
     group: "ИБ-302",
     role: "Студент",
     assignments: [
-      { courseId: 4, active: true, progress: 45, assignedAt: "05.02.2025" },
+      { courseId: 4, active: true, progress: 45, assignedAt: "05.02.2025", activatedAt: "06.02.2025", status: "active" },
     ],
   },
   {

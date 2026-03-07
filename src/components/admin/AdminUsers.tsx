@@ -2,13 +2,113 @@ import { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
-import { User, allCourses, gradients, userColors } from "./types";
+import { User, CourseAssignment, CourseStatus, allCourses, gradients, userColors, courseDirections } from "./types";
 import { MultiSelect, SearchSelect, FilterTags } from "./FilterControls";
 
 interface AdminUsersProps {
   users: User[];
   filteredUsers: User[];
   toggleCourse: (userId: number, courseId: number) => void;
+}
+
+function today(): string {
+  const d = new Date();
+  return `${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}.${d.getFullYear()}`;
+}
+
+function StatusBadge({ status }: { status: CourseStatus }) {
+  const map: Record<CourseStatus, { label: string; cls: string }> = {
+    pending:   { label: "Ожидает активации", cls: "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300" },
+    active:    { label: "Идёт обучение",      cls: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300" },
+    completed: { label: "Обучение завершено", cls: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300" },
+    certified: { label: "Удостоверение выдано", cls: "bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300" },
+  };
+  const { label, cls } = map[status];
+  return <span className={`px-2 py-0.5 rounded-md text-xs font-medium whitespace-nowrap ${cls}`}>{label}</span>;
+}
+
+interface AddCourseModalProps {
+  onClose: () => void;
+  onAdd: (courseIds: number[]) => void;
+  alreadyAssigned: number[];
+}
+
+function AddCourseModal({ onClose, onAdd, alreadyAssigned }: AddCourseModalProps) {
+  const [selected, setSelected] = useState<number[]>([]);
+  const [openDirs, setOpenDirs] = useState<number[]>([]);
+
+  const toggleDir = (id: number) =>
+    setOpenDirs((p) => p.includes(id) ? p.filter((d) => d !== id) : [...p, id]);
+
+  const toggleCourse = (id: number) =>
+    setSelected((p) => p.includes(id) ? p.filter((c) => c !== id) : [...p, id]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative bg-background rounded-2xl shadow-2xl z-10 w-full max-w-xl mx-4 flex flex-col max-h-[85vh]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border flex-shrink-0">
+          <h2 className="font-semibold text-base">Добавить курс</h2>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
+            <Icon name="X" size={18} />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto">
+          {courseDirections.map((dir) => {
+            const isOpen = openDirs.includes(dir.id);
+            return (
+              <div key={dir.id} className="border-b border-border last:border-0">
+                <button
+                  className={`w-full flex items-center justify-between px-5 py-3.5 text-left transition-colors ${isOpen ? "bg-violet-50 dark:bg-violet-900/20" : "hover:bg-muted/40"}`}
+                  onClick={() => toggleDir(dir.id)}
+                >
+                  <span className={`font-semibold text-sm ${isOpen ? "text-violet-700 dark:text-violet-300" : ""}`}>{dir.title}</span>
+                  <Icon name={isOpen ? "ChevronUp" : "ChevronDown"} size={16} className={isOpen ? "text-violet-600" : "text-muted-foreground"} />
+                </button>
+                {isOpen && dir.courses.map((c) => {
+                  const isAssigned = alreadyAssigned.includes(c.id);
+                  const isPicked = selected.includes(c.id);
+                  return (
+                    <div key={c.id} className="flex items-center justify-between px-5 py-3 border-t border-border/60 hover:bg-muted/30 transition-colors">
+                      <span className="text-sm text-foreground leading-snug pr-3">
+                        <span className="font-medium">{c.code}</span> {c.title}
+                      </span>
+                      {isAssigned ? (
+                        <span className="flex-shrink-0 px-3 py-1 text-xs font-medium rounded-lg bg-muted text-muted-foreground">Уже назначен</span>
+                      ) : isPicked ? (
+                        <button
+                          className="flex-shrink-0 px-3 py-1 text-xs font-medium rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 hover:bg-red-100 hover:text-red-600 hover:border-red-300 transition-colors"
+                          onClick={() => toggleCourse(c.id)}
+                        >Выбрано</button>
+                      ) : (
+                        <button
+                          className="flex-shrink-0 px-3 py-1 text-xs font-medium rounded-lg gradient-primary text-white hover:opacity-90 transition-opacity"
+                          onClick={() => toggleCourse(c.id)}
+                        >Выбрать</button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="p-4 border-t border-border flex gap-3 flex-shrink-0">
+          <Button variant="outline" className="rounded-xl flex-1" onClick={onClose}>Отмена</Button>
+          <Button
+            className="rounded-xl gradient-primary text-white flex-1 gap-2"
+            disabled={selected.length === 0}
+            onClick={() => { onAdd(selected); onClose(); }}
+          >
+            <Icon name="Plus" size={15} />
+            Добавить ({selected.length})
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function AdminUsers({
@@ -25,9 +125,12 @@ export default function AdminUsers({
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [actionsOpen, setActionsOpen] = useState(false);
 
+  const [addCourseForUser, setAddCourseForUser] = useState<number | null>(null);
+  const [localUsers, setLocalUsers] = useState<User[]>(users);
+
   const statusOptions = ["Все", "Есть активные курсы", "Завершил курсы", "Без назначений"];
-  const orgOptions = useMemo(() => [...new Set(users.map((u) => u.group))], [users]);
-  const fioOptions = useMemo(() => users.map((u) => u.name), [users]);
+  const orgOptions = useMemo(() => [...new Set(localUsers.map((u) => u.group))], [localUsers]);
+  const fioOptions = useMemo(() => localUsers.map((u) => u.name), [localUsers]);
   const courseOptions = useMemo(() => allCourses.map((c) => c.title), []);
 
   const resetFilters = () => {
@@ -38,7 +141,7 @@ export default function AdminUsers({
   };
 
   const localFiltered = useMemo(() => {
-    return filteredUsers.filter((u) => {
+    return filteredUsers.map((u) => localUsers.find((lu) => lu.id === u.id) ?? u).filter((u) => {
       if (filterStatus === "Есть активные курсы" && !u.assignments.some((a) => a.active)) return false;
       if (filterStatus === "Завершил курсы" && !u.assignments.some((a) => a.progress === 100)) return false;
       if (filterStatus === "Без назначений" && u.assignments.length > 0) return false;
@@ -50,7 +153,7 @@ export default function AdminUsers({
       }
       return true;
     });
-  }, [filteredUsers, filterStatus, filterOrgs, filterFio, filterCourse]);
+  }, [filteredUsers, localUsers, filterStatus, filterOrgs, filterFio, filterCourse]);
 
   const toggleRow = (id: number) => {
     setExpandedRows((prev) => {
@@ -82,8 +185,77 @@ export default function AdminUsers({
     setSelectedIds((prev) => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
   };
 
+  const activateCourse = (userId: number, courseId: number) => {
+    setLocalUsers((prev) => prev.map((u) => {
+      if (u.id !== userId) return u;
+      return {
+        ...u,
+        assignments: u.assignments.map((a) =>
+          a.courseId !== courseId ? a : { ...a, activatedAt: today(), status: "active" as CourseStatus }
+        ),
+      };
+    }));
+  };
+
+  const extendCourse = (userId: number, courseId: number) => {
+    setLocalUsers((prev) => prev.map((u) => {
+      if (u.id !== userId) return u;
+      return {
+        ...u,
+        assignments: u.assignments.map((a) =>
+          a.courseId !== courseId ? a : { ...a, status: "active" as CourseStatus, progress: Math.max(0, a.progress - 0) }
+        ),
+      };
+    }));
+  };
+
+  const issueCertificate = (userId: number, courseId: number) => {
+    setLocalUsers((prev) => prev.map((u) => {
+      if (u.id !== userId) return u;
+      return {
+        ...u,
+        assignments: u.assignments.map((a) =>
+          a.courseId !== courseId ? a : { ...a, status: "certified" as CourseStatus, completedAt: a.completedAt ?? today() }
+        ),
+      };
+    }));
+  };
+
+  const handleAddCourses = (userId: number, courseIds: number[]) => {
+    setLocalUsers((prev) => prev.map((u) => {
+      if (u.id !== userId) return u;
+      const newAssignments: CourseAssignment[] = courseIds
+        .filter((id) => !u.assignments.some((a) => a.courseId === id))
+        .map((id) => ({ courseId: id, active: true, progress: 0, assignedAt: today(), status: "pending" as CourseStatus }));
+      return { ...u, assignments: [...u.assignments, ...newAssignments] };
+    }));
+  };
+
+  const handleToggleCourse = (userId: number, courseId: number) => {
+    toggleCourse(userId, courseId);
+    setLocalUsers((prev) => prev.map((u) => {
+      if (u.id !== userId) return u;
+      return {
+        ...u,
+        assignments: u.assignments.map((a) =>
+          a.courseId !== courseId ? a : { ...a, active: !a.active }
+        ),
+      };
+    }));
+  };
+
+  const addCourseUser = addCourseForUser !== null ? localUsers.find((u) => u.id === addCourseForUser) : null;
+
   return (
     <div className="space-y-4">
+      {addCourseForUser !== null && addCourseUser && (
+        <AddCourseModal
+          onClose={() => setAddCourseForUser(null)}
+          onAdd={(ids) => handleAddCourses(addCourseForUser, ids)}
+          alreadyAssigned={addCourseUser.assignments.map((a) => a.courseId)}
+        />
+      )}
+
       {/* Фильтры + кнопка действий */}
       <div className="flex items-start gap-3">
         <div className="flex-1 bg-card rounded-2xl border border-border px-4 pt-3 pb-3 space-y-2.5">
@@ -254,18 +426,26 @@ export default function AdminUsers({
 
                       {/* Управление */}
                       <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1.5">
                           <button
-                            className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+                            className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
                             title="Редактировать"
                           >
-                            <Icon name="Pencil" size={14} />
+                            <Icon name="Pencil" size={16} />
                           </button>
                           <button
-                            className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-emerald-600"
+                            className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-emerald-600"
                             title="Активен / Неактивен"
                           >
-                            <Icon name="ToggleRight" size={14} />
+                            <Icon name="ToggleRight" size={16} />
+                          </button>
+                          <button
+                            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors text-violet-600 dark:text-violet-400 text-xs font-medium whitespace-nowrap"
+                            title="Добавить курс"
+                            onClick={() => { setAddCourseForUser(user.id); if (!isExpanded) toggleRow(user.id); }}
+                          >
+                            <Icon name="Plus" size={15} />
+                            Добавить курс
                           </button>
                         </div>
                       </td>
@@ -276,7 +456,16 @@ export default function AdminUsers({
                       <tr key={`${user.id}-expanded`} className="border-b border-border bg-violet-50/30 dark:bg-violet-900/5">
                         <td colSpan={7} className="px-8 py-4">
                           <div className="space-y-3">
-                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Назначенные курсы</p>
+                            <div className="flex items-center justify-between">
+                              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Назначенные курсы</p>
+                              <button
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet-100 dark:bg-violet-900/30 hover:bg-violet-200 dark:hover:bg-violet-900/50 transition-colors text-violet-700 dark:text-violet-300 text-xs font-medium"
+                                onClick={() => setAddCourseForUser(user.id)}
+                              >
+                                <Icon name="Plus" size={13} />
+                                Добавить курс
+                              </button>
+                            </div>
                             {user.assignments.length === 0 ? (
                               <p className="text-sm text-muted-foreground">Курсы не назначены</p>
                             ) : (
@@ -286,6 +475,8 @@ export default function AdminUsers({
                                     <tr className="border-b border-border bg-muted/30">
                                       <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground">Курс</th>
                                       <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground whitespace-nowrap">Дата назначения</th>
+                                      <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground whitespace-nowrap">Дата активации</th>
+                                      <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground whitespace-nowrap">Дата завершения</th>
                                       <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground">Прогресс</th>
                                       <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground">Статус</th>
                                       <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground">Действия</th>
@@ -293,17 +484,46 @@ export default function AdminUsers({
                                   </thead>
                                   <tbody>
                                     {user.assignments.map((a, i) => {
-                                      const course = allCourses.find((c) => c.id === a.courseId);
+                                      const course = allCourses.find((c) => c.id === a.courseId)
+                                        ?? courseDirections.flatMap((d) => d.courses).find((c) => c.id === a.courseId);
                                       if (!course) return null;
+                                      const courseTitle = "title" in course ? course.title : `${"code" in course ? course.code + " " : ""}${course.title}`;
+                                      const courseEmoji = "emoji" in course ? course.emoji : "📚";
                                       return (
                                         <tr key={a.courseId} className={`${i > 0 ? "border-t border-border/60" : ""} hover:bg-muted/20`}>
                                           <td className="px-4 py-2.5">
                                             <div className="flex items-center gap-2">
-                                              <span className="text-base">{course.emoji}</span>
-                                              <span className="font-medium text-sm">{course.title}</span>
+                                              <span className="text-base">{courseEmoji}</span>
+                                              <span className="font-medium text-sm">{courseTitle}</span>
                                             </div>
                                           </td>
-                                          <td className="px-4 py-2.5 text-xs text-muted-foreground">{a.assignedAt}</td>
+
+                                          {/* Дата назначения / кнопка Активировать */}
+                                          <td className="px-4 py-2.5">
+                                            {!a.activatedAt ? (
+                                              <button
+                                                className="flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 text-xs font-medium hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-colors whitespace-nowrap"
+                                                onClick={() => activateCourse(user.id, a.courseId)}
+                                              >
+                                                <Icon name="Play" size={12} />
+                                                Активировать
+                                              </button>
+                                            ) : (
+                                              <span className="text-xs text-muted-foreground">{a.assignedAt}</span>
+                                            )}
+                                          </td>
+
+                                          {/* Дата активации */}
+                                          <td className="px-4 py-2.5 text-xs text-muted-foreground">
+                                            {a.activatedAt ?? <span className="text-muted-foreground/50">—</span>}
+                                          </td>
+
+                                          {/* Дата завершения */}
+                                          <td className="px-4 py-2.5 text-xs text-muted-foreground">
+                                            {a.completedAt ?? <span className="text-muted-foreground/50">—</span>}
+                                          </td>
+
+                                          {/* Прогресс */}
                                           <td className="px-4 py-2.5">
                                             <div className="flex items-center gap-2 min-w-[100px]">
                                               <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
@@ -315,22 +535,38 @@ export default function AdminUsers({
                                               <span className="text-xs text-muted-foreground w-8 text-right">{a.progress}%</span>
                                             </div>
                                           </td>
+
+                                          {/* Статус */}
                                           <td className="px-4 py-2.5">
-                                            {a.progress === 100 ? (
-                                              <span className="px-2 py-0.5 rounded-md text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">Завершён</span>
-                                            ) : a.active ? (
-                                              <span className="px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">Активен</span>
-                                            ) : (
-                                              <span className="px-2 py-0.5 rounded-md text-xs font-medium bg-muted text-muted-foreground">Отключён</span>
-                                            )}
+                                            <StatusBadge status={a.status} />
                                           </td>
+
+                                          {/* Действия */}
                                           <td className="px-4 py-2.5">
-                                            <button
-                                              className="text-xs text-muted-foreground hover:text-destructive transition-colors"
-                                              onClick={() => toggleCourse(user.id, a.courseId)}
-                                            >
-                                              {a.active ? "Отключить" : "Включить"}
-                                            </button>
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                              <button
+                                                className="text-xs text-muted-foreground hover:text-destructive transition-colors whitespace-nowrap"
+                                                onClick={() => handleToggleCourse(user.id, a.courseId)}
+                                              >
+                                                {a.active ? "Отключить" : "Включить"}
+                                              </button>
+                                              <span className="text-border">·</span>
+                                              <button
+                                                className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 transition-colors whitespace-nowrap"
+                                                onClick={() => extendCourse(user.id, a.courseId)}
+                                                title="Продлить доступ к курсу"
+                                              >
+                                                Продлить курс
+                                              </button>
+                                              <span className="text-border">·</span>
+                                              <button
+                                                className={`text-xs transition-colors whitespace-nowrap ${a.status === "certified" ? "text-violet-400 cursor-default" : "text-violet-600 dark:text-violet-400 hover:text-violet-800 dark:hover:text-violet-200"}`}
+                                                onClick={() => a.status !== "certified" && issueCertificate(user.id, a.courseId)}
+                                                title="Выдать удостоверение"
+                                              >
+                                                {a.status === "certified" ? "Удостоверение выдано" : "Выдать удостоверение"}
+                                              </button>
+                                            </div>
                                           </td>
                                         </tr>
                                       );
@@ -339,7 +575,6 @@ export default function AdminUsers({
                                 </table>
                               </div>
                             )}
-
                           </div>
                         </td>
                       </tr>
@@ -358,8 +593,6 @@ export default function AdminUsers({
           </div>
         )}
       </div>
-
-
     </div>
   );
 }
