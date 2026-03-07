@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 import Tip from "@/components/ui/tip";
 import ActivateMenu from "./ActivateMenu";
+import UserStatsModal from "./UserStatsModal";
 import { User, CourseAssignment, CourseStatus, allCourses, gradients, userColors, courseDirections } from "./types";
 import { MultiSelect, SearchSelect, FilterTags } from "./FilterControls";
 
@@ -129,6 +130,7 @@ export default function AdminUsers({
 
   const [addCourseForUser, setAddCourseForUser] = useState<number | null>(null);
   const [localUsers, setLocalUsers] = useState<User[]>(users);
+  const [statsUser, setStatsUser] = useState<User | null>(null);
 
   const statusOptions = ["Все", "Есть активные курсы", "Завершил курсы", "Без назначений"];
   const orgOptions = useMemo(() => [...new Set(localUsers.map((u) => u.group))], [localUsers]);
@@ -257,6 +259,7 @@ export default function AdminUsers({
           alreadyAssigned={addCourseUser.assignments.map((a) => a.courseId)}
         />
       )}
+      <UserStatsModal user={statsUser} onClose={() => setStatsUser(null)} />
 
       {/* Фильтры + кнопка действий */}
       <div className="flex items-start gap-3">
@@ -402,11 +405,23 @@ export default function AdminUsers({
                       </td>
 
                       {/* Курсы */}
-                      <td className="px-4 py-3">
-                        <span className="text-xs text-muted-foreground whitespace-nowrap">
-                          {activeCourses.length} актив.
-                          {completedCount > 0 && ` · ${completedCount} завершено`}
-                        </span>
+                      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">
+                            {activeCourses.length} актив.
+                            {completedCount > 0 && ` · ${completedCount} завершено`}
+                          </span>
+                          {user.assignments.length > 0 && (
+                            <Tip text="Статистика слушателя" side="top">
+                              <button
+                                className="p-1 rounded-md hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors text-muted-foreground hover:text-violet-600"
+                                onClick={() => setStatsUser(localUsers.find((u2) => u2.id === user.id) ?? user)}
+                              >
+                                <Icon name="BarChart2" size={13} />
+                              </button>
+                            </Tip>
+                          )}
+                        </div>
                       </td>
 
                       {/* Логин */}
