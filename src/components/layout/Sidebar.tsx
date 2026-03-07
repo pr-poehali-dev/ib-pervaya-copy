@@ -5,7 +5,7 @@ import { useStats } from "@/contexts/StatsContext";
 
 const navItems = [
   { to: "/", icon: "LayoutDashboard", label: "Главная" },
-  { to: "/courses", icon: "BookOpen", label: "Курсы" },
+  { to: "/courses", icon: "BookOpen", label: "Каталог курсов" },
   { to: "/my-learning", icon: "GraduationCap", label: "Моё обучение" },
   { to: "/schedule", icon: "Calendar", label: "Расписание" },
   { to: "/achievements", icon: "Trophy", label: "Достижения" },
