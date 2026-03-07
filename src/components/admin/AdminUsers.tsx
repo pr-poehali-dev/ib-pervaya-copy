@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 import Tip from "@/components/ui/tip";
+import ActivateMenu from "./ActivateMenu";
 import { User, CourseAssignment, CourseStatus, allCourses, gradients, userColors, courseDirections } from "./types";
 import { MultiSelect, SearchSelect, FilterTags } from "./FilterControls";
 
@@ -186,13 +187,13 @@ export default function AdminUsers({
     setSelectedIds((prev) => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
   };
 
-  const activateCourse = (userId: number, courseId: number) => {
+  const activateCourse = (userId: number, courseId: number, date?: string) => {
     setLocalUsers((prev) => prev.map((u) => {
       if (u.id !== userId) return u;
       return {
         ...u,
         assignments: u.assignments.map((a) =>
-          a.courseId !== courseId ? a : { ...a, activatedAt: today(), status: "active" as CourseStatus }
+          a.courseId !== courseId ? a : { ...a, activatedAt: date ?? today(), status: "active" as CourseStatus }
         ),
       };
     }));
@@ -500,13 +501,7 @@ export default function AdminUsers({
                                           {/* Дата назначения / кнопка Активировать */}
                                           <td className="px-4 py-2.5">
                                             {!a.activatedAt ? (
-                                              <button
-                                                className="flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 text-xs font-medium hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-colors whitespace-nowrap"
-                                                onClick={() => activateCourse(user.id, a.courseId)}
-                                              >
-                                                <Icon name="Play" size={12} />
-                                                Активировать
-                                              </button>
+                                              <ActivateMenu onActivate={(date) => activateCourse(user.id, a.courseId, date)} />
                                             ) : (
                                               <span className="text-xs text-muted-foreground">{a.assignedAt}</span>
                                             )}
@@ -524,7 +519,7 @@ export default function AdminUsers({
 
                                           {/* Прогресс */}
                                           <td className="px-4 py-2.5">
-                                            <div className="flex items-center gap-2 min-w-[100px]">
+                                            <div className="flex items-center gap-2 min-w-[110px]">
                                               <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
                                                 <div
                                                   className="h-full bg-gradient-to-r from-violet-500 to-purple-600 rounded-full"
@@ -532,6 +527,11 @@ export default function AdminUsers({
                                                 />
                                               </div>
                                               <span className="text-xs text-muted-foreground w-8 text-right">{a.progress}%</span>
+                                              <Tip text="Статистика обучения" side="top">
+                                                <button className="p-1 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-violet-600 flex-shrink-0">
+                                                  <Icon name="BarChart2" size={13} />
+                                                </button>
+                                              </Tip>
                                             </div>
                                           </td>
 
