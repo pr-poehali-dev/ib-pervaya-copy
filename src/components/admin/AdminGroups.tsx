@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 import Tip from "@/components/ui/tip";
 import ActivateMenu from "./ActivateMenu";
+import UserStatsModal from "./UserStatsModal";
 import { User, CourseAssignment, CourseStatus, allCourses, gradients, userColors, groups, courseDirections } from "./types";
 import { MultiSelect, SearchSelect, FilterTags } from "./FilterControls";
 
@@ -141,6 +142,7 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
   const [localUsers, setLocalUsers] = useState<User[]>(users);
   const [addCourseForGroup, setAddCourseForGroup] = useState<string | null>(null);
   const [addCourseForMember, setAddCourseForMember] = useState<number | null>(null);
+  const [statsUser, setStatsUser] = useState<User | null>(null);
 
   const orgOptions = useMemo(() => [...new Set(localUsers.map((u) => u.group))], [localUsers]);
   const fioOptions = useMemo(() => localUsers.map((u) => u.name), [localUsers]);
@@ -282,6 +284,7 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
           alreadyAssigned={addCourseMemberUser.assignments.map((a) => a.courseId)}
         />
       )}
+      <UserStatsModal user={statsUser} onClose={() => setStatsUser(null)} />
 
       {/* Фильтры + кнопка действий */}
       <div className="flex items-start gap-3">
@@ -525,6 +528,16 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
                                             {/* Действия участника */}
                                             <td className="px-4 py-2.5" onClick={(e) => e.stopPropagation()}>
                                               <div className="flex items-center gap-1">
+                                                {member.assignments.length > 0 && (
+                                                  <Tip text="Статистика слушателя">
+                                                    <button
+                                                      className="p-1.5 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors text-muted-foreground hover:text-violet-600"
+                                                      onClick={() => setStatsUser(localUsers.find((u) => u.id === member.id) ?? member)}
+                                                    >
+                                                      <Icon name="BarChart2" size={15} />
+                                                    </button>
+                                                  </Tip>
+                                                )}
                                                 <Tip text="Добавить курс участнику">
                                                   <button
                                                     className="p-1.5 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors text-violet-600 dark:text-violet-400"
