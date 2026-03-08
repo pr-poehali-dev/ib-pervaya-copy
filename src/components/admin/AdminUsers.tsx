@@ -1,12 +1,11 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
-import Tip from "@/components/ui/tip";
-import ActivateMenu from "./ActivateMenu";
 import UserStatsModal from "./UserStatsModal";
-import { User, CourseAssignment, CourseStatus, allCourses, gradients, userColors, courseDirections } from "./types";
+import UserAddCourseModal from "./UserAddCourseModal";
+import UserTableRow from "./UserTableRow";
+import { User, CourseAssignment, CourseStatus, allCourses } from "./types";
 import { MultiSelect, SearchSelect, FilterTags } from "./FilterControls";
 
 interface AdminUsersProps {
@@ -18,101 +17,6 @@ interface AdminUsersProps {
 function today(): string {
   const d = new Date();
   return `${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}.${d.getFullYear()}`;
-}
-
-function StatusBadge({ status }: { status: CourseStatus }) {
-  const map: Record<CourseStatus, { label: string; cls: string }> = {
-    pending:   { label: "Ожидает активации", cls: "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300" },
-    active:    { label: "Идёт обучение",      cls: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300" },
-    completed: { label: "Обучение завершено", cls: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300" },
-    certified: { label: "Удостоверение выдано", cls: "bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300" },
-  };
-  const { label, cls } = map[status];
-  return <span className={`px-2 py-0.5 rounded-md text-xs font-medium whitespace-nowrap ${cls}`}>{label}</span>;
-}
-
-interface AddCourseModalProps {
-  onClose: () => void;
-  onAdd: (courseIds: number[]) => void;
-  alreadyAssigned: number[];
-}
-
-function AddCourseModal({ onClose, onAdd, alreadyAssigned }: AddCourseModalProps) {
-  const [selected, setSelected] = useState<number[]>([]);
-  const [openDirs, setOpenDirs] = useState<number[]>([]);
-
-  const toggleDir = (id: number) =>
-    setOpenDirs((p) => p.includes(id) ? p.filter((d) => d !== id) : [...p, id]);
-
-  const toggleCourse = (id: number) =>
-    setSelected((p) => p.includes(id) ? p.filter((c) => c !== id) : [...p, id]);
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-background rounded-2xl shadow-2xl z-10 w-full max-w-xl mx-4 flex flex-col max-h-[85vh]">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border flex-shrink-0">
-          <h2 className="font-semibold text-base">Добавить курс</h2>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
-            <Icon name="X" size={18} />
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto">
-          {courseDirections.map((dir) => {
-            const isOpen = openDirs.includes(dir.id);
-            return (
-              <div key={dir.id} className="border-b border-border last:border-0">
-                <button
-                  className={`w-full flex items-center justify-between px-5 py-3.5 text-left transition-colors ${isOpen ? "bg-violet-50 dark:bg-violet-900/20" : "hover:bg-muted/40"}`}
-                  onClick={() => toggleDir(dir.id)}
-                >
-                  <span className={`font-semibold text-sm ${isOpen ? "text-violet-700 dark:text-violet-300" : ""}`}>{dir.title}</span>
-                  <Icon name={isOpen ? "ChevronUp" : "ChevronDown"} size={16} className={isOpen ? "text-violet-600" : "text-muted-foreground"} />
-                </button>
-                {isOpen && dir.courses.map((c) => {
-                  const isAssigned = alreadyAssigned.includes(c.id);
-                  const isPicked = selected.includes(c.id);
-                  return (
-                    <div key={c.id} className="flex items-center justify-between px-5 py-3 border-t border-border/60 hover:bg-muted/30 transition-colors">
-                      <span className="text-sm text-foreground leading-snug pr-3">
-                        <span className="font-medium">{c.code}</span> {c.title}
-                      </span>
-                      {isAssigned ? (
-                        <span className="flex-shrink-0 px-3 py-1 text-xs font-medium rounded-lg bg-muted text-muted-foreground">Уже назначен</span>
-                      ) : isPicked ? (
-                        <button
-                          className="flex-shrink-0 px-3 py-1 text-xs font-medium rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 hover:bg-red-100 hover:text-red-600 hover:border-red-300 transition-colors"
-                          onClick={() => toggleCourse(c.id)}
-                        >Выбрано</button>
-                      ) : (
-                        <button
-                          className="flex-shrink-0 px-3 py-1 text-xs font-medium rounded-lg gradient-primary text-white hover:opacity-90 transition-opacity"
-                          onClick={() => toggleCourse(c.id)}
-                        >Выбрать</button>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="p-4 border-t border-border flex gap-3 flex-shrink-0">
-          <Button variant="outline" className="rounded-xl flex-1" onClick={onClose}>Отмена</Button>
-          <Button
-            className="rounded-xl gradient-primary text-white flex-1 gap-2"
-            disabled={selected.length === 0}
-            onClick={() => { onAdd(selected); onClose(); }}
-          >
-            <Icon name="Plus" size={15} />
-            Добавить ({selected.length})
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
 }
 
 export default function AdminUsers({
@@ -181,20 +85,14 @@ export default function AdminUsers({
       if (filterFio.length > 0 && !filterFio.includes(u.name)) return false;
       if (filterCourse) {
         const course = allCourses.find((c) => c.title === filterCourse);
-        if (course && !u.assignments.some((a) => a.courseId === course.id && a.active)) return false;
+        if (course && !u.assignments.some((a) => a.courseId === course.id)) return false;
       }
       return true;
     });
   }, [filteredUsers, localUsers, filterStatus, filterOrgs, filterFio, filterCourse]);
 
-  const toggleRow = (id: number) => {
-    setExpandedRows((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
+  const toggleRow = (id: number) =>
+    setExpandedRows((prev) => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
 
   const copyLogin = (userId: number, email: string) => {
     navigator.clipboard.writeText(email);
@@ -281,7 +179,7 @@ export default function AdminUsers({
   return (
     <div className="space-y-4">
       {addCourseForUser !== null && addCourseUser && (
-        <AddCourseModal
+        <UserAddCourseModal
           onClose={() => setAddCourseForUser(null)}
           onAdd={(ids) => handleAddCourses(addCourseForUser, ids)}
           alreadyAssigned={addCourseUser.assignments.map((a) => a.courseId)}
@@ -389,249 +287,25 @@ export default function AdminUsers({
               </tr>
             </thead>
             <tbody>
-              {localFiltered.map((user, idx) => {
-                const isExpanded = expandedRows.has(user.id);
-                const activeCourses = user.assignments.filter((a) => a.active);
-                const completedCount = user.assignments.filter((a) => a.progress === 100).length;
-
-                return (
-                  <>
-                    <tr
-                      key={user.id}
-                      className={`border-b border-border transition-colors cursor-pointer hover:bg-muted/20 ${isExpanded ? "bg-violet-50/50 dark:bg-violet-900/10" : ""} ${selectedIds.has(user.id) ? "bg-violet-50/30 dark:bg-violet-900/10" : ""}`}
-                      onClick={() => toggleRow(user.id)}
-                    >
-                      {/* Чекбокс */}
-                      <td className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
-                        <input
-                          type="checkbox"
-                          checked={selectedIds.has(user.id)}
-                          onChange={() => toggleSelectOne(user.id)}
-                          className="rounded border-border cursor-pointer accent-violet-600"
-                        />
-                      </td>
-
-                      {/* Expand toggle */}
-                      <td className="px-4 py-3">
-                        <Icon
-                          name={isExpanded ? "ChevronDown" : "ChevronRight"}
-                          size={16}
-                          className="text-muted-foreground"
-                        />
-                      </td>
-
-                      {/* ФИО */}
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2.5">
-                          <div className={`w-8 h-8 bg-gradient-to-br ${userColors[idx % userColors.length]} rounded-lg flex items-center justify-center flex-shrink-0`}>
-                            <span className="text-white font-bold text-[10px]">{user.initials}</span>
-                          </div>
-                          <div>
-                            <p className="font-medium leading-tight">{user.name}</p>
-                            <p className="text-xs text-muted-foreground">{user.role}</p>
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* Организация / Группа */}
-                      <td className="px-4 py-3">
-                        <Badge variant="secondary" className="text-xs">{user.group}</Badge>
-                      </td>
-
-                      {/* Курсы */}
-                      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-muted-foreground whitespace-nowrap">
-                            {activeCourses.length} актив.
-                            {completedCount > 0 && ` · ${completedCount} завершено`}
-                          </span>
-                          {user.assignments.length > 0 && (
-                            <Tip text="Статистика слушателя" side="top">
-                              <button
-                                className="p-1 rounded-md hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors text-muted-foreground hover:text-violet-600"
-                                onClick={() => setStatsUser(localUsers.find((u2) => u2.id === user.id) ?? user)}
-                              >
-                                <Icon name="BarChart2" size={13} />
-                              </button>
-                            </Tip>
-                          )}
-                        </div>
-                      </td>
-
-                      {/* Логин */}
-                      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-xs text-muted-foreground truncate max-w-[140px]">{user.email}</span>
-                          <button
-                            className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
-                            title="Скопировать логин"
-                            onClick={() => copyLogin(user.id, user.email)}
-                          >
-                            {copiedId === user.id
-                              ? <Icon name="Check" size={13} className="text-emerald-500" />
-                              : <Icon name="Copy" size={13} />
-                            }
-                          </button>
-                        </div>
-                      </td>
-
-                      {/* Управление */}
-                      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center gap-1.5">
-                          <Tip text="Редактировать слушателя">
-                            <button className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
-                              <Icon name="Pencil" size={16} />
-                            </button>
-                          </Tip>
-                          <Tip text="Активен / Неактивен">
-                            <button className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-emerald-600">
-                              <Icon name="ToggleRight" size={16} />
-                            </button>
-                          </Tip>
-                          <Tip text="Добавить курс">
-                            <button
-                              className="p-2 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors text-violet-600 dark:text-violet-400"
-                              onClick={() => { setAddCourseForUser(user.id); if (!isExpanded) toggleRow(user.id); }}
-                            >
-                              <Icon name="BookPlus" size={16} />
-                            </button>
-                          </Tip>
-                        </div>
-                      </td>
-                    </tr>
-
-                    {/* Раскрытая строка — назначенные курсы */}
-                    {isExpanded && (
-                      <tr key={`${user.id}-expanded`} className="border-b border-border bg-violet-50/30 dark:bg-violet-900/5">
-                        <td colSpan={7} className="px-8 py-4">
-                          <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Назначенные курсы</p>
-                              <button
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet-100 dark:bg-violet-900/30 hover:bg-violet-200 dark:hover:bg-violet-900/50 transition-colors text-violet-700 dark:text-violet-300 text-xs font-medium"
-                                onClick={() => setAddCourseForUser(user.id)}
-                              >
-                                <Icon name="Plus" size={13} />
-                                Добавить курс
-                              </button>
-                            </div>
-                            {user.assignments.length === 0 ? (
-                              <p className="text-sm text-muted-foreground">Курсы не назначены</p>
-                            ) : (
-                              <div className="rounded-xl border border-border overflow-hidden">
-                                <table className="w-full text-sm">
-                                  <thead>
-                                    <tr className="border-b border-border bg-muted/30">
-                                      <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground">Курс</th>
-                                      <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground whitespace-nowrap">Дата назначения</th>
-                                      <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground whitespace-nowrap">Дата активации</th>
-                                      <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground whitespace-nowrap">Дата завершения</th>
-                                      <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground">Прогресс</th>
-                                      <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground">Статус</th>
-                                      <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground">Действия</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {user.assignments.map((a, i) => {
-                                      const course = allCourses.find((c) => c.id === a.courseId)
-                                        ?? courseDirections.flatMap((d) => d.courses).find((c) => c.id === a.courseId);
-                                      if (!course) return null;
-                                      const courseTitle = "title" in course ? course.title : `${"code" in course ? course.code + " " : ""}${course.title}`;
-                                      const courseEmoji = "emoji" in course ? course.emoji : "📚";
-                                      return (
-                                        <tr key={a.courseId} className={`${i > 0 ? "border-t border-border/60" : ""} hover:bg-muted/20`}>
-                                          <td className="px-4 py-2.5">
-                                            <div className="flex items-center gap-2">
-                                              <span className="text-base">{courseEmoji}</span>
-                                              <span className="font-medium text-sm">{courseTitle}</span>
-                                            </div>
-                                          </td>
-
-                                          {/* Дата назначения / кнопка Активировать */}
-                                          <td className="px-4 py-2.5">
-                                            {!a.activatedAt ? (
-                                              <ActivateMenu onActivate={(date) => activateCourse(user.id, a.courseId, date)} />
-                                            ) : (
-                                              <span className="text-xs text-muted-foreground">{a.assignedAt}</span>
-                                            )}
-                                          </td>
-
-                                          {/* Дата активации */}
-                                          <td className="px-4 py-2.5 text-xs text-muted-foreground">
-                                            {a.activatedAt ?? <span className="text-muted-foreground/50">—</span>}
-                                          </td>
-
-                                          {/* Дата завершения */}
-                                          <td className="px-4 py-2.5 text-xs text-muted-foreground">
-                                            {a.completedAt ?? <span className="text-muted-foreground/50">—</span>}
-                                          </td>
-
-                                          {/* Прогресс */}
-                                          <td className="px-4 py-2.5">
-                                            <div className="flex items-center gap-2 min-w-[110px]">
-                                              <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                                                <div
-                                                  className="h-full bg-gradient-to-r from-violet-500 to-purple-600 rounded-full"
-                                                  style={{ width: `${a.progress}%` }}
-                                                />
-                                              </div>
-                                              <span className="text-xs text-muted-foreground w-8 text-right">{a.progress}%</span>
-                                              <Tip text="Статистика обучения" side="top">
-                                                <button className="p-1 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-violet-600 flex-shrink-0">
-                                                  <Icon name="BarChart2" size={13} />
-                                                </button>
-                                              </Tip>
-                                            </div>
-                                          </td>
-
-                                          {/* Статус */}
-                                          <td className="px-4 py-2.5">
-                                            <StatusBadge status={a.status} />
-                                          </td>
-
-                                          {/* Действия */}
-                                          <td className="px-4 py-2.5">
-                                            <div className="flex items-center gap-0.5">
-                                              <Tip text={a.active ? "Отключить курс" : "Включить курс"} side="top">
-                                                <button
-                                                  className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-destructive"
-                                                  onClick={() => handleToggleCourse(user.id, a.courseId)}
-                                                >
-                                                  <Icon name={a.active ? "ToggleRight" : "ToggleLeft"} size={15} />
-                                                </button>
-                                              </Tip>
-                                              <Tip text="Продлить курс" side="top">
-                                                <button
-                                                  className="p-1.5 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400"
-                                                  onClick={() => extendCourse(user.id, a.courseId)}
-                                                >
-                                                  <Icon name="RefreshCw" size={14} />
-                                                </button>
-                                              </Tip>
-                                              <Tip text={a.status === "certified" ? "Удостоверение уже выдано" : "Выдать удостоверение"} side="top">
-                                                <button
-                                                  className={`p-1.5 rounded-lg transition-colors ${a.status === "certified" ? "text-violet-400 cursor-default" : "text-muted-foreground hover:bg-violet-100 dark:hover:bg-violet-900/30 hover:text-violet-600 dark:hover:text-violet-400"}`}
-                                                  onClick={() => a.status !== "certified" && issueCertificate(user.id, a.courseId)}
-                                                >
-                                                  <Icon name="Award" size={15} />
-                                                </button>
-                                              </Tip>
-                                            </div>
-                                          </td>
-                                        </tr>
-                                      );
-                                    })}
-                                  </tbody>
-                                </table>
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </>
-                );
-              })}
+              {localFiltered.map((user, idx) => (
+                <UserTableRow
+                  key={user.id}
+                  user={user}
+                  idx={idx}
+                  isExpanded={expandedRows.has(user.id)}
+                  isSelected={selectedIds.has(user.id)}
+                  copiedId={copiedId}
+                  onToggleRow={toggleRow}
+                  onToggleSelect={toggleSelectOne}
+                  onCopyLogin={copyLogin}
+                  onOpenStats={(u) => setStatsUser(localUsers.find((lu) => lu.id === u.id) ?? u)}
+                  onAddCourse={(userId) => setAddCourseForUser(userId)}
+                  onActivateCourse={activateCourse}
+                  onExtendCourse={extendCourse}
+                  onIssueCertificate={issueCertificate}
+                  onToggleCourse={handleToggleCourse}
+                />
+              ))}
             </tbody>
           </table>
         </div>
