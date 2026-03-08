@@ -10,12 +10,16 @@ import Profile from "./pages/Profile";
 import MyLearning from "./pages/MyLearning";
 import NotFound from "./pages/NotFound";
 import Admin from "./pages/Admin";
+import SuperAdmin from "./pages/SuperAdmin";
+import SalesManager from "./pages/SalesManager";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { StatsProvider } from "./contexts/StatsContext";
+import { RoleProvider } from "./contexts/RoleContext";
 
 const queryClient = new QueryClient();
 
 const App = () => (
+  <RoleProvider>
   <StatsProvider>
   <ThemeProvider>
   <QueryClientProvider client={queryClient}>
@@ -30,6 +34,8 @@ const App = () => (
           <Route path="/my-learning" element={<MyLearning />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/super-admin" element={<SuperAdmin />} />
+          <Route path="/sales" element={<SalesManager />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
@@ -37,6 +43,7 @@ const App = () => (
   </QueryClientProvider>
   </ThemeProvider>
   </StatsProvider>
+  </RoleProvider>
 );
 
 export default App;

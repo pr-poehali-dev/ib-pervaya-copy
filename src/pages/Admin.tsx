@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
 import { useStats } from "@/contexts/StatsContext";
+import { useRole } from "@/contexts/RoleContext";
 import { useAdminData } from "@/hooks/useAdminData";
 import Layout from "@/components/layout/Layout";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AddUserDialog from "@/components/admin/AddUserDialog";
-import AdminTabBar from "@/components/admin/AdminTabBar";
+import AdminTabBar, { AdminTabKey } from "@/components/admin/AdminTabBar";
 import AdminTabContent from "@/components/admin/AdminTabContent";
-
-type ActiveTab = "stp" | "groups" | "users" | "reports" | "settings";
 
 export default function Admin() {
   const {
@@ -24,7 +23,9 @@ export default function Admin() {
     toggleCourse,
   } = useAdminData();
 
-  const [activeTab, setActiveTab] = useState<ActiveTab>("stp");
+  const { role } = useRole();
+  const isManager = role === "manager";
+  const [activeTab, setActiveTab] = useState<AdminTabKey>("stp");
 
   // ─── Диалог добавления группы ─────────────────────────────────────────────
   const [showAddGroup, setShowAddGroup] = useState(false);
@@ -169,7 +170,7 @@ export default function Admin() {
           onSave={handleAddUser}
         />
 
-        <AdminTabBar activeTab={activeTab} setActiveTab={setActiveTab} />
+        <AdminTabBar activeTab={activeTab} setActiveTab={setActiveTab} hideSettings={isManager} />
 
         <AdminTabContent
           activeTab={activeTab}

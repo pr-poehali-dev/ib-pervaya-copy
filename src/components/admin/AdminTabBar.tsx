@@ -1,24 +1,27 @@
 import Icon from "@/components/ui/icon";
 
-type ActiveTab = "stp" | "groups" | "users" | "reports" | "settings";
+export type AdminTabKey = "stp" | "groups" | "users" | "reports" | "settings";
 
 interface AdminTabBarProps {
-  activeTab: ActiveTab;
-  setActiveTab: (tab: ActiveTab) => void;
+  activeTab: AdminTabKey;
+  setActiveTab: (tab: AdminTabKey) => void;
+  hideSettings?: boolean;
 }
 
-const tabs = [
-  { key: "stp", icon: "ShieldAlert", label: "STP Индекс Безопасности", narrow: false },
-  { key: "groups", icon: "UsersRound", label: "Обучение групп", narrow: false },
-  { key: "users", icon: "Users", label: "Индивидуальное обучение", narrow: false },
-  { key: "reports", icon: "BarChart2", label: "Отчёты", narrow: true },
-  { key: "settings", icon: "Settings", label: "Настройки", narrow: true },
-] as const;
+const tabs: { key: AdminTabKey; icon: string; label: string; narrow: boolean }[] = [
+  { key: "stp",      icon: "ShieldAlert", label: "STP Индекс Безопасности",  narrow: false },
+  { key: "groups",   icon: "UsersRound",  label: "Обучение групп",            narrow: false },
+  { key: "users",    icon: "Users",       label: "Индивидуальное обучение",   narrow: false },
+  { key: "reports",  icon: "BarChart2",   label: "Отчёты",                    narrow: true  },
+  { key: "settings", icon: "Settings",    label: "Настройки",                 narrow: true  },
+];
 
-export default function AdminTabBar({ activeTab, setActiveTab }: AdminTabBarProps) {
+export default function AdminTabBar({ activeTab, setActiveTab, hideSettings = false }: AdminTabBarProps) {
+  const visibleTabs = hideSettings ? tabs.filter((t) => t.key !== "settings") : tabs;
+
   return (
     <div className="flex gap-2">
-      {tabs.map((tab) => (
+      {visibleTabs.map((tab) => (
         <button
           key={tab.key}
           onClick={() => setActiveTab(tab.key)}
