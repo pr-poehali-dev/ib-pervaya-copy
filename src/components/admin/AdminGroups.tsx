@@ -5,6 +5,7 @@ import Icon from "@/components/ui/icon";
 import Tip from "@/components/ui/tip";
 import ActivateMenu from "./ActivateMenu";
 import UserStatsModal from "./UserStatsModal";
+import GroupStatsModal from "./GroupStatsModal";
 import { User, CourseAssignment, CourseStatus, allCourses, gradients, userColors, groups, courseDirections } from "./types";
 import { MultiSelect, SearchSelect, FilterTags } from "./FilterControls";
 
@@ -143,6 +144,7 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
   const [addCourseForGroup, setAddCourseForGroup] = useState<string | null>(null);
   const [addCourseForMember, setAddCourseForMember] = useState<number | null>(null);
   const [statsUser, setStatsUser] = useState<User | null>(null);
+  const [groupStatsFor, setGroupStatsFor] = useState<string | null>(null);
 
   const orgOptions = useMemo(() => [...new Set(localUsers.map((u) => u.group))], [localUsers]);
   const fioOptions = useMemo(() => localUsers.map((u) => u.name), [localUsers]);
@@ -285,6 +287,12 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
         />
       )}
       <UserStatsModal user={statsUser} onClose={() => setStatsUser(null)} />
+      <GroupStatsModal
+        groupName={groupStatsFor}
+        users={localUsers}
+        onClose={() => setGroupStatsFor(null)}
+        onUserStats={(u) => { setGroupStatsFor(null); setStatsUser(u); }}
+      />
 
       {/* Фильтры + кнопка действий */}
       <div className="flex items-start gap-3">
@@ -377,6 +385,7 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">Статус</th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground whitespace-nowrap">Назначений</th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground whitespace-nowrap">Завершили</th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground whitespace-nowrap">Прогресс</th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground whitespace-nowrap">Управление</th>
               </tr>
             </thead>
@@ -385,6 +394,9 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
                 const members = localUsers.filter((u) => u.group === group);
                 const activeAssignments = members.reduce((sum, u) => sum + u.assignments.filter((a) => a.active).length, 0);
                 const completedCount = members.filter((u) => u.assignments.some((a) => a.progress === 100)).length;
+                const avgGroupProgress = activeAssignments > 0
+                  ? Math.round(members.reduce((s, u) => s + u.assignments.filter((a) => a.active).reduce((ss, a) => ss + a.progress, 0), 0) / activeAssignments)
+                  : 0;
                 const status = getGroupStatus(members);
                 const isExpanded = expandedGroups.has(group);
 
@@ -421,9 +433,34 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
                       <td className="px-4 py-3 text-center">{activeAssignments}</td>
                       <td className="px-4 py-3 text-center">{completedCount}</td>
 
+                      {/* Прогресс */}
+                      <td className="px-4 py-3">
+                        {activeAssignments > 0 ? (
+                          <div className="flex items-center gap-2 min-w-[90px]">
+                            <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-gradient-to-r from-violet-500 to-cyan-500 rounded-full transition-all"
+                                style={{ width: `${avgGroupProgress}%` }}
+                              />
+                            </div>
+                            <span className="text-xs font-semibold w-9 text-right">{avgGroupProgress}%</span>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
+                      </td>
+
                       {/* Управление группой */}
                       <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center gap-1">
+                          <Tip text="Статистика группы">
+                            <button
+                              className="p-2 rounded-lg hover:bg-cyan-100 dark:hover:bg-cyan-900/30 transition-colors text-cyan-600 dark:text-cyan-400"
+                              onClick={() => setGroupStatsFor(group)}
+                            >
+                              <Icon name="BarChart2" size={16} />
+                            </button>
+                          </Tip>
                           <Tip text="Редактировать группу">
                             <button className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
                               <Icon name="Pencil" size={16} />
@@ -450,20 +487,31 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
                     {/* Раскрытая строка — участники группы */}
                     {isExpanded && (
                       <tr key={`${group}-expanded`} className="border-b border-border bg-violet-50/30 dark:bg-violet-900/5">
-                        <td colSpan={8} className="px-8 py-4">
+                        <td colSpan={9} className="px-8 py-4">
                           <div className="space-y-3">
                             <div className="flex items-center justify-between">
                               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                                 Участники группы {group}
                               </p>
-                              <Button
-                                size="sm"
-                                className="gradient-primary text-white rounded-xl gap-1.5 text-xs h-7"
-                                onClick={() => setAddCourseForGroup(group)}
-                              >
-                                <Icon name="BookPlus" size={12} />
-                                Назначить курс всей группе
-                              </Button>
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="rounded-xl gap-1.5 text-xs h-7 border-cyan-200 dark:border-cyan-800 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/20"
+                                  onClick={() => setGroupStatsFor(group)}
+                                >
+                                  <Icon name="BarChart2" size={12} />
+                                  Статистика группы
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  className="gradient-primary text-white rounded-xl gap-1.5 text-xs h-7"
+                                  onClick={() => setAddCourseForGroup(group)}
+                                >
+                                  <Icon name="BookPlus" size={12} />
+                                  Назначить курс всей группе
+                                </Button>
+                              </div>
                             </div>
 
                             {members.length === 0 ? (
