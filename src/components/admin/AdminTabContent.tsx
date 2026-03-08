@@ -144,6 +144,15 @@ export default function AdminTabContent({
         <CertRegistryModal open={showCertModal} onClose={() => setShowCertModal(false)} users={users} />
         <div className="space-y-5">
           <p className="text-muted-foreground text-sm">Выберите отчёт для формирования</p>
+          {!canIssueCert && (
+            <div className="flex items-start gap-3 px-4 py-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-2xl">
+              <Icon name="Info" size={16} className="text-amber-500 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-amber-700 dark:text-amber-400">
+                Часть отчётов недоступна, так как ваш тенант зарегистрирован как <strong>Организация</strong>.
+                Реестр удостоверений и выдача удостоверений доступны только для <strong>Учебных центров</strong>.
+              </p>
+            </div>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {reportItems.filter((r) => r.num !== "3" || canIssueCert).map((report) => {
               const isSub = report.num === "1";
