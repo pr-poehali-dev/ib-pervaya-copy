@@ -3,6 +3,7 @@ import Icon from "@/components/ui/icon";
 import Tip from "@/components/ui/tip";
 import ActivateMenu from "@/components/admin/shared/ActivateMenu";
 import { User, CourseStatus, allCourses, userColors, courseDirections } from "@/components/admin/types";
+import { useRole } from "@/contexts/RoleContext";
 
 function CourseStatusBadge({ status }: { status: CourseStatus }) {
   const map: Record<CourseStatus, { label: string; cls: string }> = {
@@ -42,6 +43,8 @@ export default function GroupMemberRow({
 }: GroupMemberRowProps) {
   const [loginCopied, setLoginCopied] = useState(false);
   const [pwdCopied, setPwdCopied] = useState(false);
+  const { tenantType } = useRole();
+  const canIssueCert = tenantType === "training_center";
   const activeCnt = member.assignments.filter((a) => a.active).length;
   const completedCnt = member.assignments.filter((a) => a.progress === 100).length;
   const avgProgress = activeCnt > 0
@@ -230,14 +233,16 @@ export default function GroupMemberRow({
                                   <Icon name="RefreshCw" size={14} />
                                 </button>
                               </Tip>
-                              <Tip text={a.status === "certified" ? "Удостоверение уже выдано" : "Выдать удостоверение"}>
-                                <button
-                                  className={`p-1.5 rounded-lg transition-colors ${a.status === "certified" ? "text-violet-400 cursor-default" : "text-muted-foreground hover:bg-violet-100 dark:hover:bg-violet-900/30 hover:text-violet-600 dark:hover:text-violet-400"}`}
-                                  onClick={() => a.status !== "certified" && onIssueCertificate(member.id, a.courseId)}
-                                >
-                                  <Icon name="Award" size={15} />
-                                </button>
-                              </Tip>
+                              {canIssueCert && (
+                                <Tip text={a.status === "certified" ? "Удостоверение уже выдано" : "Выдать удостоверение"}>
+                                  <button
+                                    className={`p-1.5 rounded-lg transition-colors ${a.status === "certified" ? "text-violet-400 cursor-default" : "text-muted-foreground hover:bg-violet-100 dark:hover:bg-violet-900/30 hover:text-violet-600 dark:hover:text-violet-400"}`}
+                                    onClick={() => a.status !== "certified" && onIssueCertificate(member.id, a.courseId)}
+                                  >
+                                    <Icon name="Award" size={15} />
+                                  </button>
+                                </Tip>
+                              )}
                             </div>
                           </td>
                         </tr>

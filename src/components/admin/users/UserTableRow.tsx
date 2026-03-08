@@ -5,6 +5,7 @@ import Tip from "@/components/ui/tip";
 import ActivateMenu from "@/components/admin/shared/ActivateMenu";
 import UserStatusBadge from "./UserStatusBadge";
 import { User, CourseStatus, allCourses, userColors, courseDirections } from "@/components/admin/types";
+import { useRole } from "@/contexts/RoleContext";
 
 function today(): string {
   const d = new Date();
@@ -45,6 +46,8 @@ export default function UserTableRow({
   onToggleCourse,
 }: UserTableRowProps) {
   const [pwdCopied, setPwdCopied] = useState(false);
+  const { tenantType } = useRole();
+  const canIssueCert = tenantType === "training_center";
   const activeCourses = user.assignments.filter((a) => a.active);
   const completedCount = user.assignments.filter((a) => a.progress === 100).length;
 
@@ -289,14 +292,16 @@ export default function UserTableRow({
                                     <Icon name="RefreshCw" size={14} />
                                   </button>
                                 </Tip>
-                                <Tip text={a.status === "certified" ? "Удостоверение уже выдано" : "Выдать удостоверение"} side="top">
-                                  <button
-                                    className={`p-1.5 rounded-lg transition-colors ${a.status === "certified" ? "text-violet-400 cursor-default" : "text-muted-foreground hover:bg-violet-100 dark:hover:bg-violet-900/30 hover:text-violet-600 dark:hover:text-violet-400"}`}
-                                    onClick={() => a.status !== "certified" && onIssueCertificate(user.id, a.courseId)}
-                                  >
-                                    <Icon name="Award" size={15} />
-                                  </button>
-                                </Tip>
+                                {canIssueCert && (
+                                  <Tip text={a.status === "certified" ? "Удостоверение уже выдано" : "Выдать удостоверение"} side="top">
+                                    <button
+                                      className={`p-1.5 rounded-lg transition-colors ${a.status === "certified" ? "text-violet-400 cursor-default" : "text-muted-foreground hover:bg-violet-100 dark:hover:bg-violet-900/30 hover:text-violet-600 dark:hover:text-violet-400"}`}
+                                      onClick={() => a.status !== "certified" && onIssueCertificate(user.id, a.courseId)}
+                                    >
+                                      <Icon name="Award" size={15} />
+                                    </button>
+                                  </Tip>
+                                )}
                               </div>
                             </td>
                           </tr>
