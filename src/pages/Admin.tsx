@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { useStats } from "@/contexts/StatsContext";
+import { useAdminData } from "@/hooks/useAdminData";
 import Layout from "@/components/layout/Layout";
-import { User, getInitials } from "@/components/admin/types";
-import { INITIAL_USERS, GROUPS } from "@/data/mockData";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AddUserDialog from "@/components/admin/AddUserDialog";
 import AdminTabBar from "@/components/admin/AdminTabBar";
@@ -11,12 +10,21 @@ import AdminTabContent from "@/components/admin/AdminTabContent";
 type ActiveTab = "stp" | "groups" | "users" | "reports" | "settings";
 
 export default function Admin() {
-  const [users, setUsers] = useState<User[]>(INITIAL_USERS);
-  const [search, setSearch] = useState("");
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const {
+    users,
+    groups,
+    search,
+    setSearch,
+    filteredUsers,
+    totalAssignments,
+    totalCompleted,
+    addUser,
+    toggleCourse,
+  } = useAdminData();
+
   const [activeTab, setActiveTab] = useState<ActiveTab>("stp");
 
-  // Добавление группы
+  // ─── Диалог добавления группы ─────────────────────────────────────────────
   const [showAddGroup, setShowAddGroup] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupOrgName, setNewGroupOrgName] = useState("");
@@ -24,7 +32,7 @@ export default function Admin() {
   const [newGroupFile, setNewGroupFile] = useState<File | null>(null);
   const [newGroupError, setNewGroupError] = useState("");
 
-  // Добавление слушателя
+  // ─── Диалог добавления слушателя ─────────────────────────────────────────
   const [showAddUser, setShowAddUser] = useState(false);
   const [newLastName, setNewLastName] = useState("");
   const [newFirstName, setNewFirstName] = useState("");
@@ -32,25 +40,28 @@ export default function Admin() {
   const [newOrg, setNewOrg] = useState("");
   const [newInn, setNewInn] = useState("");
   const [newEmail, setNewEmail] = useState("");
-  const [newGroup, setNewGroup] = useState("ИБ-301");
+  const [newGroup, setNewGroup] = useState(groups[0] ?? "");
   const [newRole, setNewRole] = useState("Студент");
   const [selectedCourses, setSelectedCourses] = useState<number[]>([]);
   const [showCoursesPicker, setShowCoursesPicker] = useState(false);
   const [openDirections, setOpenDirections] = useState<number[]>([1]);
-  const toggleDirection = (id: number) => setOpenDirections((p) => p.includes(id) ? p.filter((d) => d !== id) : [...p, id]);
   const [showGroupDropdown, setShowGroupDropdown] = useState(false);
-  const [selectedListenerGroup, setSelectedListenerGroup] = useState<string>("");
+  const [selectedListenerGroup, setSelectedListenerGroup] = useState("");
   const [newGroupForListener, setNewGroupForListener] = useState("");
-  const [availableGroups, setAvailableGroups] = useState<string[]>([...GROUPS]);
+  const [availableGroups, setAvailableGroups] = useState<string[]>([...groups]);
   const [nameError, setNameError] = useState("");
   const [emailError, setEmailError] = useState("");
 
-  // STP фильтры
+  const toggleDirection = (id: number) =>
+    setOpenDirections((p) => (p.includes(id) ? p.filter((d) => d !== id) : [...p, id]));
+
+  // ─── STP фильтры ─────────────────────────────────────────────────────────
   const [stpFilterStatus, setStpFilterStatus] = useState("Все");
   const [stpFilterOrgs, setStpFilterOrgs] = useState<string[]>([]);
   const [stpFilterFio, setStpFilterFio] = useState<string[]>([]);
   const [stpFilterCourse, setStpFilterCourse] = useState("");
 
+  // ─── Обработчик добавления слушателя ────────────────────────────────────
   const handleAddUser = () => {
     let valid = true;
     if (!newLastName.trim()) { setNameError("Введите фамилию"); valid = false; } else setNameError("");
@@ -59,61 +70,28 @@ export default function Admin() {
     else setEmailError("");
     if (!valid) return;
 
-    const fullName = [newLastName.trim(), newFirstName.trim(), newMiddleName.trim()].filter(Boolean).join(" ");
-    const newUser: User = {
-      id: Date.now(),
-      name: fullName,
-      email: newEmail.trim(),
-      initials: getInitials(fullName),
+    addUser({
+      lastName: newLastName,
+      firstName: newFirstName,
+      middleName: newMiddleName,
+      email: newEmail,
       group: newGroup,
       role: newRole,
-      assignments: selectedCourses.map((courseId) => ({ courseId, active: true, progress: 0, assignedAt: new Date().toLocaleDateString("ru-RU") })),
-    };
-    setUsers((prev) => [...prev, newUser]);
-    setShowAddUser(false);
-    setNewLastName(""); setNewFirstName(""); setNewMiddleName(""); setNewOrg("");
-    setNewEmail(""); setNewInn(""); setNewGroup("ИБ-301"); setNewRole("Студент"); setSelectedCourses([]);
-    setSelectedListenerGroup(""); setShowGroupDropdown(false);
-    setSelectedUser(newUser);
-  };
-
-  const filteredUsers = users.filter(
-    (u) =>
-      u.name.toLowerCase().includes(search.toLowerCase()) ||
-      u.email.toLowerCase().includes(search.toLowerCase()) ||
-      u.group.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const toggleCourse = (userId: number, courseId: number) => {
-    setUsers((prev) =>
-      prev.map((u) => {
-        if (u.id !== userId) return u;
-        const exists = u.assignments.find((a) => a.courseId === courseId);
-        if (exists) {
-          return { ...u, assignments: u.assignments.map((a) => a.courseId === courseId ? { ...a, active: !a.active } : a) };
-        } else {
-          return { ...u, assignments: [...u.assignments, { courseId, active: true, progress: 0, assignedAt: new Date().toLocaleDateString("ru-RU") }] };
-        }
-      })
-    );
-    setSelectedUser((prev) => {
-      if (!prev || prev.id !== userId) return prev;
-      const exists = prev.assignments.find((a) => a.courseId === courseId);
-      if (exists) {
-        return { ...prev, assignments: prev.assignments.map((a) => a.courseId === courseId ? { ...a, active: !a.active } : a) };
-      } else {
-        return { ...prev, assignments: [...prev.assignments, { courseId, active: true, progress: 0, assignedAt: new Date().toLocaleDateString("ru-RU") }] };
-      }
+      courseIds: selectedCourses,
     });
+
+    setShowAddUser(false);
+    setNewLastName(""); setNewFirstName(""); setNewMiddleName("");
+    setNewOrg(""); setNewEmail(""); setNewInn("");
+    setNewGroup(groups[0] ?? ""); setNewRole("Студент");
+    setSelectedCourses([]); setSelectedListenerGroup(""); setShowGroupDropdown(false);
   };
 
-  const totalAssignments = users.reduce((sum, u) => sum + u.assignments.filter((a) => a.active).length, 0);
-  const totalCompleted = users.reduce((sum, u) => sum + u.assignments.filter((a) => a.progress === 100).length, 0);
-
+  // ─── Синхронизация со StatsContext ───────────────────────────────────────
   const { setStats } = useStats();
   useEffect(() => {
     setStats({ users: users.length, courses: 6, assignments: totalAssignments, completed: totalCompleted });
-  }, [users, totalAssignments, totalCompleted]);
+  }, [users.length, totalAssignments, totalCompleted]);
 
   return (
     <Layout>
