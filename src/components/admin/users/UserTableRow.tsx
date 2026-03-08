@@ -84,7 +84,12 @@ export default function UserTableRow({
           </div>
         </td>
 
-        {/* Организация / Группа */}
+        {/* Организация */}
+        <td className="px-4 py-3 text-sm text-muted-foreground max-w-[160px]">
+          <span className="block truncate" title={user.organization}>{user.organization || "—"}</span>
+        </td>
+
+        {/* Группа */}
         <td className="px-4 py-3">
           <Badge variant="secondary" className="text-xs">{user.group}</Badge>
         </td>
@@ -154,7 +159,7 @@ export default function UserTableRow({
       {/* Раскрытая строка — назначенные курсы */}
       {isExpanded && (
         <tr key={`${user.id}-expanded`} className="border-b border-border bg-violet-50/30 dark:bg-violet-900/5">
-          <td colSpan={7} className="px-8 py-4">
+          <td colSpan={8} className="px-8 py-4">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Назначенные курсы</p>

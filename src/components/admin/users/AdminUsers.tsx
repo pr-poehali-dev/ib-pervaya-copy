@@ -65,7 +65,7 @@ export default function AdminUsers({
   }, [actionsOpen]);
 
   const statusOptions = ["Все", "Есть активные курсы", "Завершил курсы", "Без назначений"];
-  const orgOptions = useMemo(() => [...new Set(localUsers.map((u) => u.group))], [localUsers]);
+  const orgOptions = useMemo(() => [...new Set(localUsers.map((u) => u.organization ?? "").filter(Boolean))], [localUsers]);
   const fioOptions = useMemo(() => localUsers.map((u) => u.name), [localUsers]);
   const courseOptions = useMemo(() => allCourses.map((c) => c.title), []);
 
@@ -81,7 +81,7 @@ export default function AdminUsers({
       if (filterStatus === "Есть активные курсы" && !u.assignments.some((a) => a.active)) return false;
       if (filterStatus === "Завершил курсы" && !u.assignments.some((a) => a.progress === 100)) return false;
       if (filterStatus === "Без назначений" && u.assignments.length > 0) return false;
-      if (filterOrgs.length > 0 && !filterOrgs.includes(u.group)) return false;
+      if (filterOrgs.length > 0 && !filterOrgs.includes(u.organization ?? "")) return false;
       if (filterFio.length > 0 && !filterFio.includes(u.name)) return false;
       if (filterCourse) {
         const course = allCourses.find((c) => c.title === filterCourse);
@@ -280,7 +280,8 @@ export default function AdminUsers({
                 </th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground w-8"></th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">ФИО</th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground whitespace-nowrap">Организация / Группа</th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground whitespace-nowrap">Организация</th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground whitespace-nowrap">Группа</th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground whitespace-nowrap">Курсы</th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">Логин</th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground whitespace-nowrap">Управление</th>
