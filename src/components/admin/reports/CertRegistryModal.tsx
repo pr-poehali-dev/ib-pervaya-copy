@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import Icon from "@/components/ui/icon";
 import { User, allCourses, courseDirections, userColors } from "@/components/admin/types";
+import SubscriptionReportFilters from "./SubscriptionReportFilters";
+import { PeriodPreset, getPeriodBounds, inPeriod, getNow, dateToInput, inputToDMY } from "./SubscriptionReportUtils";
 
 interface CertRegistryModalProps {
   open: boolean;
@@ -87,9 +89,24 @@ function exportCertPDF(entries: CertEntry[]) {
 }
 
 export default function CertRegistryModal({ open, onClose, users }: CertRegistryModalProps) {
+  const [preset, setPreset] = useState<PeriodPreset>("cur_month");
+  const [customFrom, setCustomFrom] = useState(dateToInput(new Date(getNow().getFullYear(), 0, 1)));
+  const [customTo, setCustomTo] = useState(dateToInput(getNow()));
+  const [filterOrg, setFilterOrg] = useState("Все");
   const [filterGroup, setFilterGroup] = useState("Все");
   const [filterCourse, setFilterCourse] = useState("Все");
   const [search, setSearch] = useState("");
+
+  const { from, to } = useMemo(
+    () => getPeriodBounds(preset, inputToDMY(customFrom), inputToDMY(customTo)),
+    [preset, customFrom, customTo]
+  );
+
+  const orgOptions = useMemo(() => ["Все", ...Array.from(new Set(users.map((u) => u.organization ?? "").filter(Boolean))).sort()], [users]);
+  const groupOptions = useMemo(() => {
+    const base = filterOrg === "Все" ? users : users.filter((u) => (u.organization ?? "") === filterOrg);
+    return ["Все", ...Array.from(new Set(base.map((u) => u.group))).sort()];
+  }, [users, filterOrg]);
 
   const allEntries = useMemo<CertEntry[]>(() => {
     const entries: CertEntry[] = [];
@@ -116,17 +133,19 @@ export default function CertRegistryModal({ open, onClose, users }: CertRegistry
     return entries;
   }, [users]);
 
-  const groupOptions = useMemo(() => ["Все", ...Array.from(new Set(users.map((u) => u.group))).sort()], [users]);
   const courseOptions = useMemo(() => ["Все", ...Array.from(new Set(allEntries.map((e) => e.courseTitle))).sort()], [allEntries]);
 
   const filtered = useMemo(() => {
     return allEntries.filter((e) => {
+      const u = users.find((u) => u.id === e.userId);
+      if (filterOrg !== "Все" && (u?.organization ?? "") !== filterOrg) return false;
       if (filterGroup !== "Все" && e.group !== filterGroup) return false;
       if (filterCourse !== "Все" && e.courseTitle !== filterCourse) return false;
+      if (!inPeriod(e.issuedAt, from, to)) return false;
       if (search && !e.name.toLowerCase().includes(search.toLowerCase()) && !e.email.toLowerCase().includes(search.toLowerCase())) return false;
       return true;
     });
-  }, [allEntries, filterGroup, filterCourse, search]);
+  }, [allEntries, users, filterOrg, filterGroup, filterCourse, search, from, to]);
 
   // Пересчитываем номера после фильтрации
   const numbered = filtered.map((e, i) => ({ ...e, num: i + 1 }));
@@ -173,7 +192,24 @@ export default function CertRegistryModal({ open, onClose, users }: CertRegistry
           </div>
         </div>
 
-        {/* Фильтры */}
+        {/* Фильтры периода, организации, группы */}
+        <SubscriptionReportFilters
+          preset={preset}
+          onPresetChange={setPreset}
+          customFrom={customFrom}
+          customTo={customTo}
+          onCustomFromChange={setCustomFrom}
+          onCustomToChange={setCustomTo}
+          filterOrg={filterOrg}
+          filterGroup={filterGroup}
+          orgOptions={orgOptions}
+          groupOptions={groupOptions}
+          onFilterOrgChange={(v) => { setFilterOrg(v); setFilterGroup("Все"); }}
+          onFilterGroupChange={setFilterGroup}
+          onResetFilters={() => { setFilterOrg("Все"); setFilterGroup("Все"); }}
+        />
+
+        {/* Доп. фильтры: поиск и курс */}
         <div className="flex flex-wrap gap-3 px-6 py-3 border-b border-border flex-shrink-0">
           {/* Поиск */}
           <div className="relative flex-1 min-w-[180px]">
@@ -186,14 +222,6 @@ export default function CertRegistryModal({ open, onClose, users }: CertRegistry
               className="w-full pl-8 pr-3 py-2 rounded-xl border border-border bg-muted/30 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400"
             />
           </div>
-          {/* Группа */}
-          <select
-            value={filterGroup}
-            onChange={(e) => setFilterGroup(e.target.value)}
-            className="px-3 py-2 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 cursor-pointer"
-          >
-            {groupOptions.map((g) => <option key={g} value={g}>{g === "Все" ? "Все группы" : g}</option>)}
-          </select>
           {/* Курс */}
           <select
             value={filterCourse}
@@ -202,10 +230,10 @@ export default function CertRegistryModal({ open, onClose, users }: CertRegistry
           >
             {courseOptions.map((c) => <option key={c} value={c}>{c === "Все" ? "Все курсы" : c}</option>)}
           </select>
-          {/* Сброс */}
-          {(filterGroup !== "Все" || filterCourse !== "Все" || search) && (
+          {/* Сброс доп. фильтров */}
+          {(filterCourse !== "Все" || search) && (
             <button
-              onClick={() => { setFilterGroup("Все"); setFilterCourse("Все"); setSearch(""); }}
+              onClick={() => { setFilterCourse("Все"); setSearch(""); }}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border text-sm text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
             >
               <Icon name="X" size={13} />

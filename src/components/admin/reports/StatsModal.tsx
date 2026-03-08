@@ -1,6 +1,8 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import Icon from "@/components/ui/icon";
 import { User, allCourses } from "@/components/admin/types";
+import SubscriptionReportFilters from "./SubscriptionReportFilters";
+import { PeriodPreset, getPeriodBounds, inPeriod, getNow, dateToInput, inputToDMY } from "./SubscriptionReportUtils";
 
 function exportAllCSV(users: User[], stats: {
   groupStats: { group: string; users: number; assignments: number; completed: number; avgProgress: number }[];
@@ -120,16 +122,39 @@ interface StatsModalProps {
 }
 
 export default function StatsModal({ open, onClose, users }: StatsModalProps) {
+  const [preset, setPreset] = useState<PeriodPreset>("cur_month");
+  const [customFrom, setCustomFrom] = useState(dateToInput(new Date(getNow().getFullYear(), 0, 1)));
+  const [customTo, setCustomTo] = useState(dateToInput(getNow()));
+  const [filterOrg, setFilterOrg] = useState("Все");
+  const [filterGroup, setFilterGroup] = useState("Все");
+
+  const { from, to } = useMemo(
+    () => getPeriodBounds(preset, inputToDMY(customFrom), inputToDMY(customTo)),
+    [preset, customFrom, customTo]
+  );
+
+  const orgOptions = useMemo(() => ["Все", ...Array.from(new Set(users.map((u) => u.organization ?? "").filter(Boolean))).sort()], [users]);
+  const groupOptions = useMemo(() => {
+    const base = filterOrg === "Все" ? users : users.filter((u) => (u.organization ?? "") === filterOrg);
+    return ["Все", ...Array.from(new Set(base.map((u) => u.group))).sort()];
+  }, [users, filterOrg]);
+
+  const filteredUsers = useMemo(() => users.filter((u) => {
+    if (filterOrg !== "Все" && (u.organization ?? "") !== filterOrg) return false;
+    if (filterGroup !== "Все" && u.group !== filterGroup) return false;
+    return u.assignments.some((a) => inPeriod(a.assignedAt, from, to));
+  }), [users, filterOrg, filterGroup, from, to]);
+
   const stats = useMemo(() => {
-    const totalAssignments = users.reduce(
+    const totalAssignments = filteredUsers.reduce(
       (sum, u) => sum + u.assignments.filter((a) => a.active).length,
       0
     );
-    const totalCompleted = users.reduce(
+    const totalCompleted = filteredUsers.reduce(
       (sum, u) => sum + u.assignments.filter((a) => a.progress === 100).length,
       0
     );
-    const totalInProgress = users.reduce(
+    const totalInProgress = filteredUsers.reduce(
       (sum, u) =>
         sum + u.assignments.filter((a) => a.active && a.progress > 0 && a.progress < 100).length,
       0
@@ -137,7 +162,7 @@ export default function StatsModal({ open, onClose, users }: StatsModalProps) {
     const avgProgress =
       totalAssignments > 0
         ? Math.round(
-            users.reduce(
+            filteredUsers.reduce(
               (sum, u) =>
                 sum + u.assignments.filter((a) => a.active).reduce((s, a) => s + a.progress, 0),
               0
@@ -147,7 +172,7 @@ export default function StatsModal({ open, onClose, users }: StatsModalProps) {
 
     // Статистика по курсам
     const courseStats = allCourses.map((course) => {
-      const assignments = users.flatMap((u) =>
+      const assignments = filteredUsers.flatMap((u) =>
         u.assignments.filter((a) => a.courseId === course.id && a.active)
       );
       const completed = assignments.filter((a) => a.progress === 100).length;
@@ -164,9 +189,9 @@ export default function StatsModal({ open, onClose, users }: StatsModalProps) {
     });
 
     // Статистика по группам
-    const groupNames = [...new Set(users.map((u) => u.group))];
+    const groupNames = [...new Set(filteredUsers.map((u) => u.group))];
     const groupStats = groupNames.map((group) => {
-      const groupUsers = users.filter((u) => u.group === group);
+      const groupUsers = filteredUsers.filter((u) => u.group === group);
       const gAssignments = groupUsers.flatMap((u) => u.assignments.filter((a) => a.active));
       const gCompleted = gAssignments.filter((a) => a.progress === 100).length;
       const gAvg =
@@ -183,7 +208,7 @@ export default function StatsModal({ open, onClose, users }: StatsModalProps) {
     });
 
     // Топ слушателей по прогрессу
-    const topUsers = [...users]
+    const topUsers = [...filteredUsers]
       .map((u) => {
         const active = u.assignments.filter((a) => a.active);
         const avg =
@@ -196,7 +221,7 @@ export default function StatsModal({ open, onClose, users }: StatsModalProps) {
       .slice(0, 5);
 
     return { totalAssignments, totalCompleted, totalInProgress, avgProgress, courseStats, groupStats, topUsers };
-  }, [users]);
+  }, [filteredUsers]);
 
   if (!open) return null;
 
@@ -216,7 +241,7 @@ export default function StatsModal({ open, onClose, users }: StatsModalProps) {
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => exportAllCSV(users, stats)}
+              onClick={() => exportAllCSV(filteredUsers, stats)}
               title="Скачать Excel (CSV)"
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:border-emerald-300 dark:hover:border-emerald-700 text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400 text-xs font-medium transition-colors"
             >
@@ -224,7 +249,7 @@ export default function StatsModal({ open, onClose, users }: StatsModalProps) {
               Excel
             </button>
             <button
-              onClick={() => exportAllPDF(users, stats)}
+              onClick={() => exportAllPDF(filteredUsers, stats)}
               title="Печать / сохранить PDF"
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border hover:bg-rose-50 dark:hover:bg-rose-900/20 hover:border-rose-300 dark:hover:border-rose-700 text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400 text-xs font-medium transition-colors"
             >
@@ -240,12 +265,29 @@ export default function StatsModal({ open, onClose, users }: StatsModalProps) {
           </div>
         </div>
 
+        {/* Фильтры */}
+        <SubscriptionReportFilters
+          preset={preset}
+          onPresetChange={setPreset}
+          customFrom={customFrom}
+          customTo={customTo}
+          onCustomFromChange={setCustomFrom}
+          onCustomToChange={setCustomTo}
+          filterOrg={filterOrg}
+          filterGroup={filterGroup}
+          orgOptions={orgOptions}
+          groupOptions={groupOptions}
+          onFilterOrgChange={(v) => { setFilterOrg(v); setFilterGroup("Все"); }}
+          onFilterGroupChange={setFilterGroup}
+          onResetFilters={() => { setFilterOrg("Все"); setFilterGroup("Все"); }}
+        />
+
         {/* Контент */}
         <div className="overflow-y-auto flex-1 p-6 space-y-6">
           {/* Сводные метрики */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
-              { label: "Слушателей", value: users.length, icon: "Users", color: "from-violet-500 to-purple-700", bg: "icon-bg-violet", iconColor: "text-violet-500" },
+              { label: "Слушателей", value: filteredUsers.length, icon: "Users", color: "from-violet-500 to-purple-700", bg: "icon-bg-violet", iconColor: "text-violet-500" },
               { label: "Назначений", value: stats.totalAssignments, icon: "BookOpen", color: "from-cyan-500 to-blue-600", bg: "icon-bg-cyan", iconColor: "text-cyan-500" },
               { label: "В процессе", value: stats.totalInProgress, icon: "Clock", color: "from-amber-500 to-orange-600", bg: "icon-bg-amber", iconColor: "text-amber-500" },
               { label: "Завершено", value: stats.totalCompleted, icon: "Trophy", color: "from-emerald-500 to-teal-600", bg: "icon-bg-emerald", iconColor: "text-emerald-500" },
