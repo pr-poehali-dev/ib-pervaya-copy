@@ -5,7 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Icon from "@/components/ui/icon";
-import { SystemUser, userRoles, generatePassword } from "./types";
+import { SystemUser, generatePassword } from "./types";
+import { USER_ROLES_SYSTEM as userRoles } from "@/data/mockData";
 
 interface UsersPanelProps {
   systemUsers: SystemUser[];

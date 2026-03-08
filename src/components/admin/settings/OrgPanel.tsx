@@ -5,7 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Icon from "@/components/ui/icon";
-import { OrgData, OrgType, OpfType, orgTypes, opfTypes } from "./types";
+import { OrgData, OrgType, OpfType } from "./types";
+import { ORG_TYPES as orgTypes, OPF_TYPES as opfTypes } from "@/data/mockData";
 
 interface OrgPanelProps {
   org: OrgData;
