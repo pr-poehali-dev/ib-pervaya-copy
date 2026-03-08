@@ -7,6 +7,7 @@ import AdminGroups from "@/components/admin/AdminGroups";
 import AdminSettings from "@/components/admin/AdminSettings";
 import StatsModal from "@/components/admin/StatsModal";
 import CertRegistryModal from "@/components/admin/CertRegistryModal";
+import SubscriptionReportModal from "@/components/admin/SubscriptionReportModal";
 
 type ActiveTab = "stp" | "groups" | "users" | "reports" | "settings";
 
@@ -63,6 +64,7 @@ export default function AdminTabContent({
 }: AdminTabContentProps) {
   const [showStatsModal, setShowStatsModal] = useState(false);
   const [showCertModal, setShowCertModal] = useState(false);
+  const [showSubModal, setShowSubModal] = useState(false);
   const stpOrgOptions = [...new Set(users.map((u) => u.group))];
   const stpFioOptions = users.map((u) => u.name);
   const stpCourseOptions = allCourses.map((c) => c.title);
@@ -134,16 +136,20 @@ export default function AdminTabContent({
   if (activeTab === "reports") {
     return (
       <>
+        <SubscriptionReportModal open={showSubModal} onClose={() => setShowSubModal(false)} users={users} />
         <StatsModal open={showStatsModal} onClose={() => setShowStatsModal(false)} users={users} />
         <CertRegistryModal open={showCertModal} onClose={() => setShowCertModal(false)} users={users} />
         <div className="space-y-5">
           <p className="text-muted-foreground text-sm">Выберите отчёт для формирования</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {reportItems.map((report) => {
+              const isSub = report.num === "1";
               const isStats = report.num === "2";
               const isCert = report.num === "3";
-              const isActive = isStats || isCert;
-              const handleOpen = isStats
+              const isActive = isSub || isStats || isCert;
+              const handleOpen = isSub
+                ? () => setShowSubModal(true)
+                : isStats
                 ? () => setShowStatsModal(true)
                 : isCert
                 ? () => setShowCertModal(true)
@@ -167,6 +173,12 @@ export default function AdminTabContent({
                     <p className="text-muted-foreground text-sm mt-1.5 leading-relaxed">{report.desc}</p>
                   </div>
                   <div className="flex items-center gap-2 pt-1">
+                    {isSub && (
+                      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800 rounded-lg text-xs text-violet-600 dark:text-violet-400 font-medium">
+                        <Icon name="CreditCard" size={12} />
+                        Доступен
+                      </div>
+                    )}
                     {isStats && (
                       <div className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800 rounded-lg text-xs text-cyan-600 dark:text-cyan-400 font-medium">
                         <Icon name="BarChart2" size={12} />
@@ -186,7 +198,7 @@ export default function AdminTabContent({
                       </div>
                     )}
                     <button
-                      className={`ml-auto flex items-center gap-1.5 text-xs font-medium transition-colors ${isStats ? "text-cyan-500 group-hover:text-cyan-600" : isCert ? "text-emerald-500 group-hover:text-emerald-600" : "text-muted-foreground"}`}
+                      className={`ml-auto flex items-center gap-1.5 text-xs font-medium transition-colors ${isSub ? "text-violet-500 group-hover:text-violet-600" : isStats ? "text-cyan-500 group-hover:text-cyan-600" : isCert ? "text-emerald-500 group-hover:text-emerald-600" : "text-muted-foreground"}`}
                       onClick={handleOpen}
                     >
                       Открыть
