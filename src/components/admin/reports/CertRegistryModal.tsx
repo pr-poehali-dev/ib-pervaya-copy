@@ -16,6 +16,7 @@ interface CertEntry {
   initials: string;
   name: string;
   email: string;
+  organization: string;
   group: string;
   role: string;
   courseId: number;
@@ -32,13 +33,23 @@ function getCourseTitle(courseId: number): string {
   return `Курс #${courseId}`;
 }
 
-function exportCertCSV(entries: CertEntry[]) {
-  const header = ["№", "ФИО", "Email", "Группа", "Роль", "Курс", "Дата выдачи", "Дата назначения"];
+function exportCertCSV(entries: CertEntry[], periodLabel: string, filterOrg: string, filterGroup: string) {
+  const date = new Date().toLocaleDateString("ru");
+  const filterNote = [
+    `"Период";"${periodLabel}"`,
+    filterOrg !== "Все" ? `"Организация";"${filterOrg}"` : "",
+    filterGroup !== "Все" ? `"Группа";"${filterGroup}"` : "",
+    `"Итого удостоверений";"${entries.length}"`,
+  ].filter(Boolean).join("\n");
+  const header = ["№", "ФИО", "Email", "Организация", "Группа", "Роль", "Курс", "Дата выдачи", "Дата назначения"];
   const rows = entries.map((e) => [
-    String(e.num), e.name, e.email, e.group, e.role, e.courseTitle, e.issuedAt, e.assignedAt,
+    String(e.num), e.name, e.email, e.organization ?? "", e.group, e.role, e.courseTitle, e.issuedAt, e.assignedAt,
   ]);
   const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
-  const csv = "\uFEFF" + [header, ...rows].map((r) => r.map(escape).join(";")).join("\n");
+  const csv = "\uFEFF"
+    + `"Реестр выданных удостоверений";"${date}"\n`
+    + filterNote + "\n\n"
+    + [header, ...rows].map((r) => r.map(escape).join(";")).join("\n");
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -48,12 +59,18 @@ function exportCertCSV(entries: CertEntry[]) {
   URL.revokeObjectURL(url);
 }
 
-function exportCertPDF(entries: CertEntry[]) {
+function exportCertPDF(entries: CertEntry[], periodLabel: string, filterOrg: string, filterGroup: string) {
   const date = new Date().toLocaleDateString("ru", { day: "2-digit", month: "long", year: "numeric" });
+  const filterNote = [
+    `Период: ${periodLabel}`,
+    filterOrg !== "Все" ? `Организация: ${filterOrg}` : "",
+    filterGroup !== "Все" ? `Группа: ${filterGroup}` : "",
+  ].filter(Boolean).join(" · ");
   const rows = entries.map((e) => `
     <tr>
       <td style="color:#666">${e.num}</td>
       <td><b>${e.name}</b></td>
+      <td style="color:#666">${e.organization}</td>
       <td style="color:#666">${e.group}</td>
       <td>${e.courseTitle}</td>
       <td style="color:#16a34a;font-weight:600">${e.issuedAt}</td>
@@ -65,7 +82,8 @@ function exportCertPDF(entries: CertEntry[]) {
 <style>
   body { font-family: Arial, sans-serif; font-size: 11px; color: #111; padding: 28px; }
   h1 { font-size: 18px; margin-bottom: 2px; }
-  .sub { color: #666; font-size: 10px; margin-bottom: 20px; }
+  .sub { color: #666; font-size: 10px; margin-bottom: 8px; }
+  .filters { background: #f3f4f6; border-radius: 6px; padding: 6px 10px; font-size: 10px; color: #555; margin-bottom: 16px; }
   table { width: 100%; border-collapse: collapse; }
   th { background: #f3f4f6; text-align: left; padding: 7px 9px; color: #555; font-size: 10px; }
   td { padding: 6px 9px; border-bottom: 1px solid #f0f0f0; }
@@ -74,9 +92,10 @@ function exportCertPDF(entries: CertEntry[]) {
 </style></head><body>
 <h1>Реестр выданных удостоверений</h1>
 <div class="sub">Сформирован: ${date} · Всего удостоверений: ${entries.length}</div>
+<div class="filters">${filterNote}</div>
 <table>
-  <thead><tr><th>№</th><th>ФИО</th><th>Группа</th><th>Курс</th><th>Дата выдачи</th><th>Дата назначения</th></tr></thead>
-  <tbody>${rows || "<tr><td colspan='6' style='color:#999;text-align:center;padding:20px'>Удостоверений не найдено</td></tr>"}</tbody>
+  <thead><tr><th>№</th><th>ФИО</th><th>Организация</th><th>Группа</th><th>Курс</th><th>Дата выдачи</th><th>Дата назначения</th></tr></thead>
+  <tbody>${rows || "<tr><td colspan='7' style='color:#999;text-align:center;padding:20px'>Удостоверений не найдено</td></tr>"}</tbody>
 </table>
 </body></html>`;
 
@@ -97,7 +116,7 @@ export default function CertRegistryModal({ open, onClose, users }: CertRegistry
   const [filterCourse, setFilterCourse] = useState("Все");
   const [search, setSearch] = useState("");
 
-  const { from, to } = useMemo(
+  const { from, to, label: periodLabel } = useMemo(
     () => getPeriodBounds(preset, inputToDMY(customFrom), inputToDMY(customTo)),
     [preset, customFrom, customTo]
   );
@@ -121,6 +140,7 @@ export default function CertRegistryModal({ open, onClose, users }: CertRegistry
             initials: u.initials,
             name: u.name,
             email: u.email,
+            organization: u.organization ?? "",
             group: u.group,
             role: u.role,
             courseId: a.courseId,
@@ -171,7 +191,7 @@ export default function CertRegistryModal({ open, onClose, users }: CertRegistry
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => exportCertCSV(numbered)}
+              onClick={() => exportCertCSV(numbered, periodLabel, filterOrg, filterGroup)}
               title="Скачать Excel (CSV)"
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:border-emerald-300 dark:hover:border-emerald-700 text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400 text-xs font-medium transition-colors"
             >
@@ -179,7 +199,7 @@ export default function CertRegistryModal({ open, onClose, users }: CertRegistry
               Excel
             </button>
             <button
-              onClick={() => exportCertPDF(numbered)}
+              onClick={() => exportCertPDF(numbered, periodLabel, filterOrg, filterGroup)}
               title="Печать / сохранить PDF"
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border hover:bg-rose-50 dark:hover:bg-rose-900/20 hover:border-rose-300 dark:hover:border-rose-700 text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400 text-xs font-medium transition-colors"
             >

@@ -7,7 +7,7 @@ import { PeriodPreset, getPeriodBounds, inPeriod, getNow, dateToInput, inputToDM
 function exportAllCSV(users: User[], stats: {
   groupStats: { group: string; users: number; assignments: number; completed: number; avgProgress: number }[];
   courseStats: { title: string; enrolled: number; completed: number; avgProgress: number }[];
-}) {
+}, periodLabel: string, filterOrg: string, filterGroup: string) {
   const date = new Date().toLocaleDateString("ru");
 
   // Лист 1: по группам
@@ -15,25 +15,32 @@ function exportAllCSV(users: User[], stats: {
   const groupRows = stats.groupStats.map((g) => [g.group, String(g.users), String(g.assignments), String(g.completed), `${g.avgProgress}%`]);
 
   // Лист 2: по слушателям
-  const userHeader = ["ФИО", "Email", "Роль", "Группа", "Курс", "Статус", "Прогресс", "Назначен", "Начато", "Завершено"];
+  const userHeader = ["ФИО", "Email", "Роль", "Организация", "Группа", "Курс", "Статус", "Прогресс", "Назначен", "Начато", "Завершено"];
   const statusLabels: Record<string, string> = { pending: "Ожидает активации", active: "Идёт обучение", completed: "Завершено", certified: "Удостоверение выдано" };
   const userRows: string[][] = [];
   users.forEach((u) => {
     if (u.assignments.length === 0) {
-      userRows.push([u.name, u.email, u.role, u.group, "—", "—", "—", "—", "—", "—"]);
+      userRows.push([u.name, u.email, u.role, u.organization ?? "", u.group, "—", "—", "—", "—", "—", "—"]);
     } else {
       u.assignments.forEach((a) => {
         const course = allCourses.find((c) => c.id === a.courseId);
         const title = course ? course.title : `Курс #${a.courseId}`;
-        userRows.push([u.name, u.email, u.role, u.group, title, statusLabels[a.status] ?? a.status, `${a.progress}%`, a.assignedAt, a.activatedAt ?? "—", a.completedAt ?? "—"]);
+        userRows.push([u.name, u.email, u.role, u.organization ?? "", u.group, title, statusLabels[a.status] ?? a.status, `${a.progress}%`, a.assignedAt, a.activatedAt ?? "—", a.completedAt ?? "—"]);
       });
     }
   });
 
+  const filterNote = [
+    `"Период";"${periodLabel}"`,
+    filterOrg !== "Все" ? `"Организация";"${filterOrg}"` : "",
+    filterGroup !== "Все" ? `"Группа";"${filterGroup}"` : "",
+  ].filter(Boolean).join("\n");
+
   const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
   const sep = "\n\n";
   const csv = "\uFEFF"
-    + `Сводная статистика обучения,${date}\n\n`
+    + `"Сводная статистика обучения";"${date}"\n`
+    + filterNote + "\n\n"
     + `Активность групп\n`
     + [groupHeader, ...groupRows].map((r) => r.map(escape).join(";")).join("\n")
     + sep
@@ -54,21 +61,24 @@ function exportAllPDF(users: User[], stats: {
   groupStats: { group: string; users: number; assignments: number; completed: number; avgProgress: number }[];
   courseStats: { title: string; enrolled: number; completed: number; avgProgress: number }[];
   topUsers: { name: string; group: string; avgProgress: number; completedCount: number }[];
-}) {
+}, periodLabel: string, filterOrg: string, filterGroup: string) {
   const date = new Date().toLocaleDateString("ru", { day: "2-digit", month: "long", year: "numeric" });
   const statusLabels: Record<string, string> = { pending: "Ожидает", active: "Обучается", completed: "Завершено", certified: "Удостоверение" };
+
+  const filterNote = [
+    `Период: ${periodLabel}`,
+    filterOrg !== "Все" ? `Организация: ${filterOrg}` : "",
+    filterGroup !== "Все" ? `Группа: ${filterGroup}` : "",
+  ].filter(Boolean).join(" · ");
 
   const groupRows = stats.groupStats.map((g) => `<tr><td><b>${g.group}</b></td><td>${g.users}</td><td>${g.assignments}</td><td>${g.completed}</td><td><b>${g.avgProgress}%</b></td></tr>`).join("");
   const courseRows = stats.courseStats.map((c) => `<tr><td>${c.title}</td><td>${c.enrolled}</td><td>${c.completed}</td><td><b>${c.avgProgress}%</b></td></tr>`).join("");
   const topRows = stats.topUsers.map((u, i) => `<tr><td>${i + 1}</td><td>${u.name}</td><td>${u.group}</td><td>${u.completedCount}</td><td><b>${u.avgProgress}%</b></td></tr>`).join("");
   const userRows = users.map((u) => {
-    const active = u.assignments.filter((a) => a.active);
-    const avg = active.length > 0 ? Math.round(active.reduce((s, a) => s + a.progress, 0) / active.length) : 0;
-    const completed = u.assignments.filter((a) => a.progress === 100).length;
     return u.assignments.map((a) => {
       const course = allCourses.find((c) => c.id === a.courseId);
-      return `<tr><td>${u.name}</td><td>${u.group}</td><td>${course?.title ?? `Курс #${a.courseId}`}</td><td>${statusLabels[a.status] ?? a.status}</td><td><b>${a.progress}%</b></td><td>${a.assignedAt}</td><td>${a.completedAt ?? "—"}</td></tr>`;
-    }).join("") || `<tr><td>${u.name}</td><td>${u.group}</td><td colspan="5" style="color:#999">Курсы не назначены</td></tr>`;
+      return `<tr><td>${u.name}</td><td>${u.organization ?? ""}</td><td>${u.group}</td><td>${course?.title ?? `Курс #${a.courseId}`}</td><td>${statusLabels[a.status] ?? a.status}</td><td><b>${a.progress}%</b></td><td>${a.assignedAt}</td><td>${a.completedAt ?? "—"}</td></tr>`;
+    }).join("") || `<tr><td>${u.name}</td><td>${u.organization ?? ""}</td><td>${u.group}</td><td colspan="5" style="color:#999">Курсы не назначены</td></tr>`;
   }).join("");
 
   const html = `<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8">
@@ -77,6 +87,7 @@ function exportAllPDF(users: User[], stats: {
   body { font-family: Arial, sans-serif; font-size: 11px; color: #111; padding: 28px; }
   h1 { font-size: 18px; margin-bottom: 2px; }
   .sub { color: #666; font-size: 10px; margin-bottom: 20px; }
+  .filters { background: #f3f4f6; border-radius: 6px; padding: 6px 10px; font-size: 10px; color: #555; margin-bottom: 16px; }
   .metrics { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
   .metric { border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px 16px; text-align: center; min-width: 70px; }
   .metric .val { font-size: 18px; font-weight: 700; color: #0891b2; }
@@ -90,6 +101,7 @@ function exportAllPDF(users: User[], stats: {
 </style></head><body>
 <h1>Сводная статистика обучения</h1>
 <div class="sub">Сформирован: ${date} · Всего слушателей: ${users.length}</div>
+<div class="filters">${filterNote}</div>
 <div class="metrics">
   <div class="metric"><div class="val">${users.length}</div><div class="lbl">Слушателей</div></div>
   <div class="metric"><div class="val">${stats.totalAssignments}</div><div class="lbl">Назначений</div></div>
@@ -104,7 +116,7 @@ function exportAllPDF(users: User[], stats: {
 <h2>Топ слушателей</h2>
 <table><thead><tr><th>#</th><th>ФИО</th><th>Группа</th><th>Завершено</th><th>Ср. прогресс</th></tr></thead><tbody>${topRows}</tbody></table>
 <h2>Детализация по слушателям</h2>
-<table><thead><tr><th>ФИО</th><th>Группа</th><th>Курс</th><th>Статус</th><th>Прогресс</th><th>Назначен</th><th>Завершён</th></tr></thead><tbody>${userRows}</tbody></table>
+<table><thead><tr><th>ФИО</th><th>Организация</th><th>Группа</th><th>Курс</th><th>Статус</th><th>Прогресс</th><th>Назначен</th><th>Завершён</th></tr></thead><tbody>${userRows}</tbody></table>
 </body></html>`;
 
   const win = window.open("", "_blank");
@@ -128,7 +140,7 @@ export default function StatsModal({ open, onClose, users }: StatsModalProps) {
   const [filterOrg, setFilterOrg] = useState("Все");
   const [filterGroup, setFilterGroup] = useState("Все");
 
-  const { from, to } = useMemo(
+  const { from, to, label: periodLabel } = useMemo(
     () => getPeriodBounds(preset, inputToDMY(customFrom), inputToDMY(customTo)),
     [preset, customFrom, customTo]
   );
@@ -241,7 +253,7 @@ export default function StatsModal({ open, onClose, users }: StatsModalProps) {
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => exportAllCSV(filteredUsers, stats)}
+              onClick={() => exportAllCSV(filteredUsers, stats, periodLabel, filterOrg, filterGroup)}
               title="Скачать Excel (CSV)"
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:border-emerald-300 dark:hover:border-emerald-700 text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400 text-xs font-medium transition-colors"
             >
@@ -249,7 +261,7 @@ export default function StatsModal({ open, onClose, users }: StatsModalProps) {
               Excel
             </button>
             <button
-              onClick={() => exportAllPDF(filteredUsers, stats)}
+              onClick={() => exportAllPDF(filteredUsers, stats, periodLabel, filterOrg, filterGroup)}
               title="Печать / сохранить PDF"
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border hover:bg-rose-50 dark:hover:bg-rose-900/20 hover:border-rose-300 dark:hover:border-rose-700 text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400 text-xs font-medium transition-colors"
             >
