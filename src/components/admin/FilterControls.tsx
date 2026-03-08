@@ -1,6 +1,25 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { Input } from "@/components/ui/input";
 import Icon from "@/components/ui/icon";
+
+// Хук для портального позиционирования дропдауна
+function usePortalDropdown(open: boolean) {
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const [pos, setPos] = useState({ top: 0, left: 0, width: 0 });
+
+  const recalc = useCallback(() => {
+    if (!triggerRef.current) return;
+    const r = triggerRef.current.getBoundingClientRect();
+    setPos({ top: r.bottom + window.scrollY + 4, left: r.left + window.scrollX, width: r.width });
+  }, []);
+
+  useEffect(() => {
+    if (open) recalc();
+  }, [open, recalc]);
+
+  return { triggerRef, pos };
+}
 
 export function MultiSelect({
   options,
@@ -15,23 +34,29 @@ export function MultiSelect({
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const ref = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const { triggerRef, pos } = usePortalDropdown(open);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      const t = e.target as Node;
+      if (
+        menuRef.current && !menuRef.current.contains(t) &&
+        triggerRef.current && !triggerRef.current.contains(t)
+      ) { setOpen(false); setSearch(""); }
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
-  }, []);
+  }, [triggerRef]);
 
   const filtered = options.filter((o) => o.toLowerCase().includes(search.toLowerCase()));
   const toggle = (val: string) =>
     onChange(selected.includes(val) ? selected.filter((s) => s !== val) : [...selected, val]);
 
   return (
-    <div className="relative" ref={ref}>
+    <>
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setOpen((p) => !p)}
         className="w-full flex items-center justify-between gap-2 px-3 py-2 h-9 rounded-xl border border-border bg-background text-sm hover:border-violet-400 transition-colors"
@@ -47,8 +72,13 @@ export function MultiSelect({
         </span>
         <Icon name={open ? "ChevronUp" : "ChevronDown"} size={14} className="text-muted-foreground flex-shrink-0" />
       </button>
-      {open && (
-        <div className="absolute z-30 top-full mt-1 left-0 w-full min-w-[220px] bg-background border border-border rounded-xl shadow-xl overflow-hidden">
+
+      {open && createPortal(
+        <div
+          ref={menuRef}
+          style={{ position: "absolute", top: pos.top, left: pos.left, width: Math.max(pos.width, 220), zIndex: 9999 }}
+          className="bg-background border border-border rounded-xl shadow-2xl overflow-hidden"
+        >
           <div className="p-2 border-b border-border">
             <Input className="h-7 rounded-lg text-sm" placeholder="Поиск..." value={search} onChange={(e) => setSearch(e.target.value)} autoFocus />
           </div>
@@ -66,9 +96,10 @@ export function MultiSelect({
               <button onClick={() => onChange([])} className="text-xs text-muted-foreground hover:text-foreground transition-colors">Сбросить выбор</button>
             </div>
           )}
-        </div>
+        </div>,
+        document.body
       )}
-    </div>
+    </>
   );
 }
 
@@ -85,21 +116,27 @@ export function SearchSelect({
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const ref = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const { triggerRef, pos } = usePortalDropdown(open);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      const t = e.target as Node;
+      if (
+        menuRef.current && !menuRef.current.contains(t) &&
+        triggerRef.current && !triggerRef.current.contains(t)
+      ) { setOpen(false); setSearch(""); }
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
-  }, []);
+  }, [triggerRef]);
 
   const filtered = options.filter((o) => o.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <div className="relative" ref={ref}>
+    <>
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setOpen((p) => !p)}
         className="w-full flex items-center justify-between gap-2 px-3 py-2 h-9 rounded-xl border border-border bg-background text-sm hover:border-violet-400 transition-colors"
@@ -107,8 +144,13 @@ export function SearchSelect({
         <span className={value ? "" : "text-muted-foreground"}>{value || placeholder}</span>
         <Icon name={open ? "ChevronUp" : "ChevronDown"} size={14} className="text-muted-foreground flex-shrink-0" />
       </button>
-      {open && (
-        <div className="absolute z-30 top-full mt-1 left-0 w-full min-w-[200px] bg-background border border-border rounded-xl shadow-xl overflow-hidden">
+
+      {open && createPortal(
+        <div
+          ref={menuRef}
+          style={{ position: "absolute", top: pos.top, left: pos.left, width: Math.max(pos.width, 200), zIndex: 9999 }}
+          className="bg-background border border-border rounded-xl shadow-2xl overflow-hidden"
+        >
           <div className="p-2 border-b border-border">
             <Input className="h-7 rounded-lg text-sm" placeholder="Поиск..." value={search} onChange={(e) => setSearch(e.target.value)} autoFocus />
           </div>
@@ -124,9 +166,10 @@ export function SearchSelect({
               </button>
             ))}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
-    </div>
+    </>
   );
 }
 

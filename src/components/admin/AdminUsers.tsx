@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
@@ -131,6 +132,33 @@ export default function AdminUsers({
   const [addCourseForUser, setAddCourseForUser] = useState<number | null>(null);
   const [localUsers, setLocalUsers] = useState<User[]>(users);
   const [statsUser, setStatsUser] = useState<User | null>(null);
+
+  const actionsButtonRef = useRef<HTMLButtonElement>(null);
+  const actionsMenuRef = useRef<HTMLDivElement>(null);
+  const [actionsPos, setActionsPos] = useState({ top: 0, right: 0 });
+
+  const recalcActionsPos = useCallback(() => {
+    if (!actionsButtonRef.current) return;
+    const r = actionsButtonRef.current.getBoundingClientRect();
+    setActionsPos({ top: r.bottom + window.scrollY + 4, right: window.innerWidth - r.right });
+  }, []);
+
+  useEffect(() => {
+    if (actionsOpen) recalcActionsPos();
+  }, [actionsOpen, recalcActionsPos]);
+
+  useEffect(() => {
+    if (!actionsOpen) return;
+    const handler = (e: MouseEvent) => {
+      const t = e.target as Node;
+      if (
+        actionsMenuRef.current && !actionsMenuRef.current.contains(t) &&
+        actionsButtonRef.current && !actionsButtonRef.current.contains(t)
+      ) setActionsOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [actionsOpen]);
 
   const statusOptions = ["Все", "Есть активные курсы", "Завершил курсы", "Без назначений"];
   const orgOptions = useMemo(() => [...new Set(localUsers.map((u) => u.group))], [localUsers]);
@@ -292,8 +320,9 @@ export default function AdminUsers({
         </div>
 
         {/* Кнопка действий */}
-        <div className="relative flex-shrink-0 pt-6">
+        <div className="flex-shrink-0 pt-6">
           <Button
+            ref={actionsButtonRef}
             variant="outline"
             className="rounded-xl gap-2 h-9"
             onClick={() => setActionsOpen((p) => !p)}
@@ -306,8 +335,12 @@ export default function AdminUsers({
             )}
             <Icon name="ChevronDown" size={14} />
           </Button>
-          {actionsOpen && (
-            <div className="absolute right-0 top-full mt-1 z-30 bg-background border border-border rounded-xl shadow-xl w-52 overflow-hidden">
+          {actionsOpen && createPortal(
+            <div
+              ref={actionsMenuRef}
+              style={{ position: "absolute", top: actionsPos.top, right: actionsPos.right, zIndex: 9999 }}
+              className="bg-background border border-border rounded-xl shadow-2xl w-52 overflow-hidden"
+            >
               {[
                 { icon: "Send", label: "Отправить пароли" },
                 { icon: "Download", label: "Скачать пароли" },
@@ -322,7 +355,8 @@ export default function AdminUsers({
                   {item.label}
                 </button>
               ))}
-            </div>
+            </div>,
+            document.body
           )}
         </div>
       </div>
