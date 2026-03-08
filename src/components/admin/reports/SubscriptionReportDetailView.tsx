@@ -13,6 +13,7 @@ export default function SubscriptionReportDetailView({ lineItems }: Subscription
           <tr className="border-b border-border bg-muted/50">
             <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground w-10">№</th>
             <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Слушатель</th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground whitespace-nowrap">Организация</th>
             <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Группа</th>
             <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Курс</th>
             <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground whitespace-nowrap">Дата назначения</th>
@@ -33,6 +34,9 @@ export default function SubscriptionReportDetailView({ lineItems }: Subscription
                   </div>
                 </div>
               </td>
+              <td className="px-4 py-3 text-sm text-muted-foreground max-w-[160px]">
+                <span className="block truncate" title={item.organization}>{item.organization || "—"}</span>
+              </td>
               <td className="px-4 py-3">
                 <span className="px-2.5 py-1 rounded-lg bg-muted text-xs font-medium">{item.group}</span>
               </td>
@@ -45,7 +49,7 @@ export default function SubscriptionReportDetailView({ lineItems }: Subscription
         </tbody>
         <tfoot>
           <tr className="border-t border-border bg-muted/30">
-            <td colSpan={4} className="px-4 py-3 font-bold text-sm">ИТОГО назначений</td>
+            <td colSpan={5} className="px-4 py-3 font-bold text-sm">ИТОГО назначений</td>
             <td className="px-4 py-3 font-bold text-violet-600 dark:text-violet-400 text-base">{lineItems.length}</td>
           </tr>
         </tfoot>

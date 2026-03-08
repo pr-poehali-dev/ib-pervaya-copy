@@ -307,6 +307,7 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
                   />
                 </th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground w-8"></th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground whitespace-nowrap">Организация</th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">Группа</th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground whitespace-nowrap">Участников</th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">Статус</th>
@@ -317,12 +318,16 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
               </tr>
             </thead>
             <tbody>
-              {filteredGroups.map((group, idx) => (
+              {filteredGroups.map((group, idx) => {
+                const members = localUsers.filter((u) => u.group === group);
+                const organization = members[0]?.organization ?? "";
+                return (
                 <GroupTableRow
                   key={group}
                   group={group}
                   idx={idx}
-                  members={localUsers.filter((u) => u.group === group)}
+                  organization={organization}
+                  members={members}
                   isExpanded={expandedGroups.has(group)}
                   isSelected={selectedGroups.has(group)}
                   expandedMembers={expandedMembers}
@@ -338,7 +343,8 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
                   onIssueCertificate={issueCertificate}
                   onToggleAssignment={toggleAssignment}
                 />
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>

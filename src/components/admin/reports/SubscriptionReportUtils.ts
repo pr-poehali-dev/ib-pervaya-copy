@@ -6,6 +6,7 @@ export interface LineItem {
   userId: number;
   initials: string;
   name: string;
+  organization: string;
   group: string;
   email: string;
   courseId: number;
@@ -116,8 +117,8 @@ export function exportSubCSV(
   filterOrg: string,
   filterGroup: string,
 ) {
-  const header = ["№", "ФИО", "Email", "Группа", "Курс", "Дата назначения"];
-  const rows = items.map((r, i) => [String(i + 1), r.name, r.email, r.group, r.courseTitle, r.assignedAt]);
+  const header = ["№", "ФИО", "Email", "Организация", "Группа", "Курс", "Дата назначения"];
+  const rows = items.map((r, i) => [String(i + 1), r.name, r.email, r.organization, r.group, r.courseTitle, r.assignedAt]);
   const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
   const csv = "\uFEFF"
     + `"Отчёт: Списание подписок";"Период: ${periodLabel}"\n`
@@ -148,6 +149,7 @@ export function exportSubPDF(
     <tr>
       <td style="color:#666">${i + 1}</td>
       <td><b>${r.name}</b><br><span style="color:#999;font-size:10px">${r.email}</span></td>
+      <td>${r.organization}</td>
       <td>${r.group}</td>
       <td>${r.courseTitle}</td>
       <td>${r.assignedAt}</td>
@@ -189,9 +191,9 @@ export function exportSubPDF(
 <tr style="background:#f9fafb"><td style="font-weight:700">ИТОГО</td><td style="font-weight:700">${items.length}</td></tr>
 </tbody></table>
 <h2>Детализация</h2>
-<table><thead><tr><th>№</th><th>ФИО / Email</th><th>Группа</th><th>Курс</th><th>Дата назначения</th></tr></thead>
+<table><thead><tr><th>№</th><th>ФИО / Email</th><th>Организация</th><th>Группа</th><th>Курс</th><th>Дата назначения</th></tr></thead>
 <tbody>${detailRows}</tbody>
-<tfoot><tr><td colspan="4">ИТОГО назначений</td><td style="font-weight:700">${items.length}</td></tr></tfoot>
+<tfoot><tr><td colspan="5">ИТОГО назначений</td><td style="font-weight:700">${items.length}</td></tr></tfoot>
 </table>
 </body></html>`;
 

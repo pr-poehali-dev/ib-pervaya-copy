@@ -133,6 +133,7 @@ export const INITIAL_USERS: User[] = [
     email: "alina.ivanova@company.ru",
     initials: "АИ",
     group: "ИБ-301",
+    organization: "ООО «ТехноПром»",
     role: "Студент",
     assignments: [
       { courseId: 1, active: true,  progress: 65,  assignedAt: daysAgo(5),   activatedAt: daysAgo(3),  status: "active"    },
@@ -145,6 +146,7 @@ export const INITIAL_USERS: User[] = [
     email: "d.smirnov@company.ru",
     initials: "ДС",
     group: "ИБ-301",
+    organization: "ООО «ТехноПром»",
     role: "Студент",
     assignments: [
       { courseId: 1, active: true,  progress: 100, assignedAt: monthsAgo(2), activatedAt: monthsAgo(2), completedAt: monthsAgo(1), status: "certified" },
@@ -157,6 +159,7 @@ export const INITIAL_USERS: User[] = [
     email: "m.kozlova@company.ru",
     initials: "МК",
     group: "ИБ-302",
+    organization: "АО «СтройГрупп»",
     role: "Студент",
     assignments: [
       { courseId: 4, active: true,  progress: 45,  assignedAt: daysAgo(15),  activatedAt: daysAgo(14), status: "active"    },
@@ -169,6 +172,7 @@ export const INITIAL_USERS: User[] = [
     email: "i.petrov@company.ru",
     initials: "ИП",
     group: "ИБ-302",
+    organization: "АО «СтройГрупп»",
     role: "Студент",
     assignments: [
       { courseId: 2, active: true,  progress: 80,  assignedAt: daysAgo(20),  activatedAt: daysAgo(18), status: "active"    },
@@ -181,6 +185,7 @@ export const INITIAL_USERS: User[] = [
     email: "s.nikolaev@company.ru",
     initials: "СН",
     group: "ИБ-303",
+    organization: "ГУП «Энергосеть»",
     role: "Студент",
     assignments: [
       { courseId: 3, active: true,  progress: 55,  assignedAt: daysAgo(7),   activatedAt: daysAgo(6),  status: "active"    },
@@ -193,6 +198,7 @@ export const INITIAL_USERS: User[] = [
     email: "e.sokolova@company.ru",
     initials: "ЕС",
     group: "ИБ-303",
+    organization: "ГУП «Энергосеть»",
     role: "Преподаватель",
     assignments: [
       { courseId: 5, active: true,  progress: 90,  assignedAt: monthsAgo(1), activatedAt: monthsAgo(1), status: "active"    },
@@ -205,6 +211,7 @@ export const INITIAL_USERS: User[] = [
     email: "a.lebedev@company.ru",
     initials: "АЛ",
     group: "ИБ-401",
+    organization: "ПАО «МеталлСервис»",
     role: "Студент",
     assignments: [
       { courseId: 1, active: true,  progress: 40,  assignedAt: daysAgo(1),                             status: "pending"   },
@@ -216,6 +223,7 @@ export const INITIAL_USERS: User[] = [
     email: "o.morozova@company.ru",
     initials: "ОМ",
     group: "ИБ-401",
+    organization: "ПАО «МеталлСервис»",
     role: "Студент",
     assignments: [
       { courseId: 2, active: true,  progress: 70,  assignedAt: daysAgo(12),  activatedAt: daysAgo(11), status: "active"    },

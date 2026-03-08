@@ -21,6 +21,7 @@ function statusBadgeClass(status: string) {
 interface GroupTableRowProps {
   group: string;
   idx: number;
+  organization: string;
   members: User[];
   isExpanded: boolean;
   isSelected: boolean;
@@ -41,6 +42,7 @@ interface GroupTableRowProps {
 export default function GroupTableRow({
   group,
   idx,
+  organization,
   members,
   isExpanded,
   isSelected,
@@ -80,6 +82,9 @@ export default function GroupTableRow({
         </td>
         <td className="px-4 py-3">
           <Icon name={isExpanded ? "ChevronDown" : "ChevronRight"} size={16} className="text-muted-foreground" />
+        </td>
+        <td className="px-4 py-3 text-sm text-muted-foreground max-w-[180px]">
+          <span className="block truncate" title={organization}>{organization || "—"}</span>
         </td>
         <td className="px-4 py-3">
           <div className="flex items-center gap-2.5">
@@ -150,7 +155,7 @@ export default function GroupTableRow({
       {/* Раскрытая строка — участники группы */}
       {isExpanded && (
         <tr key={`${group}-expanded`} className="border-b border-border bg-violet-50/30 dark:bg-violet-900/5">
-          <td colSpan={9} className="px-8 py-4">
+          <td colSpan={10} className="px-8 py-4">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">

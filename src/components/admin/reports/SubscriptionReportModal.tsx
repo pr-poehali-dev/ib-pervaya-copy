@@ -55,6 +55,7 @@ export default function SubscriptionReportModal({ open, onClose, users }: Subscr
             userId: u.id,
             initials: u.initials,
             name: u.name,
+            organization: u.organization ?? "",
             group: u.group,
             email: u.email,
             courseId: a.courseId,

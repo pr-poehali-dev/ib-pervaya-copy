@@ -21,6 +21,7 @@ export type User = {
   email: string;
   initials: string;
   group: string;
+  organization: string;
   role: string;
   assignments: CourseAssignment[];
 };

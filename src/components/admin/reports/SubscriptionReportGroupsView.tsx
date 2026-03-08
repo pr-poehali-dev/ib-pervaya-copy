@@ -39,7 +39,10 @@ export default function SubscriptionReportGroupsView({
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-sm">{g.group}</p>
-                <p className="text-xs text-muted-foreground">{new Set(g.items.map(i => i.userId)).size} слушателей</p>
+                <p className="text-xs text-muted-foreground">
+                  {g.items[0]?.organization ? `${g.items[0].organization} · ` : ""}
+                  {new Set(g.items.map(i => i.userId)).size} слушателей
+                </p>
               </div>
               <div className="flex items-center gap-4 flex-shrink-0">
                 <div className="text-right">
