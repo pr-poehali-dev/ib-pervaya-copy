@@ -43,7 +43,6 @@ export default function GroupStatsMembersTab({
   onSelectUser,
   onUserStats,
 }: GroupStatsMembersTabProps) {
-  // === Список слушателей ===
   if (!selectedUser) {
     return (
       <div className="space-y-2">
@@ -90,7 +89,6 @@ export default function GroupStatsMembersTab({
     );
   }
 
-  // === Детали одного слушателя ===
   const active = selectedUser.assignments.filter((a) => a.active);
   const avgP = active.length > 0 ? Math.round(active.reduce((s, a) => s + a.progress, 0) / active.length) : 0;
   const completedC = selectedUser.assignments.filter((a) => a.status === "completed" || a.status === "certified").length;
@@ -106,7 +104,6 @@ export default function GroupStatsMembersTab({
         Все слушатели
       </button>
 
-      {/* Заголовок слушателя */}
       <div className="bg-card rounded-2xl border border-border p-5 flex items-center gap-4">
         <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${userColors[selectedUser.id % userColors.length]} flex items-center justify-center text-white text-lg font-bold flex-shrink-0`}>
           {selectedUser.initials}
@@ -126,7 +123,6 @@ export default function GroupStatsMembersTab({
         )}
       </div>
 
-      {/* Мини-метрики слушателя */}
       <div className="grid grid-cols-4 gap-3">
         {[
           { label: "Всего курсов",  value: selectedUser.assignments.length, icon: "BookOpen",    color: "text-violet-500",  bg: "icon-bg-violet" },
@@ -160,7 +156,6 @@ export default function GroupStatsMembersTab({
         </div>
       )}
 
-      {/* Курсы слушателя */}
       <div>
         <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
           <Icon name="ListChecks" size={14} className="text-muted-foreground" />

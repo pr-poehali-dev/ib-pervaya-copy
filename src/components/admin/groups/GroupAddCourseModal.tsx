@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
-import { courseDirections } from "./types";
+import { courseDirections } from "@/components/admin/types";
 
 interface GroupAddCourseModalProps {
   title: string;

@@ -1,13 +1,13 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import { User, allCourses } from "@/components/admin/types";
-import { MultiSelect, SearchSelect, FilterTags } from "@/components/admin/FilterControls";
-import AdminUsers from "@/components/admin/AdminUsers";
-import AdminGroups from "@/components/admin/AdminGroups";
+import { MultiSelect, SearchSelect, FilterTags } from "@/components/admin/shared/FilterControls";
+import AdminUsers from "@/components/admin/users/AdminUsers";
+import AdminGroups from "@/components/admin/groups/AdminGroups";
 import AdminSettings from "@/components/admin/AdminSettings";
-import StatsModal from "@/components/admin/StatsModal";
-import CertRegistryModal from "@/components/admin/CertRegistryModal";
-import SubscriptionReportModal from "@/components/admin/SubscriptionReportModal";
+import StatsModal from "@/components/admin/reports/StatsModal";
+import CertRegistryModal from "@/components/admin/reports/CertRegistryModal";
+import SubscriptionReportModal from "@/components/admin/reports/SubscriptionReportModal";
 
 type ActiveTab = "stp" | "groups" | "users" | "reports" | "settings";
 

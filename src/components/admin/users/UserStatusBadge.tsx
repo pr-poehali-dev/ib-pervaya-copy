@@ -1,4 +1,4 @@
-import { CourseStatus } from "./types";
+import { CourseStatus } from "@/components/admin/types";
 
 export default function UserStatusBadge({ status }: { status: CourseStatus }) {
   const map: Record<CourseStatus, { label: string; cls: string }> = {

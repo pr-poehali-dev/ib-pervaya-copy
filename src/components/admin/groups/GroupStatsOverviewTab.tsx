@@ -54,7 +54,6 @@ export default function GroupStatsOverviewTab({ members, stats, onSelectMember }
         ))}
       </div>
 
-      {/* Средний прогресс */}
       <div className="bg-card rounded-2xl border border-border p-5 flex items-center gap-5">
         <ProgressRing value={stats.avgProgress} size={70} />
         <div className="flex-1 space-y-2">
@@ -69,7 +68,6 @@ export default function GroupStatsOverviewTab({ members, stats, onSelectMember }
         </div>
       </div>
 
-      {/* Топ слушателей */}
       <div>
         <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
           <Icon name="Trophy" size={14} className="text-amber-500" />

@@ -2,12 +2,12 @@ import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
-import UserStatsModal from "./UserStatsModal";
+import UserStatsModal from "@/components/admin/users/UserStatsModal";
 import GroupStatsModal from "./GroupStatsModal";
 import GroupAddCourseModal from "./GroupAddCourseModal";
 import GroupTableRow from "./GroupTableRow";
-import { User, CourseAssignment, CourseStatus, allCourses, groups } from "./types";
-import { MultiSelect, SearchSelect, FilterTags } from "./FilterControls";
+import { User, CourseAssignment, CourseStatus, allCourses, groups } from "@/components/admin/types";
+import { MultiSelect, SearchSelect, FilterTags } from "@/components/admin/shared/FilterControls";
 
 interface AdminGroupsProps {
   users: User[];

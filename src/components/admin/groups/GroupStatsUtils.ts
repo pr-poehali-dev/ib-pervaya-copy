@@ -54,15 +54,9 @@ export function exportCSV(groupName: string, members: User[]) {
       u.assignments.forEach((a) => {
         const info = getCourseInfo(a.courseId);
         rows.push([
-          u.name,
-          u.email,
-          u.role,
-          info.title,
-          STATUS_LABELS[a.status],
-          `${a.progress}%`,
-          a.assignedAt,
-          a.activatedAt ?? "—",
-          a.completedAt ?? "—",
+          u.name, u.email, u.role, info.title,
+          STATUS_LABELS[a.status], `${a.progress}%`,
+          a.assignedAt, a.activatedAt ?? "—", a.completedAt ?? "—",
         ]);
       });
     }
@@ -81,24 +75,10 @@ export function exportCSV(groupName: string, members: User[]) {
 
 export function exportPDF(groupName: string, members: User[], stats: GroupStats) {
   const date = new Date().toLocaleDateString("ru", { day: "2-digit", month: "long", year: "numeric" });
-
   const membersRows = stats.memberStats.map((u) => `
-    <tr>
-      <td>${u.name}</td>
-      <td>${u.email}</td>
-      <td>${u.role}</td>
-      <td>${u.activeCount}</td>
-      <td>${u.completedCount}</td>
-      <td><b>${u.avgProgress}%</b></td>
-    </tr>`).join("");
-
+    <tr><td>${u.name}</td><td>${u.email}</td><td>${u.role}</td><td>${u.activeCount}</td><td>${u.completedCount}</td><td><b>${u.avgProgress}%</b></td></tr>`).join("");
   const coursesRows = stats.courseStats.map((c) => `
-    <tr>
-      <td>${c.title}</td>
-      <td>${c.enrolled}</td>
-      <td>${c.completed}</td>
-      <td><b>${c.avgProgress}%</b></td>
-    </tr>`).join("");
+    <tr><td>${c.title}</td><td>${c.enrolled}</td><td>${c.completed}</td><td><b>${c.avgProgress}%</b></td></tr>`).join("");
 
   const html = `<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8">
 <title>Статистика группы ${groupName}</title>

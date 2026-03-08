@@ -1,7 +1,7 @@
 import Icon from "@/components/ui/icon";
 import Tip from "@/components/ui/tip";
-import ActivateMenu from "./ActivateMenu";
-import { User, CourseStatus, allCourses, userColors, courseDirections } from "./types";
+import ActivateMenu from "@/components/admin/shared/ActivateMenu";
+import { User, CourseStatus, allCourses, userColors, courseDirections } from "@/components/admin/types";
 
 function CourseStatusBadge({ status }: { status: CourseStatus }) {
   const map: Record<CourseStatus, { label: string; cls: string }> = {

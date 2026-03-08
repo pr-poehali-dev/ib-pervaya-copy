@@ -1,9 +1,9 @@
 import { Badge } from "@/components/ui/badge";
 import Icon from "@/components/ui/icon";
 import Tip from "@/components/ui/tip";
-import ActivateMenu from "./ActivateMenu";
+import ActivateMenu from "@/components/admin/shared/ActivateMenu";
 import UserStatusBadge from "./UserStatusBadge";
-import { User, CourseStatus, allCourses, userColors, courseDirections } from "./types";
+import { User, CourseStatus, allCourses, userColors, courseDirections } from "@/components/admin/types";
 
 function today(): string {
   const d = new Date();

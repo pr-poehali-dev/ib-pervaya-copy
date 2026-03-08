@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 import Tip from "@/components/ui/tip";
 import GroupMemberRow from "./GroupMemberRow";
-import { User, gradients } from "./types";
+import { User, gradients } from "@/components/admin/types";
 
 function getGroupStatus(members: User[]): string {
   if (members.length === 0) return "Не начато";

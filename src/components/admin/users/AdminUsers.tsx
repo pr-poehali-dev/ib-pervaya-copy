@@ -5,8 +5,8 @@ import Icon from "@/components/ui/icon";
 import UserStatsModal from "./UserStatsModal";
 import UserAddCourseModal from "./UserAddCourseModal";
 import UserTableRow from "./UserTableRow";
-import { User, CourseAssignment, CourseStatus, allCourses } from "./types";
-import { MultiSelect, SearchSelect, FilterTags } from "./FilterControls";
+import { User, CourseAssignment, CourseStatus, allCourses } from "@/components/admin/types";
+import { MultiSelect, SearchSelect, FilterTags } from "@/components/admin/shared/FilterControls";
 
 interface AdminUsersProps {
   users: User[];
