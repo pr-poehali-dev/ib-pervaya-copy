@@ -1,5 +1,5 @@
 import Icon from "@/components/ui/icon";
-import { User, allCourses, courseDirections, CourseStatus, userColors } from "@/components/admin/types";
+import { User, allCourses, courseDirections, CourseStatus } from "@/components/admin/types";
 
 interface UserStatsModalProps {
   user: User | null;
@@ -19,6 +19,90 @@ function getCourseInfo(courseId: number) {
   const dir = courseDirections.flatMap((d) => d.courses).find((c) => c.id === courseId);
   if (dir) return { title: `${dir.code} ${dir.title}`, emoji: "📚", duration: "—", lessons: 0 };
   return { title: `Курс #${courseId}`, emoji: "📚", duration: "—", lessons: 0 };
+}
+
+const STATUS_LABELS: Record<CourseStatus, string> = {
+  pending: "Ожидает активации",
+  active: "Идёт обучение",
+  completed: "Обучение завершено",
+  certified: "Удостоверение выдано",
+};
+
+function exportUserCSV(user: User) {
+  const header = ["Курс", "Статус", "Прогресс", "Назначен", "Начато", "Завершено"];
+  const rows = user.assignments.map((a) => {
+    const info = getCourseInfo(a.courseId);
+    return [
+      info.title,
+      STATUS_LABELS[a.status],
+      `${a.progress}%`,
+      a.assignedAt,
+      a.activatedAt ?? "—",
+      a.completedAt ?? "—",
+    ];
+  });
+  const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
+  const csv = "\uFEFF" + [header, ...rows].map((r) => r.map(escape).join(";")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `Слушатель_${user.name.replace(/\s+/g, "_")}_${new Date().toLocaleDateString("ru")}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportUserPDF(user: User, avgProgress: number, completedCount: number, certifiedCount: number) {
+  const date = new Date().toLocaleDateString("ru", { day: "2-digit", month: "long", year: "numeric" });
+  const rows = user.assignments.map((a) => {
+    const info = getCourseInfo(a.courseId);
+    return `<tr>
+      <td>${info.emoji} ${info.title}</td>
+      <td>${STATUS_LABELS[a.status]}</td>
+      <td><b>${a.progress}%</b></td>
+      <td>${a.assignedAt}</td>
+      <td>${a.activatedAt ?? "—"}</td>
+      <td>${a.completedAt ?? "—"}</td>
+    </tr>`;
+  }).join("");
+
+  const html = `<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8">
+<title>Карточка слушателя — ${user.name}</title>
+<style>
+  body { font-family: Arial, sans-serif; font-size: 12px; color: #111; padding: 32px; }
+  h1 { font-size: 20px; margin-bottom: 2px; }
+  .sub { color: #666; font-size: 11px; margin-bottom: 24px; }
+  .metrics { display: flex; gap: 14px; margin-bottom: 24px; flex-wrap: wrap; }
+  .metric { border: 1px solid #e5e7eb; border-radius: 10px; padding: 10px 18px; text-align: center; min-width: 80px; }
+  .metric .val { font-size: 20px; font-weight: 700; color: #7c3aed; }
+  .metric .lbl { font-size: 10px; color: #666; margin-top: 2px; }
+  table { width: 100%; border-collapse: collapse; }
+  th { background: #f3f4f6; text-align: left; padding: 8px 10px; font-size: 11px; color: #555; }
+  td { padding: 7px 10px; border-bottom: 1px solid #f0f0f0; }
+  tr:last-child td { border: none; }
+  h2 { font-size: 14px; margin: 20px 0 8px; border-left: 3px solid #7c3aed; padding-left: 8px; }
+  @media print { body { padding: 16px; } }
+</style></head><body>
+<h1>${user.name}</h1>
+<div class="sub">${user.role} · Группа ${user.group} · ${user.email} · Сформирован: ${date}</div>
+<div class="metrics">
+  <div class="metric"><div class="val">${user.assignments.length}</div><div class="lbl">Всего курсов</div></div>
+  <div class="metric"><div class="val">${user.assignments.filter(a => a.active).length}</div><div class="lbl">Активных</div></div>
+  <div class="metric"><div class="val">${completedCount}</div><div class="lbl">Завершено</div></div>
+  <div class="metric"><div class="val">${certifiedCount}</div><div class="lbl">Удостоверений</div></div>
+  <div class="metric"><div class="val">${avgProgress}%</div><div class="lbl">Ср. прогресс</div></div>
+</div>
+<h2>Детализация по курсам</h2>
+<table><thead><tr><th>Курс</th><th>Статус</th><th>Прогресс</th><th>Назначен</th><th>Начато</th><th>Завершено</th></tr></thead>
+<tbody>${rows || "<tr><td colspan='6'>Курсы не назначены</td></tr>"}</tbody></table>
+</body></html>`;
+
+  const win = window.open("", "_blank");
+  if (!win) return;
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  setTimeout(() => { win.print(); }, 400);
 }
 
 function ProgressRing({ value }: { value: number }) {
@@ -72,12 +156,30 @@ export default function UserStatsModal({ user, onClose }: UserStatsModalProps) {
               <p className="text-xs text-muted-foreground">{user.role} · {user.group}</p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-lg hover:bg-muted flex items-center justify-center transition-colors"
-          >
-            <Icon name="X" size={18} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => exportUserCSV(user)}
+              title="Скачать Excel (CSV)"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:border-emerald-300 dark:hover:border-emerald-700 text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400 text-xs font-medium transition-colors"
+            >
+              <Icon name="FileSpreadsheet" size={14} />
+              Excel
+            </button>
+            <button
+              onClick={() => exportUserPDF(user, avgProgress, completedCount, certifiedCount)}
+              title="Печать / сохранить PDF"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border hover:bg-rose-50 dark:hover:bg-rose-900/20 hover:border-rose-300 dark:hover:border-rose-700 text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400 text-xs font-medium transition-colors"
+            >
+              <Icon name="FileText" size={14} />
+              PDF
+            </button>
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-lg hover:bg-muted flex items-center justify-center transition-colors ml-1"
+            >
+              <Icon name="X" size={18} />
+            </button>
+          </div>
         </div>
 
         {/* Контент */}
