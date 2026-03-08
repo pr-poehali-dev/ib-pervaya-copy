@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import { User, allCourses } from "@/components/admin/types";
+import { useRole } from "@/contexts/RoleContext";
 import { MultiSelect, SearchSelect, FilterTags } from "@/components/admin/shared/FilterControls";
 import AdminUsers from "@/components/admin/users/AdminUsers";
 import AdminGroups from "@/components/admin/groups/AdminGroups";
@@ -65,6 +66,8 @@ export default function AdminTabContent({
   const [showStatsModal, setShowStatsModal] = useState(false);
   const [showCertModal, setShowCertModal] = useState(false);
   const [showSubModal, setShowSubModal] = useState(false);
+  const { tenantType } = useRole();
+  const canIssueCert = tenantType === "training_center";
   const stpOrgOptions = [...new Set(users.map((u) => u.group))];
   const stpFioOptions = users.map((u) => u.name);
   const stpCourseOptions = allCourses.map((c) => c.title);
@@ -142,7 +145,7 @@ export default function AdminTabContent({
         <div className="space-y-5">
           <p className="text-muted-foreground text-sm">Выберите отчёт для формирования</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {reportItems.map((report) => {
+            {reportItems.filter((r) => r.num !== "3" || canIssueCert).map((report) => {
               const isSub = report.num === "1";
               const isStats = report.num === "2";
               const isCert = report.num === "3";
