@@ -2,6 +2,117 @@ import { useMemo } from "react";
 import Icon from "@/components/ui/icon";
 import { User, allCourses } from "@/components/admin/types";
 
+function exportAllCSV(users: User[], stats: {
+  groupStats: { group: string; users: number; assignments: number; completed: number; avgProgress: number }[];
+  courseStats: { title: string; enrolled: number; completed: number; avgProgress: number }[];
+}) {
+  const date = new Date().toLocaleDateString("ru");
+
+  // Лист 1: по группам
+  const groupHeader = ["Группа", "Слушателей", "Назначений", "Завершено", "Ср. прогресс"];
+  const groupRows = stats.groupStats.map((g) => [g.group, String(g.users), String(g.assignments), String(g.completed), `${g.avgProgress}%`]);
+
+  // Лист 2: по слушателям
+  const userHeader = ["ФИО", "Email", "Роль", "Группа", "Курс", "Статус", "Прогресс", "Назначен", "Начато", "Завершено"];
+  const statusLabels: Record<string, string> = { pending: "Ожидает активации", active: "Идёт обучение", completed: "Завершено", certified: "Удостоверение выдано" };
+  const userRows: string[][] = [];
+  users.forEach((u) => {
+    if (u.assignments.length === 0) {
+      userRows.push([u.name, u.email, u.role, u.group, "—", "—", "—", "—", "—", "—"]);
+    } else {
+      u.assignments.forEach((a) => {
+        const course = allCourses.find((c) => c.id === a.courseId);
+        const title = course ? course.title : `Курс #${a.courseId}`;
+        userRows.push([u.name, u.email, u.role, u.group, title, statusLabels[a.status] ?? a.status, `${a.progress}%`, a.assignedAt, a.activatedAt ?? "—", a.completedAt ?? "—"]);
+      });
+    }
+  });
+
+  const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
+  const sep = "\n\n";
+  const csv = "\uFEFF"
+    + `Сводная статистика обучения,${date}\n\n`
+    + `Активность групп\n`
+    + [groupHeader, ...groupRows].map((r) => r.map(escape).join(";")).join("\n")
+    + sep
+    + `Детализация по слушателям\n`
+    + [userHeader, ...userRows].map((r) => r.map(escape).join(";")).join("\n");
+
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `Статистика_обучения_${date}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportAllPDF(users: User[], stats: {
+  totalAssignments: number; totalCompleted: number; totalInProgress: number; avgProgress: number;
+  groupStats: { group: string; users: number; assignments: number; completed: number; avgProgress: number }[];
+  courseStats: { title: string; enrolled: number; completed: number; avgProgress: number }[];
+  topUsers: { name: string; group: string; avgProgress: number; completedCount: number }[];
+}) {
+  const date = new Date().toLocaleDateString("ru", { day: "2-digit", month: "long", year: "numeric" });
+  const statusLabels: Record<string, string> = { pending: "Ожидает", active: "Обучается", completed: "Завершено", certified: "Удостоверение" };
+
+  const groupRows = stats.groupStats.map((g) => `<tr><td><b>${g.group}</b></td><td>${g.users}</td><td>${g.assignments}</td><td>${g.completed}</td><td><b>${g.avgProgress}%</b></td></tr>`).join("");
+  const courseRows = stats.courseStats.map((c) => `<tr><td>${c.title}</td><td>${c.enrolled}</td><td>${c.completed}</td><td><b>${c.avgProgress}%</b></td></tr>`).join("");
+  const topRows = stats.topUsers.map((u, i) => `<tr><td>${i + 1}</td><td>${u.name}</td><td>${u.group}</td><td>${u.completedCount}</td><td><b>${u.avgProgress}%</b></td></tr>`).join("");
+  const userRows = users.map((u) => {
+    const active = u.assignments.filter((a) => a.active);
+    const avg = active.length > 0 ? Math.round(active.reduce((s, a) => s + a.progress, 0) / active.length) : 0;
+    const completed = u.assignments.filter((a) => a.progress === 100).length;
+    return u.assignments.map((a) => {
+      const course = allCourses.find((c) => c.id === a.courseId);
+      return `<tr><td>${u.name}</td><td>${u.group}</td><td>${course?.title ?? `Курс #${a.courseId}`}</td><td>${statusLabels[a.status] ?? a.status}</td><td><b>${a.progress}%</b></td><td>${a.assignedAt}</td><td>${a.completedAt ?? "—"}</td></tr>`;
+    }).join("") || `<tr><td>${u.name}</td><td>${u.group}</td><td colspan="5" style="color:#999">Курсы не назначены</td></tr>`;
+  }).join("");
+
+  const html = `<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8">
+<title>Статистика обучения — ${date}</title>
+<style>
+  body { font-family: Arial, sans-serif; font-size: 11px; color: #111; padding: 28px; }
+  h1 { font-size: 18px; margin-bottom: 2px; }
+  .sub { color: #666; font-size: 10px; margin-bottom: 20px; }
+  .metrics { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .metric { border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px 16px; text-align: center; min-width: 70px; }
+  .metric .val { font-size: 18px; font-weight: 700; color: #0891b2; }
+  .metric .lbl { font-size: 9px; color: #666; margin-top: 2px; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 11px; }
+  th { background: #f3f4f6; text-align: left; padding: 6px 8px; color: #555; }
+  td { padding: 6px 8px; border-bottom: 1px solid #f0f0f0; }
+  tr:last-child td { border: none; }
+  h2 { font-size: 13px; margin: 18px 0 6px; border-left: 3px solid #0891b2; padding-left: 7px; page-break-before: auto; }
+  @media print { body { padding: 14px; } h2 { page-break-before: auto; } }
+</style></head><body>
+<h1>Сводная статистика обучения</h1>
+<div class="sub">Сформирован: ${date} · Всего слушателей: ${users.length}</div>
+<div class="metrics">
+  <div class="metric"><div class="val">${users.length}</div><div class="lbl">Слушателей</div></div>
+  <div class="metric"><div class="val">${stats.totalAssignments}</div><div class="lbl">Назначений</div></div>
+  <div class="metric"><div class="val">${stats.totalInProgress}</div><div class="lbl">В процессе</div></div>
+  <div class="metric"><div class="val">${stats.totalCompleted}</div><div class="lbl">Завершено</div></div>
+  <div class="metric"><div class="val">${stats.avgProgress}%</div><div class="lbl">Ср. прогресс</div></div>
+</div>
+<h2>Активность групп</h2>
+<table><thead><tr><th>Группа</th><th>Слушателей</th><th>Назначений</th><th>Завершили</th><th>Ср. прогресс</th></tr></thead><tbody>${groupRows}</tbody></table>
+<h2>Прогресс по курсам</h2>
+<table><thead><tr><th>Курс</th><th>Слушателей</th><th>Завершили</th><th>Ср. прогресс</th></tr></thead><tbody>${courseRows}</tbody></table>
+<h2>Топ слушателей</h2>
+<table><thead><tr><th>#</th><th>ФИО</th><th>Группа</th><th>Завершено</th><th>Ср. прогресс</th></tr></thead><tbody>${topRows}</tbody></table>
+<h2>Детализация по слушателям</h2>
+<table><thead><tr><th>ФИО</th><th>Группа</th><th>Курс</th><th>Статус</th><th>Прогресс</th><th>Назначен</th><th>Завершён</th></tr></thead><tbody>${userRows}</tbody></table>
+</body></html>`;
+
+  const win = window.open("", "_blank");
+  if (!win) return;
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  setTimeout(() => { win.print(); }, 400);
+}
+
 interface StatsModalProps {
   open: boolean;
   onClose: () => void;
@@ -103,12 +214,30 @@ export default function StatsModal({ open, onClose, users }: StatsModalProps) {
               <p className="text-muted-foreground text-xs">Прогресс слушателей и активность по группам</p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-lg hover:bg-muted flex items-center justify-center transition-colors"
-          >
-            <Icon name="X" size={18} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => exportAllCSV(users, stats)}
+              title="Скачать Excel (CSV)"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:border-emerald-300 dark:hover:border-emerald-700 text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400 text-xs font-medium transition-colors"
+            >
+              <Icon name="FileSpreadsheet" size={14} />
+              Excel
+            </button>
+            <button
+              onClick={() => exportAllPDF(users, stats)}
+              title="Печать / сохранить PDF"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border hover:bg-rose-50 dark:hover:bg-rose-900/20 hover:border-rose-300 dark:hover:border-rose-700 text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400 text-xs font-medium transition-colors"
+            >
+              <Icon name="FileText" size={14} />
+              PDF
+            </button>
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-lg hover:bg-muted flex items-center justify-center transition-colors ml-1"
+            >
+              <Icon name="X" size={18} />
+            </button>
+          </div>
         </div>
 
         {/* Контент */}
