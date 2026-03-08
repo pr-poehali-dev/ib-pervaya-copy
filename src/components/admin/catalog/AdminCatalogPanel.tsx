@@ -71,21 +71,29 @@ function AddCourseModal({ onClose }: { onClose: () => void }) {
   );
 }
 
+const PLATFORM_CATEGORIES = ["Все", ...Array.from(new Set(ALL_COURSES.map((c) => c.category)))];
+const OWN_CATEGORIES = ["Все", ...Array.from(new Set(MOCK_OWN_COURSES.map((c) => c.category)))];
+
 export default function AdminCatalogPanel() {
   const { canOwnCourses } = useRole();
   const [tab, setTab] = useState<CatalogTab>("platform");
   const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("Все");
   const [showAddModal, setShowAddModal] = useState(false);
 
-  const filteredPlatform = ALL_COURSES.filter((c) =>
-    c.title.toLowerCase().includes(search.toLowerCase()) ||
-    c.category.toLowerCase().includes(search.toLowerCase())
-  );
+  const categories = tab === "platform" ? PLATFORM_CATEGORIES : OWN_CATEGORIES;
 
-  const filteredOwn = MOCK_OWN_COURSES.filter((c) =>
-    c.title.toLowerCase().includes(search.toLowerCase()) ||
-    c.category.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredPlatform = ALL_COURSES.filter((c) => {
+    const matchSearch = c.title.toLowerCase().includes(search.toLowerCase()) || c.category.toLowerCase().includes(search.toLowerCase());
+    const matchCat = category === "Все" || c.category === category;
+    return matchSearch && matchCat;
+  });
+
+  const filteredOwn = MOCK_OWN_COURSES.filter((c) => {
+    const matchSearch = c.title.toLowerCase().includes(search.toLowerCase()) || c.category.toLowerCase().includes(search.toLowerCase());
+    const matchCat = category === "Все" || c.category === category;
+    return matchSearch && matchCat;
+  });
 
   return (
     <div className="space-y-4">
@@ -95,7 +103,7 @@ export default function AdminCatalogPanel() {
       <div className="flex items-center gap-3">
         <div className="flex gap-1 bg-muted/40 rounded-xl p-1">
           <button
-            onClick={() => setTab("platform")}
+            onClick={() => { setTab("platform"); setCategory("Все"); }}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${tab === "platform" ? "bg-background shadow text-foreground" : "text-muted-foreground hover:text-foreground"}`}
           >
             <Icon name="Globe" size={15} />
@@ -103,7 +111,7 @@ export default function AdminCatalogPanel() {
           </button>
           {canOwnCourses && (
             <button
-              onClick={() => setTab("own")}
+              onClick={() => { setTab("own"); setCategory("Все"); }}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${tab === "own" ? "bg-background shadow text-foreground" : "text-muted-foreground hover:text-foreground"}`}
             >
               <Icon name="FolderOpen" size={15} />
@@ -127,6 +135,23 @@ export default function AdminCatalogPanel() {
             Добавить курс
           </Button>
         )}
+      </div>
+
+      {/* Фильтр по категориям */}
+      <div className="flex flex-wrap gap-2">
+        {categories.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setCategory(cat)}
+            className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-all ${
+              category === cat
+                ? "bg-violet-600 text-white border-violet-600"
+                : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/30 bg-background"
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
       </div>
 
       {/* Баннер если нет своих курсов */}
