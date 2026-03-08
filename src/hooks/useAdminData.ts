@@ -8,12 +8,13 @@
  * 1. Замените инициализацию состояния на загрузку с сервера:
  *
  *    const [users, setUsers] = useState<User[]>([]);
- *    const [loading, setLoading] = useState(true);
  *
  *    useEffect(() => {
+ *      setLoading(true);
  *      fetch('/api/users')
- *        .then(r => r.json())
- *        .then(data => { setUsers(data); setLoading(false); });
+ *        .then(r => { if (!r.ok) throw new Error('Ошибка загрузки'); return r.json(); })
+ *        .then(data => { setUsers(data); setLoading(false); })
+ *        .catch(e => { setError(e.message); setLoading(false); });
  *    }, []);
  *
  * 2. Мутации (addUser, toggleCourse и т.д.) — замените на POST/PATCH:
@@ -28,7 +29,7 @@
  * ══════════════════════════════════════════════════════════════════════════════
  */
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { User, CourseStatus, getInitials } from "@/components/admin/types";
 import { INITIAL_USERS, GROUPS, ALL_COURSES } from "@/data/mockData";
 
@@ -38,8 +39,28 @@ function todayRu(): string {
 
 export function useAdminData() {
   // ─── Данные ──────────────────────────────────────────────────────────────
-  const [users, setUsers] = useState<User[]>(INITIAL_USERS);
-  const [groups, setGroups] = useState<string[]>([...GROUPS]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [groups, setGroups] = useState<string[]>([]);
+
+  // ─── Состояние загрузки ───────────────────────────────────────────────────
+  // При подключении API: setLoading(true) перед fetch, setLoading(false) в then/catch
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Имитируем загрузку с задержкой (удалить при подключении реального API)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      try {
+        setUsers(INITIAL_USERS);
+        setGroups([...GROUPS]);
+        setLoading(false);
+      } catch (e) {
+        setError("Ошибка загрузки данных");
+        setLoading(false);
+      }
+    }, 600);
+    return () => clearTimeout(timer);
+  }, []);
 
   // ─── Поиск ───────────────────────────────────────────────────────────────
   const [search, setSearch] = useState("");
@@ -223,6 +244,9 @@ export function useAdminData() {
     users,
     groups,
     courses: ALL_COURSES,
+    // состояние загрузки
+    loading,
+    error,
     // поиск
     search,
     setSearch,

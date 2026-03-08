@@ -18,6 +18,8 @@ export default function Admin() {
     filteredUsers,
     totalAssignments,
     totalCompleted,
+    loading,
+    error,
     addUser,
     toggleCourse,
   } = useAdminData();
@@ -92,6 +94,39 @@ export default function Admin() {
   useEffect(() => {
     setStats({ users: users.length, courses: 6, assignments: totalAssignments, completed: totalCompleted });
   }, [users.length, totalAssignments, totalCompleted]);
+
+  if (error) {
+    return (
+      <Layout>
+        <div className="max-w-6xl mx-auto flex flex-col items-center justify-center min-h-[40vh] gap-4 text-center">
+          <div className="w-14 h-14 bg-red-100 dark:bg-red-900/30 rounded-2xl flex items-center justify-center">
+            <span className="text-2xl">⚠️</span>
+          </div>
+          <div>
+            <p className="font-bold text-base">Не удалось загрузить данные</p>
+            <p className="text-muted-foreground text-sm mt-1">{error}</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="max-w-6xl mx-auto space-y-6 animate-pulse">
+          <div className="h-20 bg-muted rounded-2xl" />
+          <div className="flex gap-2">
+            {[1,2,3,4,5].map(i => <div key={i} className="h-10 flex-1 bg-muted rounded-xl" />)}
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[1,2,3].map(i => <div key={i} className="h-40 bg-muted rounded-2xl" />)}
+          </div>
+          <div className="h-64 bg-muted rounded-2xl" />
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
