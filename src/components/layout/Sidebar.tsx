@@ -19,6 +19,13 @@ const STUDENT_NAV: NavItem[] = [
 
 const ADMIN_NAV: NavItem[] = [
   { to: "/admin",   icon: "ShieldCheck", label: "Панель управления" },
+  { to: "/catalog", icon: "BookOpen",    label: "Каталог курсов" },
+  { to: "/profile", icon: "User",        label: "Профиль" },
+];
+
+const MANAGER_NAV: NavItem[] = [
+  { to: "/admin",   icon: "ShieldCheck", label: "Панель управления" },
+  { to: "/catalog", icon: "BookOpen",    label: "Каталог курсов" },
   { to: "/profile", icon: "User",        label: "Профиль" },
 ];
 
@@ -56,7 +63,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
     role === "superadmin"    ? SUPERADMIN_NAV :
     role === "sales_manager" ? SALES_NAV :
     role === "admin"         ? ADMIN_NAV :
-    role === "manager"       ? ADMIN_NAV :
+    role === "manager"       ? MANAGER_NAV :
     STUDENT_NAV;
 
   const statItems = [

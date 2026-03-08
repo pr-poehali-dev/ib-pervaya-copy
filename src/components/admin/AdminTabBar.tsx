@@ -1,29 +1,23 @@
 import Icon from "@/components/ui/icon";
 
-export type AdminTabKey = "stp" | "groups" | "users" | "catalog" | "reports" | "settings";
+export type AdminTabKey = "stp" | "groups" | "users" | "reports" | "settings";
 
 interface AdminTabBarProps {
   activeTab: AdminTabKey;
   setActiveTab: (tab: AdminTabKey) => void;
   hideSettings?: boolean;
-  showCatalog?: boolean;
 }
 
 const tabs: { key: AdminTabKey; icon: string; label: string; narrow: boolean }[] = [
-  { key: "stp",      icon: "ShieldAlert", label: "STP",              narrow: true  },
-  { key: "groups",   icon: "UsersRound",  label: "Группы",           narrow: false },
-  { key: "users",    icon: "Users",       label: "Слушатели",        narrow: false },
-  { key: "catalog",  icon: "BookOpen",    label: "Каталог курсов",   narrow: false },
-  { key: "reports",  icon: "BarChart2",   label: "Отчёты",           narrow: true  },
-  { key: "settings", icon: "Settings",    label: "Настройки",        narrow: true  },
+  { key: "stp",      icon: "ShieldAlert", label: "STP Индекс Безопасности",  narrow: false },
+  { key: "groups",   icon: "UsersRound",  label: "Обучение групп",            narrow: false },
+  { key: "users",    icon: "Users",       label: "Индивидуальное обучение",   narrow: false },
+  { key: "reports",  icon: "BarChart2",   label: "Отчёты",                    narrow: true  },
+  { key: "settings", icon: "Settings",    label: "Настройки",                 narrow: true  },
 ];
 
-export default function AdminTabBar({ activeTab, setActiveTab, hideSettings = false, showCatalog = true }: AdminTabBarProps) {
-  const visibleTabs = tabs.filter((t) => {
-    if (t.key === "settings" && hideSettings) return false;
-    if (t.key === "catalog" && !showCatalog) return false;
-    return true;
-  });
+export default function AdminTabBar({ activeTab, setActiveTab, hideSettings = false }: AdminTabBarProps) {
+  const visibleTabs = hideSettings ? tabs.filter((t) => t.key !== "settings") : tabs;
 
   return (
     <div className="flex gap-2">

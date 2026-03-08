@@ -12,6 +12,7 @@ import NotFound from "./pages/NotFound";
 import Admin from "./pages/Admin";
 import SuperAdmin from "./pages/SuperAdmin";
 import SalesManager from "./pages/SalesManager";
+import Catalog from "./pages/Catalog";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { StatsProvider } from "./contexts/StatsContext";
 import { RoleProvider } from "./contexts/RoleContext";
@@ -36,6 +37,7 @@ const App = () => (
           <Route path="/admin" element={<Admin />} />
           <Route path="/super-admin" element={<SuperAdmin />} />
           <Route path="/sales" element={<SalesManager />} />
+          <Route path="/catalog" element={<Catalog />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
