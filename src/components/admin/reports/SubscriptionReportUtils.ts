@@ -156,6 +156,7 @@ export function exportSubPDF(
     </tr>`).join("");
 
   const filterNote = [
+    `Период: ${periodLabel}`,
     filterOrg !== "Все" ? `Организация: ${filterOrg}` : "",
     filterGroup !== "Все" ? `Группа: ${filterGroup}` : "",
   ].filter(Boolean).join(" · ");
@@ -165,7 +166,8 @@ export function exportSubPDF(
 <style>
   body { font-family: Arial, sans-serif; font-size: 11px; color: #111; padding: 28px; }
   h1 { font-size: 17px; margin-bottom: 2px; }
-  .sub { color: #666; font-size: 10px; margin-bottom: 18px; }
+  .sub { color: #666; font-size: 10px; margin-bottom: 8px; }
+  .filters { background: #f3f4f6; border-radius: 6px; padding: 6px 10px; font-size: 10px; color: #555; margin-bottom: 16px; }
   .info { display:flex; gap:14px; margin-bottom:18px; flex-wrap:wrap; }
   .info-item { border:1px solid #e5e7eb; border-radius:8px; padding:9px 15px; }
   .info-item .val { font-size:16px; font-weight:700; color:#7c3aed; }
@@ -179,7 +181,8 @@ export function exportSubPDF(
   @media print { body { padding:14px; } }
 </style></head><body>
 <h1>Списание подписок за период</h1>
-<div class="sub">Период: ${periodLabel}${filterNote ? " · " + filterNote : ""} · Сформирован: ${date}</div>
+<div class="sub">Сформирован: ${date}</div>
+<div class="filters">${filterNote}</div>
 <div class="info">
   <div class="info-item"><div class="val">${items.length}</div><div class="lbl">Назначений</div></div>
   <div class="info-item"><div class="val">${new Set(items.map(i => i.userId)).size}</div><div class="lbl">Слушателей</div></div>
