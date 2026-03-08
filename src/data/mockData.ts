@@ -1,14 +1,8 @@
 /**
  * ЕДИНАЯ ТОЧКА МОКОВЫХ ДАННЫХ
  *
- * Чтобы подключить реальный API — замените функции ниже на HTTP-запросы.
  * Все компоненты импортируют данные только отсюда.
- *
- * Пример замены на API:
- *   export async function fetchUsers(): Promise<User[]> {
- *     const res = await fetch('/api/users');
- *     return res.json();
- *   }
+ * Чтобы подключить реальный API — замените нужную константу на fetch-запрос.
  */
 
 import type {
@@ -46,15 +40,18 @@ function monthsAgo(n: number): string {
   return fmt(d);
 }
 
-// ─── Группы ──────────────────────────────────────────────────────────────────
+// ─── Группы ───────────────────────────────────────────────────────────────────
+// API: GET /api/groups → string[]
 
 export const GROUPS: string[] = ["ИБ-301", "ИБ-302", "ИБ-303", "ИБ-401", "ИБ-402"];
 
-// ─── Роли ────────────────────────────────────────────────────────────────────
+// ─── Роли слушателей ──────────────────────────────────────────────────────────
+// API: GET /api/roles → string[]
 
 export const ROLES: string[] = ["Студент", "Преподаватель", "Наблюдатель"];
 
 // ─── Курсы (базовый каталог) ──────────────────────────────────────────────────
+// API: GET /api/courses → Course[]
 
 export const ALL_COURSES: Course[] = [
   { id: 1, title: "Основы информационной безопасности",    category: "ИБ",           emoji: "🔐", lessons: 18, duration: "24 ч" },
@@ -66,6 +63,7 @@ export const ALL_COURSES: Course[] = [
 ];
 
 // ─── Направления курсов ───────────────────────────────────────────────────────
+// API: GET /api/course-directions → CourseDirection[]
 
 export const COURSE_DIRECTIONS: CourseDirection[] = [
   {
@@ -130,6 +128,7 @@ export const COURSE_DIRECTIONS: CourseDirection[] = [
 ];
 
 // ─── Слушатели ────────────────────────────────────────────────────────────────
+// API: GET /api/users → User[]
 // Даты назначений охватывают: текущий месяц, прошлый месяц и квартал
 
 export const INITIAL_USERS: User[] = [
@@ -225,8 +224,8 @@ export const INITIAL_USERS: User[] = [
   },
   {
     id: 8,
-    name: "Ольга Морозова",
-    email: "o.morozova@company.ru",
+    name: "Ольга Михайлова",
+    email: "o.mikhailova@company.ru",
     initials: "ОМ",
     group: "ИБ-401",
     organization: "ПАО «МеталлСервис»",
@@ -257,6 +256,7 @@ export const USER_COLORS: string[] = [
 ];
 
 // ─── Настройки организации ────────────────────────────────────────────────────
+// API: GET /api/org → OrgData
 
 export const DEFAULT_ORG: OrgData = {
   type: "Юридическое лицо",
@@ -267,6 +267,9 @@ export const DEFAULT_ORG: OrgData = {
   licenseNo: "9999",
   licenseDate: "09.02.2026",
 };
+
+// ─── Системные пользователи (администраторы) ──────────────────────────────────
+// API: GET /api/system-users → SystemUser[]
 
 export const DEFAULT_SYSTEM_USERS: SystemUser[] = [
   {
@@ -283,6 +286,9 @@ export const DEFAULT_SYSTEM_USERS: SystemUser[] = [
   },
 ];
 
+// ─── Настройки email ──────────────────────────────────────────────────────────
+// API: GET /api/email-settings → EmailSettings
+
 export const DEFAULT_EMAIL_SETTINGS: EmailSettings = {
   hrEmail: "gts@supmin.ru",
   senderEmail: "admin@supmin.ru",
@@ -297,13 +303,19 @@ export const DEFAULT_EMAIL_SETTINGS: EmailSettings = {
   useSsl: false,
 };
 
+// ─── Справочники форм и ролей ─────────────────────────────────────────────────
+// Статичные списки — не требуют API
+
 export const ORG_TYPES = ["Юридическое лицо", "ИП", "Физическое лицо"] as const;
 export const OPF_TYPES = ["ООО", "АО", "ПАО", "ГБУ", "ФГБУ", "ИП"] as const;
 export const USER_ROLES_SYSTEM = ["Администратор", "Менеджер", "Преподаватель", "Наблюдатель"] as const;
 
+// ─── Шаблоны email-уведомлений ────────────────────────────────────────────────
+// API: GET /api/email-templates → EmailTemplate[]
+
 export const EMAIL_TEMPLATES = [
-  { id: "90days", title: "За 90 дней до истечения", desc: "Первое напоминание о плановой аттестации" },
-  { id: "30days", title: "За 30 дней до истечения", desc: "Второе напоминание о плановой аттестации" },
-  { id: "7days",  title: "За 7 дней до истечения",  desc: "Срочное напоминание об аттестации" },
-  { id: "expired", title: "Истечение срока",         desc: "Уведомление об истечении срока аттестации" },
+  { id: "90days",  title: "За 90 дней до истечения", desc: "Первое напоминание о плановой аттестации" },
+  { id: "30days",  title: "За 30 дней до истечения", desc: "Второе напоминание о плановой аттестации" },
+  { id: "7days",   title: "За 7 дней до истечения",  desc: "Срочное напоминание об аттестации" },
+  { id: "expired", title: "Истечение срока",          desc: "Уведомление об истечении срока аттестации" },
 ];
