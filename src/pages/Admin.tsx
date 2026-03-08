@@ -25,6 +25,7 @@ export default function Admin() {
 
   const { role } = useRole();
   const isManager = role === "manager";
+  const showCatalog = role === "admin";
   const [activeTab, setActiveTab] = useState<AdminTabKey>("stp");
 
   // ─── Диалог добавления группы ─────────────────────────────────────────────
@@ -170,7 +171,7 @@ export default function Admin() {
           onSave={handleAddUser}
         />
 
-        <AdminTabBar activeTab={activeTab} setActiveTab={setActiveTab} hideSettings={isManager} />
+        <AdminTabBar activeTab={activeTab} setActiveTab={setActiveTab} hideSettings={isManager} showCatalog={showCatalog} />
 
         <AdminTabContent
           activeTab={activeTab}

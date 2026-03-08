@@ -10,12 +10,11 @@ import RoleSwitcher from "@/components/ui/RoleSwitcher";
 type NavItem = { to: string; icon: string; label: string };
 
 const STUDENT_NAV: NavItem[] = [
-  { to: "/",           icon: "LayoutDashboard", label: "Главная" },
-  { to: "/courses",    icon: "BookOpen",         label: "Каталог курсов" },
-  { to: "/my-learning",icon: "GraduationCap",    label: "Моё обучение" },
-  { to: "/schedule",   icon: "Calendar",          label: "Расписание" },
+  { to: "/",            icon: "LayoutDashboard", label: "Главная" },
+  { to: "/my-learning", icon: "GraduationCap",   label: "Моё обучение" },
+  { to: "/schedule",    icon: "Calendar",         label: "Расписание" },
   { to: "/achievements",icon: "Trophy",           label: "Достижения" },
-  { to: "/profile",    icon: "User",              label: "Профиль" },
+  { to: "/profile",     icon: "User",             label: "Профиль" },
 ];
 
 const ADMIN_NAV: NavItem[] = [

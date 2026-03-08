@@ -6,14 +6,15 @@ import { MultiSelect, SearchSelect, FilterTags } from "@/components/admin/shared
 import AdminUsers from "@/components/admin/users/AdminUsers";
 import AdminGroups from "@/components/admin/groups/AdminGroups";
 import AdminSettings from "@/components/admin/AdminSettings";
+import AdminCatalogPanel from "@/components/admin/catalog/AdminCatalogPanel";
 import StatsModal from "@/components/admin/reports/StatsModal";
 import CertRegistryModal from "@/components/admin/reports/CertRegistryModal";
 import SubscriptionReportModal from "@/components/admin/reports/SubscriptionReportModal";
 
-type ActiveTab = "stp" | "groups" | "users" | "reports" | "settings";
+import { AdminTabKey } from "@/components/admin/AdminTabBar";
 
 interface AdminTabContentProps {
-  activeTab: ActiveTab;
+  activeTab: AdminTabKey;
   users: User[];
   filteredUsers: User[];
   toggleCourse: (userId: number, courseId: number) => void;
@@ -80,6 +81,10 @@ export default function AdminTabContent({
         toggleCourse={toggleCourse}
       />
     );
+  }
+
+  if (activeTab === "catalog") {
+    return <AdminCatalogPanel />;
   }
 
   if (activeTab === "stp") {
