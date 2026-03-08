@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useStats } from "@/contexts/StatsContext";
 import Layout from "@/components/layout/Layout";
-import { User, initialUsers, groups, getInitials } from "@/components/admin/types";
+import { User, getInitials } from "@/components/admin/types";
+import { INITIAL_USERS, GROUPS } from "@/data/mockData";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AddUserDialog from "@/components/admin/AddUserDialog";
 import AdminTabBar from "@/components/admin/AdminTabBar";
@@ -10,7 +11,7 @@ import AdminTabContent from "@/components/admin/AdminTabContent";
 type ActiveTab = "stp" | "groups" | "users" | "reports" | "settings";
 
 export default function Admin() {
-  const [users, setUsers] = useState<User[]>(initialUsers);
+  const [users, setUsers] = useState<User[]>(INITIAL_USERS);
   const [search, setSearch] = useState("");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState<ActiveTab>("stp");
@@ -40,7 +41,7 @@ export default function Admin() {
   const [showGroupDropdown, setShowGroupDropdown] = useState(false);
   const [selectedListenerGroup, setSelectedListenerGroup] = useState<string>("");
   const [newGroupForListener, setNewGroupForListener] = useState("");
-  const [availableGroups, setAvailableGroups] = useState<string[]>([...groups]);
+  const [availableGroups, setAvailableGroups] = useState<string[]>([...GROUPS]);
   const [nameError, setNameError] = useState("");
   const [emailError, setEmailError] = useState("");
 
