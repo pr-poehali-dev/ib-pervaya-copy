@@ -38,16 +38,16 @@ export default function SubscriptionReportModal({ open, onClose, users }: Subscr
     [preset, customFrom, customTo]
   );
 
-  const orgOptions = useMemo(() => ["Все", ...Array.from(new Set(users.map((u) => u.group))).sort()], [users]);
+  const orgOptions = useMemo(() => ["Все", ...Array.from(new Set(users.map((u) => u.organization ?? "").filter(Boolean))).sort()], [users]);
   const groupOptions = useMemo(() => {
-    const base = filterOrg === "Все" ? users : users.filter((u) => u.group === filterOrg);
+    const base = filterOrg === "Все" ? users : users.filter((u) => (u.organization ?? "") === filterOrg);
     return ["Все", ...Array.from(new Set(base.map((u) => u.group))).sort()];
   }, [users, filterOrg]);
 
   const lineItems = useMemo<LineItem[]>(() => {
     const items: LineItem[] = [];
     users.forEach((u) => {
-      if (filterOrg !== "Все" && u.group !== filterOrg) return;
+      if (filterOrg !== "Все" && (u.organization ?? "") !== filterOrg) return;
       if (filterGroup !== "Все" && u.group !== filterGroup) return;
       u.assignments.forEach((a) => {
         if (inPeriod(a.assignedAt, from, to)) {
