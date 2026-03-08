@@ -50,6 +50,116 @@ function ProgressRing({ value, size = 64 }: { value: number; size?: number }) {
   );
 }
 
+const STATUS_LABELS: Record<CourseStatus, string> = {
+  pending: "Ожидает активации",
+  active: "Идёт обучение",
+  completed: "Завершено",
+  certified: "Удостоверение выдано",
+};
+
+function exportCSV(groupName: string, members: User[]) {
+  const header = ["ФИО", "Email", "Роль", "Курс", "Статус", "Прогресс", "Назначен", "Начато", "Завершено"];
+  const rows: string[][] = [];
+  members.forEach((u) => {
+    if (u.assignments.length === 0) {
+      rows.push([u.name, u.email, u.role, "—", "—", "—", "—", "—", "—"]);
+    } else {
+      u.assignments.forEach((a) => {
+        const info = getCourseInfo(a.courseId);
+        rows.push([
+          u.name,
+          u.email,
+          u.role,
+          info.title,
+          STATUS_LABELS[a.status],
+          `${a.progress}%`,
+          a.assignedAt,
+          a.activatedAt ?? "—",
+          a.completedAt ?? "—",
+        ]);
+      });
+    }
+  });
+
+  const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
+  const csv = "\uFEFF" + [header, ...rows].map((r) => r.map(escape).join(";")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `Статистика_${groupName}_${new Date().toLocaleDateString("ru")}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportPDF(groupName: string, members: User[], stats: {
+  totalAssignments: number; completed: number; certified: number; inProgress: number; avgProgress: number;
+  courseStats: { title: string; enrolled: number; completed: number; avgProgress: number }[];
+  memberStats: { name: string; email: string; role: string; activeCount: number; completedCount: number; avgProgress: number }[];
+}) {
+  const date = new Date().toLocaleDateString("ru", { day: "2-digit", month: "long", year: "numeric" });
+
+  const membersRows = stats.memberStats.map((u) => `
+    <tr>
+      <td>${u.name}</td>
+      <td>${u.email}</td>
+      <td>${u.role}</td>
+      <td>${u.activeCount}</td>
+      <td>${u.completedCount}</td>
+      <td><b>${u.avgProgress}%</b></td>
+    </tr>`).join("");
+
+  const coursesRows = stats.courseStats.map((c) => `
+    <tr>
+      <td>${c.title}</td>
+      <td>${c.enrolled}</td>
+      <td>${c.completed}</td>
+      <td><b>${c.avgProgress}%</b></td>
+    </tr>`).join("");
+
+  const html = `<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8">
+<title>Статистика группы ${groupName}</title>
+<style>
+  body { font-family: Arial, sans-serif; font-size: 12px; color: #111; padding: 32px; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .sub { color: #666; font-size: 11px; margin-bottom: 24px; }
+  .metrics { display: flex; gap: 16px; margin-bottom: 24px; }
+  .metric { border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px 20px; flex: 1; text-align: center; }
+  .metric .val { font-size: 22px; font-weight: 700; color: #7c3aed; }
+  .metric .lbl { font-size: 10px; color: #666; margin-top: 2px; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+  th { background: #f3f4f6; text-align: left; padding: 8px 10px; font-size: 11px; color: #555; }
+  td { padding: 7px 10px; border-bottom: 1px solid #f0f0f0; }
+  tr:last-child td { border: none; }
+  h2 { font-size: 14px; margin: 20px 0 8px; border-left: 3px solid #7c3aed; padding-left: 8px; }
+  @media print { body { padding: 16px; } }
+</style></head><body>
+<h1>Статистика группы ${groupName}</h1>
+<div class="sub">Сформирован: ${date} · ${members.length} слушателей · ${stats.totalAssignments} назначений</div>
+<div class="metrics">
+  <div class="metric"><div class="val">${members.length}</div><div class="lbl">Слушателей</div></div>
+  <div class="metric"><div class="val">${stats.totalAssignments}</div><div class="lbl">Назначений</div></div>
+  <div class="metric"><div class="val">${stats.inProgress}</div><div class="lbl">В процессе</div></div>
+  <div class="metric"><div class="val">${stats.completed}</div><div class="lbl">Завершено</div></div>
+  <div class="metric"><div class="val">${stats.certified}</div><div class="lbl">Удостоверений</div></div>
+  <div class="metric"><div class="val">${stats.avgProgress}%</div><div class="lbl">Средний прогресс</div></div>
+</div>
+<h2>Прогресс по курсам</h2>
+<table><thead><tr><th>Курс</th><th>Слушателей</th><th>Завершили</th><th>Ср. прогресс</th></tr></thead>
+<tbody>${coursesRows}</tbody></table>
+<h2>Слушатели</h2>
+<table><thead><tr><th>ФИО</th><th>Email</th><th>Роль</th><th>Активных курсов</th><th>Завершено</th><th>Ср. прогресс</th></tr></thead>
+<tbody>${membersRows}</tbody></table>
+</body></html>`;
+
+  const win = window.open("", "_blank");
+  if (!win) return;
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  setTimeout(() => { win.print(); }, 400);
+}
+
 type Tab = "overview" | "courses" | "members";
 
 export default function GroupStatsModal({ groupName, users, onClose, onUserStats }: GroupStatsModalProps) {
@@ -130,9 +240,27 @@ export default function GroupStatsModal({ groupName, users, onClose, onUserStats
               <p className="text-xs text-muted-foreground">{members.length} слушателей · {stats.totalAssignments} назначений</p>
             </div>
           </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-lg hover:bg-muted flex items-center justify-center transition-colors">
-            <Icon name="X" size={18} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => exportCSV(groupName!, members)}
+              title="Скачать Excel (CSV)"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:border-emerald-300 dark:hover:border-emerald-700 text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400 text-xs font-medium transition-colors"
+            >
+              <Icon name="FileSpreadsheet" size={14} />
+              Excel
+            </button>
+            <button
+              onClick={() => exportPDF(groupName!, members, stats)}
+              title="Печать / сохранить PDF"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border hover:bg-rose-50 dark:hover:bg-rose-900/20 hover:border-rose-300 dark:hover:border-rose-700 text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400 text-xs font-medium transition-colors"
+            >
+              <Icon name="FileText" size={14} />
+              PDF
+            </button>
+            <button onClick={onClose} className="w-8 h-8 rounded-lg hover:bg-muted flex items-center justify-center transition-colors ml-1">
+              <Icon name="X" size={18} />
+            </button>
+          </div>
         </div>
 
         {/* Табы */}
