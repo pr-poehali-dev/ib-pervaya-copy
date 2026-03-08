@@ -191,6 +191,7 @@ export default function GroupTableRow({
                       <tr className="border-b border-border bg-muted/30">
                         <th className="px-4 py-2.5 w-8"></th>
                         <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground">ФИО</th>
+                        <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground">Логин / Пароль</th>
                         <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground whitespace-nowrap">Курсов назначено</th>
                         <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground">Завершено</th>
                         <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground">Прогресс</th>

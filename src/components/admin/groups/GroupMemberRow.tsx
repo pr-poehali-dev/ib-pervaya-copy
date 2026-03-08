@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import Tip from "@/components/ui/tip";
 import ActivateMenu from "@/components/admin/shared/ActivateMenu";
@@ -39,6 +40,8 @@ export default function GroupMemberRow({
   onIssueCertificate,
   onToggleAssignment,
 }: GroupMemberRowProps) {
+  const [loginCopied, setLoginCopied] = useState(false);
+  const [pwdCopied, setPwdCopied] = useState(false);
   const activeCnt = member.assignments.filter((a) => a.active).length;
   const completedCnt = member.assignments.filter((a) => a.progress === 100).length;
   const avgProgress = activeCnt > 0
@@ -60,6 +63,32 @@ export default function GroupMemberRow({
               <span className="text-white font-bold text-[9px]">{member.initials}</span>
             </div>
             <span className="font-medium text-sm">{member.name}</span>
+          </div>
+        </td>
+        <td className="px-4 py-2.5" onClick={(e) => e.stopPropagation()}>
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-muted-foreground truncate max-w-[120px]">{member.email}</span>
+              <Tip text="Скопировать логин">
+                <button
+                  className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
+                  onClick={() => { navigator.clipboard.writeText(member.email); setLoginCopied(true); setTimeout(() => setLoginCopied(false), 2000); }}
+                >
+                  {loginCopied ? <Icon name="Check" size={12} className="text-emerald-500" /> : <Icon name="Copy" size={12} />}
+                </button>
+              </Tip>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-muted-foreground tracking-widest">••••••••</span>
+              <Tip text="Скопировать пароль">
+                <button
+                  className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
+                  onClick={() => { navigator.clipboard.writeText("••••••••"); setPwdCopied(true); setTimeout(() => setPwdCopied(false), 2000); }}
+                >
+                  {pwdCopied ? <Icon name="Check" size={12} className="text-emerald-500" /> : <Icon name="KeyRound" size={12} />}
+                </button>
+              </Tip>
+            </div>
           </div>
         </td>
         <td className="px-4 py-2.5 text-sm text-muted-foreground">{activeCnt}</td>
@@ -107,7 +136,7 @@ export default function GroupMemberRow({
       {/* Курсы участника */}
       {isExpanded && (
         <tr key={`${member.id}-courses`} className="border-t border-border/60 bg-muted/10">
-          <td colSpan={6} className="px-10 py-3">
+          <td colSpan={7} className="px-10 py-3">
             {member.assignments.length === 0 ? (
               <p className="text-xs text-muted-foreground">Курсы не назначены</p>
             ) : (
