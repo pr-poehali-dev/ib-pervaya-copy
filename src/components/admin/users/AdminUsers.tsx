@@ -7,6 +7,7 @@ import UserAddCourseModal from "./UserAddCourseModal";
 import UserTableRow from "./UserTableRow";
 import { User, CourseAssignment, CourseStatus, allCourses } from "@/components/admin/types";
 import { MultiSelect, SearchSelect, FilterTags } from "@/components/admin/shared/FilterControls";
+import { useRole } from "@/contexts/RoleContext";
 
 interface AdminUsersProps {
   users: User[];
@@ -24,6 +25,8 @@ export default function AdminUsers({
   filteredUsers,
   toggleCourse,
 }: AdminUsersProps) {
+  const { tenantType } = useRole();
+  const canIssueCert = tenantType === "training_center";
   const [filterStatus, setFilterStatus] = useState("Все");
   const [filterOrgs, setFilterOrgs] = useState<string[]>([]);
   const [filterFio, setFilterFio] = useState<string[]>([]);
@@ -178,6 +181,14 @@ export default function AdminUsers({
 
   return (
     <div className="space-y-4">
+      {!canIssueCert && (
+        <div className="flex items-start gap-3 px-4 py-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-2xl">
+          <Icon name="Info" size={16} className="text-amber-500 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-amber-700 dark:text-amber-400">
+            Выдача удостоверений недоступна — ваш тенант зарегистрирован как <strong>Организация</strong>. Эта функция доступна только <strong>Учебным центрам</strong>.
+          </p>
+        </div>
+      )}
       {addCourseForUser !== null && addCourseUser && (
         <UserAddCourseModal
           onClose={() => setAddCourseForUser(null)}
