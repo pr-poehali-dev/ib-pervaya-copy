@@ -6,6 +6,8 @@ import UserStatsModal from "@/components/admin/users/UserStatsModal";
 import GroupStatsModal from "./GroupStatsModal";
 import GroupAddCourseModal from "./GroupAddCourseModal";
 import GroupTableRow from "./GroupTableRow";
+import GroupCard from "./GroupCard";
+import MemberCard from "./MemberCard";
 import { User, CourseAssignment, CourseStatus, allCourses, groups } from "@/components/admin/types";
 import { MultiSelect, SearchSelect, FilterTags } from "@/components/admin/shared/FilterControls";
 import { useRole } from "@/contexts/RoleContext";
@@ -15,6 +17,9 @@ interface AdminGroupsProps {
 }
 
 const STATUS_OPTIONS = ["Все", "Обучается", "Завершено", "Не начато"];
+
+type ViewMode = "table" | "cards";
+type NavLevel = "groups" | "members";
 
 function today(): string {
   const d = new Date();
@@ -29,18 +34,34 @@ function getGroupStatus(members: User[]): string {
   return "Не начато";
 }
 
+function getAvgProgress(members: User[]): number {
+  const active = members.flatMap((u) => u.assignments.filter((a) => a.active));
+  if (active.length === 0) return 0;
+  return Math.round(active.reduce((s, a) => s + a.progress, 0) / active.length);
+}
+
 export default function AdminGroups({ users }: AdminGroupsProps) {
   const { tenantType } = useRole();
   const canIssueCert = tenantType === "training_center";
+
+  // ─── Вид и навигация ────────────────────────────────────────────────────────
+  const [viewMode, setViewMode] = useState<ViewMode>("table");
+  const [navLevel, setNavLevel] = useState<NavLevel>("groups");
+  const [activeGroup, setActiveGroup] = useState<string | null>(null);
+
+  // ─── Фильтры ─────────────────────────────────────────────────────────────────
   const [filterStatus, setFilterStatus] = useState("Все");
   const [filterOrgs, setFilterOrgs] = useState<string[]>([]);
   const [filterFio, setFilterFio] = useState<string[]>([]);
   const [filterCourse, setFilterCourse] = useState("");
+
+  // ─── Таблица: раскрытие/выбор ────────────────────────────────────────────────
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [expandedMembers, setExpandedMembers] = useState<Set<number>>(new Set());
   const [selectedGroups, setSelectedGroups] = useState<Set<string>>(new Set());
   const [actionsOpen, setActionsOpen] = useState(false);
 
+  // ─── Данные ──────────────────────────────────────────────────────────────────
   const [localUsers, setLocalUsers] = useState<User[]>(users);
   const [addCourseForGroup, setAddCourseForGroup] = useState<string | null>(null);
   const [addCourseForMember, setAddCourseForMember] = useState<number | null>(null);
@@ -116,23 +137,25 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
   };
 
   const toggleGroup = (group: string) => {
-    setExpandedGroups((prev) => {
-      const next = new Set(prev);
-      if (next.has(group)) next.delete(group);
-      else next.add(group);
-      return next;
-    });
+    setExpandedGroups((prev) => { const next = new Set(prev); if (next.has(group)) next.delete(group); else next.add(group); return next; });
   };
 
   const toggleMember = (userId: number) => {
-    setExpandedMembers((prev) => {
-      const next = new Set(prev);
-      if (next.has(userId)) next.delete(userId);
-      else next.add(userId);
-      return next;
-    });
+    setExpandedMembers((prev) => { const next = new Set(prev); if (next.has(userId)) next.delete(userId); else next.add(userId); return next; });
   };
 
+  // ─── Навигация карточного режима ─────────────────────────────────────────────
+  function openGroup(group: string) {
+    setActiveGroup(group);
+    setNavLevel("members");
+  }
+
+  function goBack() {
+    setNavLevel("groups");
+    setActiveGroup(null);
+  }
+
+  // ─── Мутации данных ───────────────────────────────────────────────────────────
   const addCoursesToMember = (userId: number, courseIds: number[]) => {
     setLocalUsers((prev) => prev.map((u) => {
       if (u.id !== userId) return u;
@@ -193,16 +216,13 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
     ? localUsers.find((u) => u.id === addCourseForMember)
     : null;
 
+  const activeGroupMembers = activeGroup
+    ? localUsers.filter((u) => u.group === activeGroup)
+    : [];
+
   return (
     <div className="space-y-4">
-      {!canIssueCert && (
-        <div className="flex items-start gap-3 px-4 py-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-2xl">
-          <Icon name="Info" size={16} className="text-amber-500 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-amber-700 dark:text-amber-400">
-            Выдача удостоверений недоступна — ваш тенант зарегистрирован как <strong>Организация</strong>. Эта функция доступна только <strong>Учебным центрам</strong>.
-          </p>
-        </div>
-      )}
+      {/* Модалки */}
       {addCourseForGroup !== null && (
         <GroupAddCourseModal
           title={`Назначить курс группе ${addCourseForGroup}`}
@@ -226,148 +246,290 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
         onUserStats={(u) => { setGroupStatsFor(null); setStatsUser(u); }}
       />
 
-      {/* Фильтры + кнопка действий */}
-      <div className="flex items-start gap-3">
-        <div className="flex-1 bg-card rounded-2xl border border-border px-4 pt-3 pb-3 space-y-2.5">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">Статус обучения группы</p>
-              <SearchSelect options={STATUS_OPTIONS} value={filterStatus} onChange={setFilterStatus} placeholder="Все статусы" />
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">Организация</p>
-              <MultiSelect options={orgOptions} selected={filterOrgs} onChange={setFilterOrgs} placeholder="Все организации" />
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">ФИО обучающегося</p>
-              <MultiSelect options={fioOptions} selected={filterFio} onChange={setFilterFio} placeholder="Все слушатели" />
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">Курс обучения</p>
-              <SearchSelect options={courseOptions} value={filterCourse} onChange={setFilterCourse} placeholder="Все курсы" />
-            </div>
-          </div>
-          <FilterTags
-            filterStatus={filterStatus} setFilterStatus={setFilterStatus} defaultStatus="Все"
-            filterOrgs={filterOrgs} setFilterOrgs={setFilterOrgs}
-            filterFio={filterFio} setFilterFio={setFilterFio}
-            filterCourse={filterCourse} setFilterCourse={setFilterCourse}
-            onReset={resetFilters}
-          />
+      {!canIssueCert && (
+        <div className="flex items-start gap-3 px-4 py-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-2xl">
+          <Icon name="Info" size={16} className="text-amber-500 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-amber-700 dark:text-amber-400">
+            Выдача удостоверений недоступна — ваш тенант зарегистрирован как <strong>Организация</strong>. Эта функция доступна только <strong>Учебным центрам</strong>.
+          </p>
         </div>
+      )}
 
-        {/* Кнопка действий */}
-        <div className="flex-shrink-0 pt-6">
-          <Button
-            ref={actionsButtonRef}
-            variant="outline"
-            className="rounded-xl gap-2 h-9"
-            onClick={() => setActionsOpen((p) => !p)}
-            disabled={selectedGroups.size === 0}
+      {/* Хлебные крошки (только в режиме карточек) */}
+      {viewMode === "cards" && (
+        <div className="flex items-center gap-2 text-sm">
+          <button
+            onClick={goBack}
+            className={`flex items-center gap-1 transition-colors ${navLevel === "groups" ? "text-foreground font-semibold" : "text-muted-foreground hover:text-foreground"}`}
           >
-            <Icon name="Zap" size={15} />
-            Действия
-            {selectedGroups.size > 0 && (
-              <span className="bg-violet-600 text-white text-xs rounded-full px-1.5 py-0.5 leading-none">{selectedGroups.size}</span>
-            )}
-            <Icon name="ChevronDown" size={14} />
-          </Button>
-          {actionsOpen && createPortal(
-            <div
-              ref={actionsMenuRef}
-              style={{ position: "absolute", top: actionsPos.top, right: actionsPos.right, zIndex: 9999 }}
-              className="bg-background border border-border rounded-xl shadow-2xl w-52 overflow-hidden"
-            >
-              {[
-                { icon: "Send", label: "Отправить пароли" },
-                { icon: "Download", label: "Скачать пароли" },
-                { icon: "FileText", label: "Сформировать отчёт" },
-              ].map((item) => (
-                <button
-                  key={item.label}
-                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-muted/60 transition-colors text-left"
-                  onClick={() => setActionsOpen(false)}
-                >
-                  <Icon name={item.icon} size={15} className="text-muted-foreground" />
-                  {item.label}
-                </button>
-              ))}
-            </div>,
-            document.body
+            <Icon name="LayoutGrid" size={14} />
+            Группы
+          </button>
+          {navLevel === "members" && activeGroup && (
+            <>
+              <Icon name="ChevronRight" size={14} className="text-muted-foreground" />
+              <span className="text-foreground font-semibold flex items-center gap-1">
+                <Icon name="Users" size={14} />
+                {activeGroup}
+                <span className="text-muted-foreground font-normal ml-1">· {activeGroupMembers.length} слушателей</span>
+              </span>
+            </>
           )}
         </div>
-      </div>
+      )}
 
-      <p className="text-xs text-muted-foreground">
-        Найдено групп: {filteredGroups.length}
-        {selectedGroups.size > 0 && <span className="ml-2 text-violet-600 font-medium">· Выбрано: {selectedGroups.size}</span>}
-      </p>
+      {/* Панель управления: фильтры + переключатель вида */}
+      {(viewMode === "table" || navLevel === "groups") && (
+        <div className="flex items-start gap-3">
+          <div className="flex-1 bg-card rounded-2xl border border-border px-4 pt-3 pb-3 space-y-2.5">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">Статус обучения группы</p>
+                <SearchSelect options={STATUS_OPTIONS} value={filterStatus} onChange={setFilterStatus} placeholder="Все статусы" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">Организация</p>
+                <MultiSelect options={orgOptions} selected={filterOrgs} onChange={setFilterOrgs} placeholder="Все организации" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">ФИО обучающегося</p>
+                <MultiSelect options={fioOptions} selected={filterFio} onChange={setFilterFio} placeholder="Все слушатели" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">Курс обучения</p>
+                <SearchSelect options={courseOptions} value={filterCourse} onChange={setFilterCourse} placeholder="Все курсы" />
+              </div>
+            </div>
+            <FilterTags
+              filterStatus={filterStatus} setFilterStatus={setFilterStatus} defaultStatus="Все"
+              filterOrgs={filterOrgs} setFilterOrgs={setFilterOrgs}
+              filterFio={filterFio} setFilterFio={setFilterFio}
+              filterCourse={filterCourse} setFilterCourse={setFilterCourse}
+              onReset={resetFilters}
+            />
+          </div>
 
-      <div className="bg-card rounded-2xl border border-border overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border bg-muted/40">
-                <th className="px-3 py-3 w-8" onClick={(e) => e.stopPropagation()}>
-                  <input
-                    type="checkbox"
-                    checked={allChecked}
-                    ref={(el) => { if (el) el.indeterminate = someChecked && !allChecked; }}
-                    onChange={toggleSelectAll}
-                    className="rounded border-border cursor-pointer accent-violet-600"
-                  />
-                </th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground w-8"></th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground whitespace-nowrap">Организация</th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Группа</th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground whitespace-nowrap">Участников</th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Статус</th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground whitespace-nowrap">Назначений</th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground whitespace-nowrap">Завершили</th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground whitespace-nowrap">Прогресс</th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground whitespace-nowrap">Управление</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredGroups.map((group, idx) => {
+          <div className="flex-shrink-0 pt-6 flex flex-col gap-2">
+            {/* Переключатель вида */}
+            <div className="flex rounded-xl border border-border overflow-hidden h-9">
+              <button
+                onClick={() => setViewMode("table")}
+                className={`flex items-center justify-center px-3 transition-colors ${viewMode === "table" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted"}`}
+                title="Таблица"
+              >
+                <Icon name="List" size={15} />
+              </button>
+              <button
+                onClick={() => { setViewMode("cards"); setNavLevel("groups"); setActiveGroup(null); }}
+                className={`flex items-center justify-center px-3 transition-colors ${viewMode === "cards" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted"}`}
+                title="Карточки"
+              >
+                <Icon name="LayoutGrid" size={15} />
+              </button>
+            </div>
+
+            {/* Кнопка действий (только таблица) */}
+            {viewMode === "table" && (
+              <Button
+                ref={actionsButtonRef}
+                variant="outline"
+                className="rounded-xl gap-2 h-9"
+                onClick={() => setActionsOpen((p) => !p)}
+                disabled={selectedGroups.size === 0}
+              >
+                <Icon name="Zap" size={15} />
+                Действия
+                {selectedGroups.size > 0 && (
+                  <span className="bg-primary text-primary-foreground text-xs rounded-full px-1.5 py-0.5 leading-none">{selectedGroups.size}</span>
+                )}
+                <Icon name="ChevronDown" size={14} />
+              </Button>
+            )}
+
+            {actionsOpen && createPortal(
+              <div
+                ref={actionsMenuRef}
+                style={{ position: "absolute", top: actionsPos.top, right: actionsPos.right, zIndex: 9999 }}
+                className="bg-background border border-border rounded-xl shadow-2xl w-52 overflow-hidden"
+              >
+                {[
+                  { icon: "Send", label: "Отправить пароли" },
+                  { icon: "Download", label: "Скачать пароли" },
+                  { icon: "FileText", label: "Сформировать отчёт" },
+                ].map((item) => (
+                  <button
+                    key={item.label}
+                    className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-muted/60 transition-colors text-left"
+                    onClick={() => setActionsOpen(false)}
+                  >
+                    <Icon name={item.icon} size={15} className="text-muted-foreground" />
+                    {item.label}
+                  </button>
+                ))}
+              </div>,
+              document.body
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════ РЕЖИМ: ТАБЛИЦА ══════════════ */}
+      {viewMode === "table" && (
+        <>
+          <p className="text-xs text-muted-foreground">
+            Найдено групп: {filteredGroups.length}
+            {selectedGroups.size > 0 && <span className="ml-2 text-primary font-medium">· Выбрано: {selectedGroups.size}</span>}
+          </p>
+
+          <div className="bg-card rounded-2xl border border-border overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-muted/40">
+                    <th className="px-3 py-3 w-8" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={allChecked}
+                        ref={(el) => { if (el) el.indeterminate = someChecked && !allChecked; }}
+                        onChange={toggleSelectAll}
+                        className="rounded border-border cursor-pointer accent-primary"
+                      />
+                    </th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground w-8"></th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground whitespace-nowrap">Организация</th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Группа</th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground whitespace-nowrap">Участников</th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Статус</th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground whitespace-nowrap">Назначений</th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground whitespace-nowrap">Завершили</th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground whitespace-nowrap">Прогресс</th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground whitespace-nowrap">Управление</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredGroups.map((group, idx) => {
+                    const members = localUsers.filter((u) => u.group === group);
+                    const organization = members[0]?.organization ?? "";
+                    return (
+                      <GroupTableRow
+                        key={group}
+                        group={group}
+                        idx={idx}
+                        organization={organization}
+                        members={members}
+                        isExpanded={expandedGroups.has(group)}
+                        isSelected={selectedGroups.has(group)}
+                        expandedMembers={expandedMembers}
+                        onToggleGroup={toggleGroup}
+                        onToggleSelect={toggleSelectOne}
+                        onToggleMember={toggleMember}
+                        onOpenGroupStats={(g) => setGroupStatsFor(g)}
+                        onOpenUserStats={(u) => setStatsUser(localUsers.find((lu) => lu.id === u.id) ?? u)}
+                        onAddCourseForGroup={(g) => setAddCourseForGroup(g)}
+                        onAddCourseForMember={(userId) => setAddCourseForMember(userId)}
+                        onActivateCourse={activateCourse}
+                        onExtendCourse={extendCourse}
+                        onIssueCertificate={issueCertificate}
+                        onToggleAssignment={toggleAssignment}
+                      />
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            {filteredGroups.length === 0 && (
+              <div className="p-10 text-center">
+                <Icon name="SearchX" size={32} className="text-muted-foreground mx-auto mb-3" />
+                <p className="font-medium">Группы не найдены</p>
+                <p className="text-muted-foreground text-sm mt-1">Попробуйте изменить условия фильтрации</p>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* ══════════════ РЕЖИМ: КАРТОЧКИ — УРОВЕНЬ ГРУПП ══════════════ */}
+      {viewMode === "cards" && navLevel === "groups" && (
+        <>
+          <p className="text-xs text-muted-foreground">Найдено групп: {filteredGroups.length}</p>
+          {filteredGroups.length === 0 ? (
+            <div className="p-10 text-center bg-card rounded-2xl border border-border">
+              <Icon name="SearchX" size={32} className="text-muted-foreground mx-auto mb-3" />
+              <p className="font-medium">Группы не найдены</p>
+              <p className="text-muted-foreground text-sm mt-1">Попробуйте изменить условия фильтрации</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {filteredGroups.map((group) => {
                 const members = localUsers.filter((u) => u.group === group);
-                const organization = members[0]?.organization ?? "";
+                const status = getGroupStatus(members);
+                const avgProgress = getAvgProgress(members);
                 return (
-                <GroupTableRow
-                  key={group}
-                  group={group}
-                  idx={idx}
-                  organization={organization}
-                  members={members}
-                  isExpanded={expandedGroups.has(group)}
-                  isSelected={selectedGroups.has(group)}
-                  expandedMembers={expandedMembers}
-                  onToggleGroup={toggleGroup}
-                  onToggleSelect={toggleSelectOne}
-                  onToggleMember={toggleMember}
-                  onOpenGroupStats={(g) => setGroupStatsFor(g)}
-                  onOpenUserStats={(u) => setStatsUser(localUsers.find((lu) => lu.id === u.id) ?? u)}
-                  onAddCourseForGroup={(g) => setAddCourseForGroup(g)}
-                  onAddCourseForMember={(userId) => setAddCourseForMember(userId)}
-                  onActivateCourse={activateCourse}
-                  onExtendCourse={extendCourse}
-                  onIssueCertificate={issueCertificate}
-                  onToggleAssignment={toggleAssignment}
-                />
+                  <GroupCard
+                    key={group}
+                    group={group}
+                    members={members}
+                    status={status}
+                    avgProgress={avgProgress}
+                    onOpen={() => openGroup(group)}
+                    onStats={() => setGroupStatsFor(group)}
+                    onAddCourse={() => setAddCourseForGroup(group)}
+                  />
                 );
               })}
-            </tbody>
-          </table>
-        </div>
+            </div>
+          )}
+        </>
+      )}
 
-        {filteredGroups.length === 0 && (
-          <div className="p-10 text-center">
-            <Icon name="SearchX" size={32} className="text-muted-foreground mx-auto mb-3" />
-            <p className="font-medium">Группы не найдены</p>
-            <p className="text-muted-foreground text-sm mt-1">Попробуйте изменить условия фильтрации</p>
+      {/* ══════════════ РЕЖИМ: КАРТОЧКИ — УРОВЕНЬ СЛУШАТЕЛЕЙ ══════════════ */}
+      {viewMode === "cards" && navLevel === "members" && activeGroup && (
+        <>
+          {/* Панель действий группы */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-xl gap-2"
+              onClick={() => setGroupStatsFor(activeGroup)}
+            >
+              <Icon name="BarChart2" size={15} />
+              Статистика группы
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-xl gap-2"
+              onClick={() => setAddCourseForGroup(activeGroup)}
+            >
+              <Icon name="BookPlus" size={15} />
+              Назначить курс всей группе
+            </Button>
+            <p className="text-xs text-muted-foreground ml-auto">
+              {activeGroupMembers.length} слушател{activeGroupMembers.length === 1 ? "ь" : activeGroupMembers.length < 5 ? "я" : "ей"}
+            </p>
           </div>
-        )}
-      </div>
+
+          {activeGroupMembers.length === 0 ? (
+            <div className="p-10 text-center bg-card rounded-2xl border border-border">
+              <Icon name="Users" size={32} className="text-muted-foreground mx-auto mb-3" />
+              <p className="font-medium">В группе нет слушателей</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {activeGroupMembers.map((member) => (
+                <MemberCard
+                  key={member.id}
+                  user={member}
+                  onOpen={() => setStatsUser(member)}
+                  onStats={() => setStatsUser(member)}
+                  onAddCourse={() => setAddCourseForMember(member.id)}
+                />
+              ))}
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
