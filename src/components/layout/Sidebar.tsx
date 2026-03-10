@@ -81,10 +81,10 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
     STUDENT_NAV;
 
   const statItems = [
-    { icon: "Users",       value: stats.users,       label: "Слушателей", color: "from-violet-500 to-purple-700" },
-    { icon: "BookOpen",    value: stats.courses,      label: "Курсов",     color: "from-cyan-500 to-blue-600" },
-    { icon: "CheckCircle", value: stats.assignments,  label: "Назначений", color: "from-emerald-500 to-teal-600" },
-    { icon: "Trophy",      value: stats.completed,    label: "Завершено",  color: "from-amber-500 to-orange-600" },
+    { icon: "Ticket",      value: stats.subscriptionsLeft, label: "подписок осталось",  color: "from-violet-500 to-purple-700" },
+    { icon: "CreditCard",  value: stats.subscriptionsUsed, label: "списано в месяце",   color: "from-cyan-500 to-blue-600" },
+    { icon: "GraduationCap", value: stats.inProgress,      label: "на подготовке",      color: "from-emerald-500 to-teal-600" },
+    { icon: "Clock",       value: stats.pending,           label: "ожидают активации",  color: "from-amber-500 to-orange-600" },
   ];
 
   const showStats = role === "admin" || role === "manager";

@@ -1,10 +1,10 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 
 interface Stats {
-  users: number;
-  courses: number;
-  assignments: number;
-  completed: number;
+  subscriptionsLeft: number;
+  subscriptionsUsed: number;
+  inProgress: number;
+  pending: number;
 }
 
 interface StatsContextType {
@@ -15,7 +15,12 @@ interface StatsContextType {
 const StatsContext = createContext<StatsContextType | undefined>(undefined);
 
 export function StatsProvider({ children }: { children: ReactNode }) {
-  const [stats, setStats] = useState<Stats>({ users: 0, courses: 6, assignments: 0, completed: 0 });
+  const [stats, setStats] = useState<Stats>({
+    subscriptionsLeft: 100,
+    subscriptionsUsed: 50,
+    inProgress: 10,
+    pending: 20,
+  });
   return (
     <StatsContext.Provider value={{ stats, setStats }}>
       {children}

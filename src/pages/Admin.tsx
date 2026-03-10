@@ -93,7 +93,14 @@ export default function Admin() {
   // ─── Синхронизация со StatsContext ───────────────────────────────────────
   const { setStats } = useStats();
   useEffect(() => {
-    setStats({ users: users.length, courses: 6, assignments: totalAssignments, completed: totalCompleted });
+    const inProgress = users.filter((u) => u.assignments.some((a) => a.active && a.progress > 0 && a.progress < 100)).length;
+    const pending = users.filter((u) => u.assignments.some((a) => a.status === "pending")).length;
+    setStats({
+      subscriptionsLeft: 100,
+      subscriptionsUsed: totalAssignments,
+      inProgress,
+      pending,
+    });
   }, [users.length, totalAssignments, totalCompleted]);
 
   if (error) {
