@@ -499,6 +499,14 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
                     onOpen={() => openGroup(group)}
                     onStats={() => setGroupStatsFor(group)}
                     onAddCourse={() => setAddCourseForGroup(group)}
+                    onActivateAll={() => {
+                      const today_ = today();
+                      members.forEach((u) => {
+                        u.assignments.filter((a) => !a.activatedAt).forEach((a) => {
+                          activateCourse(u.id, a.courseId, today_);
+                        });
+                      });
+                    }}
                   />
                 );
               })}

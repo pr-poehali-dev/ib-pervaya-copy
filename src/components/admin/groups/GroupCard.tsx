@@ -1,4 +1,6 @@
+import { useState } from "react";
 import Icon from "@/components/ui/icon";
+import Tip from "@/components/ui/tip";
 import { User } from "@/components/admin/types";
 
 interface GroupCardProps {
@@ -9,6 +11,7 @@ interface GroupCardProps {
   onOpen: () => void;
   onStats: () => void;
   onAddCourse: () => void;
+  onActivateAll: () => void;
 }
 
 const STATUS_STYLE: Record<string, string> = {
@@ -32,11 +35,33 @@ function getGradient(group: string) {
   return GRADIENTS[Math.abs(hash) % GRADIENTS.length];
 }
 
-export default function GroupCard({ group, members, status, avgProgress, onOpen, onStats, onAddCourse }: GroupCardProps) {
+export default function GroupCard({ group, members, status, avgProgress, onOpen, onStats, onAddCourse, onActivateAll }: GroupCardProps) {
   const gradient = getGradient(group);
   const completed = members.filter((u) => u.assignments.some((a) => a.progress === 100)).length;
   const active = members.filter((u) => u.assignments.some((a) => a.active && a.progress > 0 && a.progress < 100)).length;
   const totalAssignments = members.reduce((s, u) => s + u.assignments.filter((a) => a.active).length, 0);
+
+  const [sendCopied, setSendCopied] = useState(false);
+
+  function handleSendPasswords(e: React.MouseEvent) {
+    e.stopPropagation();
+    const text = members.map((m) => `${m.name}: ${m.email}`).join("\n");
+    navigator.clipboard.writeText(text);
+    setSendCopied(true);
+    setTimeout(() => setSendCopied(false), 2000);
+  }
+
+  function handleDownloadPasswords(e: React.MouseEvent) {
+    e.stopPropagation();
+    const csv = "ФИО,Email\n" + members.map((m) => `${m.name},${m.email}`).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${group}_passwords.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   return (
     <div
@@ -89,7 +114,7 @@ export default function GroupCard({ group, members, status, avgProgress, onOpen,
         </div>
       </div>
 
-      {/* Аватары + кнопки */}
+      {/* Аватары + кнопки действий */}
       <div className="flex items-center justify-between">
         <div className="flex -space-x-2">
           {members.slice(0, 4).map((m, i) => (
@@ -106,21 +131,35 @@ export default function GroupCard({ group, members, status, avgProgress, onOpen,
             </div>
           )}
         </div>
+
         <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
-          <button
-            onClick={onStats}
-            className="w-8 h-8 rounded-lg hover:bg-muted flex items-center justify-center transition-colors"
-            title="Статистика"
-          >
-            <Icon name="BarChart2" size={15} className="text-muted-foreground" />
-          </button>
-          <button
-            onClick={onAddCourse}
-            className="w-8 h-8 rounded-lg hover:bg-muted flex items-center justify-center transition-colors"
-            title="Назначить курс"
-          >
-            <Icon name="BookPlus" size={15} className="text-muted-foreground" />
-          </button>
+          <Tip text="Статистика группы">
+            <button onClick={(e) => { e.stopPropagation(); onStats(); }} className="w-8 h-8 rounded-lg hover:bg-muted flex items-center justify-center transition-colors">
+              <Icon name="BarChart2" size={15} className="text-muted-foreground" />
+            </button>
+          </Tip>
+          <Tip text="Назначить курс группе">
+            <button onClick={(e) => { e.stopPropagation(); onAddCourse(); }} className="w-8 h-8 rounded-lg hover:bg-muted flex items-center justify-center transition-colors">
+              <Icon name="BookPlus" size={15} className="text-muted-foreground" />
+            </button>
+          </Tip>
+          <Tip text="Активировать все курсы">
+            <button onClick={(e) => { e.stopPropagation(); onActivateAll(); }} className="w-8 h-8 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/30 flex items-center justify-center transition-colors">
+              <Icon name="PlayCircle" size={15} className="text-muted-foreground hover:text-emerald-600" />
+            </button>
+          </Tip>
+          <Tip text={sendCopied ? "Скопировано!" : "Отправить логины/пароли"}>
+            <button onClick={handleSendPasswords} className="w-8 h-8 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 flex items-center justify-center transition-colors">
+              {sendCopied
+                ? <Icon name="Check" size={15} className="text-emerald-500" />
+                : <Icon name="Send" size={15} className="text-muted-foreground" />}
+            </button>
+          </Tip>
+          <Tip text="Скачать пароли (CSV)">
+            <button onClick={handleDownloadPasswords} className="w-8 h-8 rounded-lg hover:bg-muted flex items-center justify-center transition-colors">
+              <Icon name="Download" size={15} className="text-muted-foreground" />
+            </button>
+          </Tip>
         </div>
       </div>
     </div>

@@ -48,6 +48,7 @@ export default function MemberCoursesView({
   const { tenantType } = useRole();
   const canIssueCert = tenantType === "training_center";
   const [loginCopied, setLoginCopied] = useState(false);
+  const [pwdCopied, setPwdCopied] = useState(false);
 
   const activeAssignments = member.assignments.filter((a) => a.active);
   const completedCount = member.assignments.filter((a) => a.progress === 100).length;
@@ -74,6 +75,17 @@ export default function MemberCoursesView({
                 onClick={() => { navigator.clipboard.writeText(member.email); setLoginCopied(true); setTimeout(() => setLoginCopied(false), 2000); }}
               >
                 {loginCopied ? <Icon name="Check" size={12} className="text-emerald-500" /> : <Icon name="Copy" size={12} />}
+              </button>
+            </Tip>
+          </div>
+          <div className="flex items-center gap-2 mt-0.5">
+            <span className="text-sm text-muted-foreground tracking-widest">••••••••</span>
+            <Tip text="Скопировать пароль">
+              <button
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                onClick={() => { navigator.clipboard.writeText("password123"); setPwdCopied(true); setTimeout(() => setPwdCopied(false), 2000); }}
+              >
+                {pwdCopied ? <Icon name="Check" size={12} className="text-emerald-500" /> : <Icon name="KeyRound" size={12} />}
               </button>
             </Tip>
           </div>
