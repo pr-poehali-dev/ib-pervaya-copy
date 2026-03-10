@@ -8,6 +8,7 @@ import GroupAddCourseModal from "./GroupAddCourseModal";
 import GroupTableRow from "./GroupTableRow";
 import GroupCard from "./GroupCard";
 import MemberCard from "./MemberCard";
+import MemberCoursesView from "./MemberCoursesView";
 import { User, CourseAssignment, CourseStatus, allCourses, groups } from "@/components/admin/types";
 import { MultiSelect, SearchSelect, FilterTags } from "@/components/admin/shared/FilterControls";
 import { useRole } from "@/contexts/RoleContext";
@@ -19,7 +20,7 @@ interface AdminGroupsProps {
 const STATUS_OPTIONS = ["Все", "Обучается", "Завершено", "Не начато"];
 
 type ViewMode = "table" | "cards";
-type NavLevel = "groups" | "members";
+type NavLevel = "groups" | "members" | "member";
 
 function today(): string {
   const d = new Date();
@@ -48,6 +49,7 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
   const [viewMode, setViewMode] = useState<ViewMode>("table");
   const [navLevel, setNavLevel] = useState<NavLevel>("groups");
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
+  const [activeMember, setActiveMember] = useState<User | null>(null);
 
   // ─── Фильтры ─────────────────────────────────────────────────────────────────
   const [filterStatus, setFilterStatus] = useState("Все");
@@ -150,9 +152,20 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
     setNavLevel("members");
   }
 
+  function openMember(member: User) {
+    setActiveMember(member);
+    setNavLevel("member");
+  }
+
   function goBack() {
-    setNavLevel("groups");
-    setActiveGroup(null);
+    if (navLevel === "member") {
+      setNavLevel("members");
+      setActiveMember(null);
+    } else {
+      setNavLevel("groups");
+      setActiveGroup(null);
+      setActiveMember(null);
+    }
   }
 
   // ─── Мутации данных ───────────────────────────────────────────────────────────
@@ -257,21 +270,33 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
 
       {/* Хлебные крошки (только в режиме карточек) */}
       {viewMode === "cards" && (
-        <div className="flex items-center gap-2 text-sm">
+        <div className="flex items-center gap-2 text-sm flex-wrap">
           <button
-            onClick={goBack}
+            onClick={() => { setNavLevel("groups"); setActiveGroup(null); setActiveMember(null); }}
             className={`flex items-center gap-1 transition-colors ${navLevel === "groups" ? "text-foreground font-semibold" : "text-muted-foreground hover:text-foreground"}`}
           >
             <Icon name="LayoutGrid" size={14} />
             Группы
           </button>
-          {navLevel === "members" && activeGroup && (
+          {(navLevel === "members" || navLevel === "member") && activeGroup && (
+            <>
+              <Icon name="ChevronRight" size={14} className="text-muted-foreground" />
+              <button
+                onClick={() => { setNavLevel("members"); setActiveMember(null); }}
+                className={`flex items-center gap-1 transition-colors ${navLevel === "members" ? "text-foreground font-semibold" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                <Icon name="Users" size={14} />
+                {activeGroup}
+                {navLevel === "members" && <span className="text-muted-foreground font-normal ml-1">· {activeGroupMembers.length} слушателей</span>}
+              </button>
+            </>
+          )}
+          {navLevel === "member" && activeMember && (
             <>
               <Icon name="ChevronRight" size={14} className="text-muted-foreground" />
               <span className="text-foreground font-semibold flex items-center gap-1">
-                <Icon name="Users" size={14} />
-                {activeGroup}
-                <span className="text-muted-foreground font-normal ml-1">· {activeGroupMembers.length} слушателей</span>
+                <Icon name="User" size={14} />
+                {activeMember.name}
               </span>
             </>
           )}
@@ -517,11 +542,11 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {activeGroupMembers.map((member) => (
+              {activeGroupMembers.map((member, mi) => (
                 <MemberCard
                   key={member.id}
                   user={member}
-                  onOpen={() => setStatsUser(member)}
+                  onOpen={() => openMember(member)}
                   onStats={() => setStatsUser(member)}
                   onAddCourse={() => setAddCourseForMember(member.id)}
                 />
@@ -529,6 +554,19 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
             </div>
           )}
         </>
+      )}
+
+      {/* ══════════════ РЕЖИМ: КАРТОЧКИ — УРОВЕНЬ СЛУШАТЕЛЯ (курсы) ══════════════ */}
+      {viewMode === "cards" && navLevel === "member" && activeMember && (
+        <MemberCoursesView
+          member={localUsers.find((u) => u.id === activeMember.id) ?? activeMember}
+          memberIndex={activeGroupMembers.findIndex((u) => u.id === activeMember.id)}
+          onAddCourse={(userId) => setAddCourseForMember(userId)}
+          onActivateCourse={activateCourse}
+          onExtendCourse={extendCourse}
+          onIssueCertificate={issueCertificate}
+          onToggleAssignment={toggleAssignment}
+        />
       )}
     </div>
   );
