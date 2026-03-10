@@ -81,11 +81,15 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
     STUDENT_NAV;
 
   const statItems = [
-    { icon: "Ticket",      value: stats.subscriptionsLeft, label: "подписок осталось",  color: "from-violet-500 to-purple-700" },
-    { icon: "CreditCard",  value: stats.subscriptionsUsed, label: "списано в месяце",   color: "from-cyan-500 to-blue-600" },
-    { icon: "GraduationCap", value: stats.inProgress,      label: "на подготовке",      color: "from-emerald-500 to-teal-600" },
-    { icon: "Clock",       value: stats.pending,           label: "ожидают активации",  color: "from-amber-500 to-orange-600" },
+    { icon: "Ticket",        value: stats.subscriptionsLeft, label: "подписок осталось", color: "from-violet-500 to-purple-700" },
+    { icon: "CreditCard",    value: stats.subscriptionsUsed, label: "списано в месяце",  color: "from-cyan-500 to-blue-600" },
+    { icon: "GraduationCap", value: stats.inProgress,        label: "на подготовке",     color: "from-emerald-500 to-teal-600" },
+    { icon: "Clock",         value: stats.pending,           label: "ожидают активации", color: "from-amber-500 to-orange-600" },
   ];
+
+  const totalSubs = stats.subscriptionsLeft + stats.subscriptionsUsed;
+  const usedPct = totalSubs > 0 ? Math.round((stats.subscriptionsUsed / totalSubs) * 100) : 0;
+  const leftPct = 100 - usedPct;
 
   const showStats = role === "admin" || role === "manager";
 
@@ -183,6 +187,25 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
               <p className="text-white font-bold text-[10px] mt-0.5">{s.value}</p>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Прогресс-бар подписок */}
+      {showStats && !collapsed && (
+        <div className="px-3 pb-2">
+          <div className="bg-white/5 rounded-xl px-3 py-2.5 space-y-1.5">
+            <div className="flex items-center justify-between text-[10px]">
+              <span className="text-white/50">Подписки использованы</span>
+              <span className="text-white/70 font-semibold">{stats.subscriptionsUsed} / {totalSubs}</span>
+            </div>
+            <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full transition-all"
+                style={{ width: `${leftPct}%` }}
+              />
+            </div>
+            <p className="text-[10px] text-white/40">{stats.subscriptionsLeft} осталось доступных</p>
+          </div>
         </div>
       )}
 

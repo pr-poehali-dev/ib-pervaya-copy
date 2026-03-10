@@ -19,7 +19,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 const ROLE_MAP: Record<string, AppRole> = {
   "Администратор": "admin",
   "Менеджер": "manager",
-  "Преподаватель": "student",
+  "Слушатель": "student",
   "Наблюдатель": "student",
   "Суперадмин": "superadmin",
 };

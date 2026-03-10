@@ -31,7 +31,7 @@ const TEST_ACCOUNTS = [
   { email: "admin@isp.ru",   password: "admin123",   label: "Администратор" },
   { email: "super@isp.ru",   password: "super123",   label: "Суперадмин" },
   { email: "manager@isp.ru", password: "manager123", label: "Менеджер" },
-  { email: "student@isp.ru", password: "student123", label: "Преподаватель" },
+  { email: "student@isp.ru", password: "student123", label: "Слушатель" },
 ];
 
 const ROLE_REDIRECT: Record<string, string> = {

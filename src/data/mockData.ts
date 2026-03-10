@@ -315,7 +315,7 @@ export const DEFAULT_SYSTEM_USERS: SystemUser[] = [
     firstName: "АНТОН",
     middleName: "ВИТАЛЬЕВИЧ",
     email: "student@isp.ru",
-    role: "Преподаватель",
+    role: "Слушатель",
     department: "",
     password: "student123",
     status: "active",
@@ -345,7 +345,7 @@ export const DEFAULT_EMAIL_SETTINGS: EmailSettings = {
 
 export const ORG_TYPES = ["Юридическое лицо", "ИП", "Физическое лицо"] as const;
 export const OPF_TYPES = ["ООО", "АО", "ПАО", "ГБУ", "ФГБУ", "ИП"] as const;
-export const USER_ROLES_SYSTEM = ["Администратор", "Менеджер", "Преподаватель", "Наблюдатель"] as const;
+export const USER_ROLES_SYSTEM = ["Администратор", "Менеджер", "Слушатель", "Наблюдатель"] as const;
 
 // ─── Шаблоны email-уведомлений ────────────────────────────────────────────────
 // API: GET /api/email-templates → EmailTemplate[]
