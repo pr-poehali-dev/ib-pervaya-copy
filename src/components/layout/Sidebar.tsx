@@ -81,10 +81,8 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
     STUDENT_NAV;
 
   const statItems = [
-    { icon: "Ticket",        value: stats.subscriptionsLeft, label: "подписок осталось", color: "from-violet-500 to-purple-700" },
-    { icon: "CreditCard",    value: stats.subscriptionsUsed, label: "списано в месяце",  color: "from-cyan-500 to-blue-600" },
-    { icon: "GraduationCap", value: stats.inProgress,        label: "на подготовке",     color: "from-emerald-500 to-teal-600" },
-    { icon: "Clock",         value: stats.pending,           label: "ожидают активации", color: "from-amber-500 to-orange-600" },
+    { icon: "GraduationCap", value: stats.inProgress, label: "проходят подготовку",  color: "from-emerald-500 to-teal-600" },
+    { icon: "Clock",         value: stats.pending,    label: "ожидают активации",     color: "from-amber-500 to-orange-600" },
   ];
 
   const totalSubs = stats.subscriptionsLeft + stats.subscriptionsUsed;
@@ -161,20 +159,18 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
       {/* Статистика (только для admin/manager) */}
       {showStats && !collapsed && (
-        <div className="px-3 pb-2">
-          <div className="grid grid-cols-2 gap-1.5">
-            {statItems.map((s) => (
-              <div key={s.label} className="bg-white/5 rounded-xl px-2.5 py-2 flex items-center gap-2">
-                <div className={`w-6 h-6 bg-gradient-to-br ${s.color} rounded-md flex items-center justify-center flex-shrink-0`}>
-                  <Icon name={s.icon} size={12} className="text-white" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-white font-bold text-sm leading-none">{s.value}</p>
-                  <p className="text-white/40 text-[10px] leading-tight truncate">{s.label}</p>
-                </div>
+        <div className="px-3 pb-2 space-y-1.5">
+          {statItems.map((s) => (
+            <div key={s.label} className="bg-white/5 rounded-xl px-3 py-2 flex items-center gap-3">
+              <div className={`w-7 h-7 bg-gradient-to-br ${s.color} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                <Icon name={s.icon} size={14} className="text-white" />
               </div>
-            ))}
-          </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-white/50 text-[10px] leading-tight">{s.label}</p>
+              </div>
+              <p className="text-white font-bold text-sm">{s.value}</p>
+            </div>
+          ))}
         </div>
       )}
       {showStats && collapsed && (
