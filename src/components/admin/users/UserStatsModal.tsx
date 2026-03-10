@@ -152,6 +152,9 @@ export default function UserStatsModal({ user, onClose }: UserStatsModalProps) {
               {user.initials}
             </div>
             <div>
+              {user.organization && (
+                <p className="text-[10px] text-muted-foreground">{user.organization}</p>
+              )}
               <h2 className="font-bold text-base leading-tight">{user.name}</h2>
               <p className="text-xs text-muted-foreground">{user.role} · {user.group}</p>
             </div>
