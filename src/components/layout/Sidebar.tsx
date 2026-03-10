@@ -6,7 +6,6 @@ import { useStats } from "@/contexts/StatsContext";
 import { useRole } from "@/contexts/RoleContext";
 import { useAuth } from "@/contexts/AuthContext";
 import ThemePicker from "@/components/ui/ThemePicker";
-import RoleSwitcher from "@/components/ui/RoleSwitcher";
 
 type NavItem = { to: string; icon: string; label: string };
 
@@ -101,17 +100,17 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
         {!collapsed && (
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 gradient-primary rounded-xl flex items-center justify-center flex-shrink-0">
-              <Icon name="Zap" size={18} className="text-white" />
+              <Icon name="BookOpen" size={18} className="text-white" />
             </div>
             <div>
-              <p className="text-white font-bold text-lg leading-tight font-['Manrope']">ИСП</p>
-              <p className="text-white/40 text-xs">Платформа обучения</p>
+              <p className="text-white font-bold text-sm leading-tight font-['Manrope']">ИСП</p>
+              <p className="text-white/40 text-[10px]">Система подготовки</p>
             </div>
           </div>
         )}
         {collapsed && (
           <div className="w-9 h-9 gradient-primary rounded-xl flex items-center justify-center">
-            <Icon name="Zap" size={18} className="text-white" />
+            <Icon name="BookOpen" size={18} className="text-white" />
           </div>
         )}
         <button
@@ -193,11 +192,6 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
         open={themePickerOpen}
         onToggle={() => setThemePickerOpen((p) => !p)}
       />
-
-      {/* Переключатель роли */}
-      <div className="border-t border-white/10 p-2">
-        <RoleSwitcher collapsed={collapsed} />
-      </div>
 
       {/* Пользователь + выход */}
       <div className="p-2 border-t border-white/10 space-y-1">
