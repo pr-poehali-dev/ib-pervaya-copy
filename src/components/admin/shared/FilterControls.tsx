@@ -176,17 +176,19 @@ export function SearchSelect({
 export function FilterTags({
   filterStatus, setFilterStatus, defaultStatus,
   filterOrgs, setFilterOrgs,
+  filterGroups, setFilterGroups,
   filterFio, setFilterFio,
   filterCourse, setFilterCourse,
   onReset,
 }: {
   filterStatus: string; setFilterStatus: (v: string) => void; defaultStatus: string;
   filterOrgs: string[]; setFilterOrgs: (v: string[]) => void;
+  filterGroups?: string[]; setFilterGroups?: (v: string[]) => void;
   filterFio: string[]; setFilterFio: (v: string[]) => void;
   filterCourse: string; setFilterCourse: (v: string) => void;
   onReset: () => void;
 }) {
-  const hasFilters = filterStatus !== defaultStatus || filterOrgs.length > 0 || filterFio.length > 0 || filterCourse;
+  const hasFilters = filterStatus !== defaultStatus || filterOrgs.length > 0 || (filterGroups?.length ?? 0) > 0 || filterFio.length > 0 || filterCourse;
   if (!hasFilters) return null;
   return (
     <div className="flex flex-wrap items-center gap-1.5">
@@ -201,6 +203,11 @@ export function FilterTags({
       {filterOrgs.map((o) => (
         <span key={o} className="flex items-center gap-1 px-2 py-0.5 bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300 rounded-lg text-xs font-medium">
           {o}<button onClick={() => setFilterOrgs(filterOrgs.filter((x) => x !== o))} className="hover:text-destructive">×</button>
+        </span>
+      ))}
+      {filterGroups?.map((g) => (
+        <span key={g} className="flex items-center gap-1 px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-lg text-xs font-medium">
+          {g}<button onClick={() => setFilterGroups?.(filterGroups.filter((x) => x !== g))} className="hover:text-destructive">×</button>
         </span>
       ))}
       {filterFio.map((f) => (

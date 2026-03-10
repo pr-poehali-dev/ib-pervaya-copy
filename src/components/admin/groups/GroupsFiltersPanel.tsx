@@ -17,11 +17,14 @@ interface GroupsFiltersPanelProps {
   setFilterStatus: (v: string) => void;
   filterOrgs: string[];
   setFilterOrgs: (v: string[]) => void;
+  filterGroups: string[];
+  setFilterGroups: (v: string[]) => void;
   filterFio: string[];
   setFilterFio: (v: string[]) => void;
   filterCourse: string;
   setFilterCourse: (v: string) => void;
   orgOptions: string[];
+  groupOptions: string[];
   fioOptions: string[];
   courseOptions: string[];
   onResetFilters: () => void;
@@ -42,11 +45,14 @@ export default function GroupsFiltersPanel({
   setFilterStatus,
   filterOrgs,
   setFilterOrgs,
+  filterGroups,
+  setFilterGroups,
   filterFio,
   setFilterFio,
   filterCourse,
   setFilterCourse,
   orgOptions,
+  groupOptions,
   fioOptions,
   courseOptions,
   onResetFilters,
@@ -60,7 +66,7 @@ export default function GroupsFiltersPanel({
   return (
     <div className="flex items-start gap-3">
       <div className="flex-1 bg-card rounded-2xl border border-border px-4 pt-3 pb-3 space-y-2.5">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground">Статус обучения группы</p>
             <SearchSelect options={STATUS_OPTIONS} value={filterStatus} onChange={setFilterStatus} placeholder="Все статусы" />
@@ -68,6 +74,10 @@ export default function GroupsFiltersPanel({
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground">Организация</p>
             <MultiSelect options={orgOptions} selected={filterOrgs} onChange={setFilterOrgs} placeholder="Все организации" />
+          </div>
+          <div className="space-y-1">
+            <p className="text-xs text-muted-foreground">Группа</p>
+            <MultiSelect options={groupOptions} selected={filterGroups} onChange={setFilterGroups} placeholder="Все группы" />
           </div>
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground">ФИО обучающегося</p>
@@ -81,6 +91,7 @@ export default function GroupsFiltersPanel({
         <FilterTags
           filterStatus={filterStatus} setFilterStatus={setFilterStatus} defaultStatus="Все"
           filterOrgs={filterOrgs} setFilterOrgs={setFilterOrgs}
+          filterGroups={filterGroups} setFilterGroups={setFilterGroups}
           filterFio={filterFio} setFilterFio={setFilterFio}
           filterCourse={filterCourse} setFilterCourse={setFilterCourse}
           onReset={onResetFilters}

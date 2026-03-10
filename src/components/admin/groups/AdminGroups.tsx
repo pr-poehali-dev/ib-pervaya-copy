@@ -49,6 +49,7 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
   // ─── Фильтры ─────────────────────────────────────────────────────────────────
   const [filterStatus, setFilterStatus] = useState("Все");
   const [filterOrgs, setFilterOrgs] = useState<string[]>([]);
+  const [filterGroups, setFilterGroups] = useState<string[]>([]);
   const [filterFio, setFilterFio] = useState<string[]>([]);
   const [filterCourse, setFilterCourse] = useState("");
 
@@ -92,7 +93,8 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
     return () => document.removeEventListener("mousedown", handler);
   }, [actionsOpen]);
 
-  const orgOptions = useMemo(() => [...new Set(localUsers.map((u) => u.group))], [localUsers]);
+  const orgOptions = useMemo(() => [...new Set(localUsers.map((u) => u.organization).filter(Boolean))], [localUsers]);
+  const groupOptions = useMemo(() => [...new Set(localUsers.map((u) => u.group))], [localUsers]);
   const fioOptions = useMemo(() => localUsers.map((u) => u.name), [localUsers]);
   const courseOptions = useMemo(() => allCourses.map((c) => c.title), []);
 
@@ -101,7 +103,8 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
       const members = localUsers.filter((u) => u.group === group);
       const status = getGroupStatus(members);
       if (filterStatus !== "Все" && status !== filterStatus) return false;
-      if (filterOrgs.length > 0 && !filterOrgs.includes(group)) return false;
+      if (filterOrgs.length > 0 && !members.some((u) => filterOrgs.includes(u.organization))) return false;
+      if (filterGroups.length > 0 && !filterGroups.includes(group)) return false;
       if (filterFio.length > 0 && !members.some((u) => filterFio.includes(u.name))) return false;
       if (filterCourse) {
         const course = allCourses.find((c) => c.title === filterCourse);
@@ -109,11 +112,12 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
       }
       return true;
     });
-  }, [localUsers, filterStatus, filterOrgs, filterFio, filterCourse]);
+  }, [localUsers, filterStatus, filterOrgs, filterGroups, filterFio, filterCourse]);
 
   const resetFilters = () => {
     setFilterStatus("Все");
     setFilterOrgs([]);
+    setFilterGroups([]);
     setFilterFio([]);
     setFilterCourse("");
   };
@@ -283,11 +287,14 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
           setFilterStatus={setFilterStatus}
           filterOrgs={filterOrgs}
           setFilterOrgs={setFilterOrgs}
+          filterGroups={filterGroups}
+          setFilterGroups={setFilterGroups}
           filterFio={filterFio}
           setFilterFio={setFilterFio}
           filterCourse={filterCourse}
           setFilterCourse={setFilterCourse}
           orgOptions={orgOptions}
+          groupOptions={groupOptions}
           fioOptions={fioOptions}
           courseOptions={courseOptions}
           onResetFilters={resetFilters}
