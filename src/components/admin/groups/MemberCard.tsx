@@ -45,6 +45,9 @@ export default function MemberCard({ user, onOpen, onStats, onAddCourse }: Membe
           <span className="text-white font-bold text-sm">{user.initials}</span>
         </div>
         <div className="flex-1 min-w-0">
+          {user.organization && (
+            <p className="text-[10px] text-muted-foreground truncate">{user.organization}</p>
+          )}
           <p className="font-semibold text-sm text-foreground truncate">{user.name}</p>
           <p className="text-xs text-muted-foreground truncate">{user.email}</p>
         </div>
