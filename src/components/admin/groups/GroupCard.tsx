@@ -37,6 +37,7 @@ function getGradient(group: string) {
 
 export default function GroupCard({ group, members, status, avgProgress, onOpen, onStats, onAddCourse, onActivateAll }: GroupCardProps) {
   const gradient = getGradient(group);
+  const organization = members[0]?.organization ?? "";
   const completed = members.filter((u) => u.assignments.some((a) => a.progress === 100)).length;
   const active = members.filter((u) => u.assignments.some((a) => a.active && a.progress > 0 && a.progress < 100)).length;
   const totalAssignments = members.reduce((s, u) => s + u.assignments.filter((a) => a.active).length, 0);
@@ -75,6 +76,9 @@ export default function GroupCard({ group, members, status, avgProgress, onOpen,
             <Icon name="Users" size={20} className="text-white" />
           </div>
           <div>
+            {organization && (
+              <p className="text-[10px] text-muted-foreground truncate max-w-[140px]">{organization}</p>
+            )}
             <p className="font-bold text-sm text-foreground">{group}</p>
             <p className="text-xs text-muted-foreground">{members.length} слушател{members.length === 1 ? "ь" : members.length < 5 ? "я" : "ей"}</p>
           </div>
