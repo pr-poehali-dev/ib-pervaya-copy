@@ -22,6 +22,13 @@ const FEATURES = [
   },
 ];
 
+const TEST_ACCOUNTS = [
+  { email: "admin@isp.ru",   password: "admin123",   label: "Администратор" },
+  { email: "super@isp.ru",   password: "super123",   label: "Суперадмин" },
+  { email: "manager@isp.ru", password: "manager123", label: "Менеджер" },
+  { email: "student@isp.ru", password: "student123", label: "Преподаватель" },
+];
+
 const ROLE_REDIRECT: Record<string, string> = {
   superadmin: "/super-admin",
   sales_manager: "/sales",
@@ -200,6 +207,24 @@ export default function Login() {
               )}
               Войти
             </button>
+
+            {/* Тестовые аккаунты */}
+            <div className="pt-2">
+              <p className="text-xs text-gray-400 text-center mb-2">Быстрый вход для тестирования</p>
+              <div className="grid grid-cols-2 gap-1.5">
+                {TEST_ACCOUNTS.map((acc) => (
+                  <button
+                    key={acc.email}
+                    type="button"
+                    onClick={() => { setEmail(acc.email); setPassword(acc.password); }}
+                    className="text-left px-3 py-2 rounded-lg border border-gray-100 bg-gray-50 hover:bg-emerald-50 hover:border-emerald-200 transition-all group"
+                  >
+                    <p className="text-xs font-medium text-gray-700 group-hover:text-emerald-700">{acc.label}</p>
+                    <p className="text-[10px] text-gray-400 truncate">{acc.email}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
           </form>
         </div>
       </div>
