@@ -96,6 +96,7 @@ export function useAdminData() {
     email: string;
     group: string;
     role: string;
+    organization: string;
     courseIds: number[];
   }): User {
     const fullName = [params.lastName, params.firstName, params.middleName]
@@ -110,6 +111,7 @@ export function useAdminData() {
       initials: getInitials(fullName),
       group: params.group,
       role: params.role,
+      organization: params.organization.trim(),
       assignments: params.courseIds.map((courseId) => ({
         courseId,
         active: true,

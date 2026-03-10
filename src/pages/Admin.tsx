@@ -80,6 +80,7 @@ export default function Admin() {
       email: newEmail,
       group: newGroup,
       role: newRole,
+      organization: newOrg,
       courseIds: selectedCourses,
     });
 
