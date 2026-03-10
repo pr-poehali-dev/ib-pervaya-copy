@@ -36,7 +36,7 @@ export default function ThemePicker({ collapsed, open, onToggle }: ThemePickerPr
           <div className="px-4 py-3 border-b border-white/10">
             <p className="text-white/70 text-xs font-semibold uppercase tracking-wide">Светлые</p>
           </div>
-          <div className="p-2 grid grid-cols-5 gap-1.5">
+          <div className="p-2 grid grid-cols-6 gap-1.5">
             {lightThemes.map((t) => (
               <ThemeButton key={t.id} t={t} active={themeId === t.id} onSelect={setTheme} />
             ))}
@@ -44,7 +44,7 @@ export default function ThemePicker({ collapsed, open, onToggle }: ThemePickerPr
           <div className="px-4 py-3 border-t border-b border-white/10">
             <p className="text-white/70 text-xs font-semibold uppercase tracking-wide">Тёмные</p>
           </div>
-          <div className="p-2 grid grid-cols-5 gap-1.5">
+          <div className="p-2 grid grid-cols-6 gap-1.5">
             {darkThemes.map((t) => (
               <ThemeButton key={t.id} t={t} active={themeId === t.id} onSelect={setTheme} />
             ))}

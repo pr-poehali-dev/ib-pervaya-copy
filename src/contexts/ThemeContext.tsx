@@ -1,11 +1,13 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 
 export type ThemeId =
+  | "light-teal"
   | "light-violet"
   | "light-blue"
   | "light-emerald"
   | "light-rose"
   | "light-amber"
+  | "dark-teal"
   | "dark-violet"
   | "dark-blue"
   | "dark-emerald"
@@ -23,11 +25,13 @@ export interface ThemeOption {
 }
 
 export const themes: ThemeOption[] = [
+  { id: "light-teal",   label: "Светлая · Бирюзовый",  dark: false, primary: "#10b981", preview: "#10b981" },
   { id: "light-violet", label: "Светлая · Фиолетовый", dark: false, primary: "#7c3aed", preview: "#7c3aed" },
   { id: "light-blue",   label: "Светлая · Синий",      dark: false, primary: "#2563eb", preview: "#2563eb" },
   { id: "light-emerald",label: "Светлая · Изумрудный", dark: false, primary: "#059669", preview: "#059669" },
   { id: "light-rose",   label: "Светлая · Розовый",    dark: false, primary: "#e11d48", preview: "#e11d48" },
   { id: "light-amber",  label: "Светлая · Янтарный",   dark: false, primary: "#d97706", preview: "#d97706" },
+  { id: "dark-teal",    label: "Тёмная · Бирюзовый",   dark: true,  primary: "#34d399", preview: "#10b981" },
   { id: "dark-violet",  label: "Тёмная · Фиолетовый",  dark: true,  primary: "#a78bfa", preview: "#7c3aed" },
   { id: "dark-blue",    label: "Тёмная · Синий",        dark: true,  primary: "#60a5fa", preview: "#2563eb" },
   { id: "dark-emerald", label: "Тёмная · Изумрудный",  dark: true,  primary: "#34d399", preview: "#059669" },
@@ -47,6 +51,18 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 const themeVars: Record<ThemeId, Record<string, string>> = {
+  "light-teal": {
+    "--background": "160 30% 97%", "--foreground": "170 15% 10%",
+    "--card": "0 0% 100%", "--card-foreground": "170 15% 10%",
+    "--popover": "0 0% 100%", "--popover-foreground": "170 15% 10%",
+    "--primary": "160 84% 39%", "--primary-foreground": "0 0% 100%",
+    "--secondary": "174 72% 40%", "--secondary-foreground": "0 0% 100%",
+    "--muted": "160 15% 94%", "--muted-foreground": "160 8% 46%",
+    "--accent": "32 100% 58%", "--accent-foreground": "0 0% 100%",
+    "--destructive": "0 84% 60%", "--destructive-foreground": "0 0% 100%",
+    "--border": "160 18% 88%", "--input": "160 18% 88%", "--ring": "160 84% 39%",
+    "--gradient-from": "160 84% 39%", "--gradient-to": "174 72% 40%",
+  },
   "light-violet": {
     "--background": "240 20% 98%", "--foreground": "240 10% 10%",
     "--card": "0 0% 100%", "--card-foreground": "240 10% 10%",
@@ -106,6 +122,18 @@ const themeVars: Record<ThemeId, Record<string, string>> = {
     "--destructive": "0 84% 60%", "--destructive-foreground": "0 0% 100%",
     "--border": "40 15% 88%", "--input": "40 15% 88%", "--ring": "38 92% 50%",
     "--gradient-from": "38 92% 50%", "--gradient-to": "25 95% 53%",
+  },
+  "dark-teal": {
+    "--background": "168 35% 9%", "--foreground": "160 20% 90%",
+    "--card": "168 30% 14%", "--card-foreground": "160 20% 90%",
+    "--popover": "168 30% 14%", "--popover-foreground": "160 20% 90%",
+    "--primary": "160 84% 50%", "--primary-foreground": "0 0% 0%",
+    "--secondary": "174 72% 42%", "--secondary-foreground": "0 0% 0%",
+    "--muted": "168 25% 18%", "--muted-foreground": "160 12% 52%",
+    "--accent": "32 100% 55%", "--accent-foreground": "0 0% 100%",
+    "--destructive": "0 84% 55%", "--destructive-foreground": "0 0% 100%",
+    "--border": "168 22% 21%", "--input": "168 22% 21%", "--ring": "160 84% 50%",
+    "--gradient-from": "160 84% 39%", "--gradient-to": "174 72% 40%",
   },
   "dark-violet": {
     "--background": "221 39% 11%", "--foreground": "220 20% 92%",
@@ -211,7 +239,7 @@ function applyTheme(id: ThemeId) {
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [themeId, setThemeId] = useState<ThemeId>(() => {
-    return (localStorage.getItem("themeId") as ThemeId) || "light-violet";
+    return (localStorage.getItem("themeId") as ThemeId) || "light-teal";
   });
 
   useEffect(() => {
