@@ -67,6 +67,7 @@ export default function OrgPanel({ org, onSave, onBack }: OrgPanelProps) {
             { label: "ИНН", value: org.inn },
             { label: "№ лицензии", value: org.licenseNo },
             { label: "Дата лицензии", value: org.licenseDate },
+            { label: "Количество подписок", value: String(org.subscriptionsTotal) },
           ].map((item) => (
             <div key={item.label} className="space-y-1">
               <p className="text-xs text-muted-foreground">{item.label}</p>
@@ -128,6 +129,18 @@ export default function OrgPanel({ org, onSave, onBack }: OrgPanelProps) {
             <div className="space-y-1.5">
               <Label>Дата лицензии</Label>
               <Input className="rounded-xl" value={orgDraft.licenseDate} onChange={(e) => setOrgDraft({ ...orgDraft, licenseDate: e.target.value })} placeholder="дд.мм.гггг" />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Количество подписок</Label>
+              <Input
+                className="rounded-xl"
+                type="number"
+                min={0}
+                value={orgDraft.subscriptionsTotal}
+                onChange={(e) => setOrgDraft({ ...orgDraft, subscriptionsTotal: Number(e.target.value) })}
+                placeholder="100"
+              />
+              <p className="text-xs text-muted-foreground">Общее число подписок, доступных для активации слушателями</p>
             </div>
             <div className="flex gap-2 pt-1">
               <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setEditOrg(false)}>Отмена</Button>

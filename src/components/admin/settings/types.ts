@@ -10,6 +10,7 @@ export interface OrgData {
   inn: string;
   licenseNo: string;
   licenseDate: string;
+  subscriptionsTotal: number;
 }
 
 export interface SystemUser {

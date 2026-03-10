@@ -266,6 +266,7 @@ export const DEFAULT_ORG: OrgData = {
   inn: "9000000001",
   licenseNo: "9999",
   licenseDate: "09.02.2026",
+  subscriptionsTotal: 100,
 };
 
 // ─── Системные пользователи (администраторы) ──────────────────────────────────
