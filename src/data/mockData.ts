@@ -280,7 +280,7 @@ export const DEFAULT_SYSTEM_USERS: SystemUser[] = [
     email: "admin@isp.ru",
     role: "Администратор",
     department: "",
-    password: "",
+    password: "admin123",
     status: "active",
     registeredAt: "09.02.2026",
   },
