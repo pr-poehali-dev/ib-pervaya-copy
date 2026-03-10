@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useStats } from "@/contexts/StatsContext";
 import { useRole } from "@/contexts/RoleContext";
+import { useAuth } from "@/contexts/AuthContext";
 import ThemePicker from "@/components/ui/ThemePicker";
 import RoleSwitcher from "@/components/ui/RoleSwitcher";
 
@@ -54,10 +55,24 @@ interface SidebarProps {
 
 export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const location = useLocation();
+  const navigate = useNavigate();
   const { theme } = useTheme();
   const { stats } = useStats();
   const { role } = useRole();
+  const { user, logout } = useAuth();
   const [themePickerOpen, setThemePickerOpen] = useState(false);
+
+  function handleLogout() {
+    logout();
+    navigate("/login");
+  }
+
+  const initials = user
+    ? `${user.lastName[0] ?? ""}${user.firstName[0] ?? ""}`
+    : "??";
+  const fullName = user
+    ? `${user.lastName} ${user.firstName[0]}.${user.middleName ? user.middleName[0] + "." : ""}`
+    : "Гость";
 
   const navItems: NavItem[] =
     role === "superadmin"    ? SUPERADMIN_NAV :
@@ -184,22 +199,27 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
         <RoleSwitcher collapsed={collapsed} />
       </div>
 
-      {/* Пользователь */}
-      <div className="p-2 border-t border-white/10">
-        <div className={`flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-white/10 cursor-pointer transition-all ${collapsed ? "justify-center" : ""}`}>
+      {/* Пользователь + выход */}
+      <div className="p-2 border-t border-white/10 space-y-1">
+        <div className={`flex items-center gap-3 px-3 py-3 rounded-xl ${collapsed ? "justify-center" : ""}`}>
           <div className="w-9 h-9 gradient-secondary rounded-xl flex items-center justify-center flex-shrink-0">
-            <span className="text-white font-bold text-sm">АИ</span>
+            <span className="text-white font-bold text-sm">{initials}</span>
           </div>
           {!collapsed && (
-            <>
-              <div className="flex-1 min-w-0">
-                <p className="text-white text-sm font-medium truncate">Алина Иванова</p>
-                <p className="text-white/40 text-xs">{ROLE_LABELS[role] ?? "Слушатель"}</p>
-              </div>
-              <Icon name="ChevronRight" size={16} className="text-white/40" />
-            </>
+            <div className="flex-1 min-w-0">
+              <p className="text-white text-sm font-medium truncate">{fullName}</p>
+              <p className="text-white/40 text-xs">{ROLE_LABELS[role] ?? "Слушатель"}</p>
+            </div>
           )}
         </div>
+        <button
+          onClick={handleLogout}
+          title="Выйти из системы"
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/50 hover:text-red-400 hover:bg-red-500/10 transition-all ${collapsed ? "justify-center" : ""}`}
+        >
+          <Icon name="LogOut" size={18} className="flex-shrink-0" />
+          {!collapsed && <span className="text-sm font-medium">Выйти</span>}
+        </button>
       </div>
     </aside>
   );
