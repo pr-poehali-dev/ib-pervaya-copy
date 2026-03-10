@@ -6,19 +6,24 @@ import Icon from "@/components/ui/icon";
 
 const FEATURES = [
   {
-    icon: "Users",
-    title: "Мультитенантная архитектура",
-    desc: "Управление несколькими организациями в одной системе",
+    icon: "BrainCircuit",
+    title: "AI ассистент тренинга",
+    desc: "Для формирования траектории подготовки",
   },
   {
-    icon: "ClipboardCheck",
-    title: "Аттестация персонала",
-    desc: "Контроль сроков, интеграция с Ростехнадзором",
+    icon: "GraduationCap",
+    title: "Обучение и тренинг персонала",
+    desc: "Подготовка к аттестации и проверке знаний",
   },
   {
     icon: "BarChart2",
     title: "Аналитика и отчёты",
-    desc: "Матрицы компетенций, gap-анализ, статистика",
+    desc: "Статистика, отчеты и аналитика в одном ЛК",
+  },
+  {
+    icon: "Plug",
+    title: "Интеграция",
+    desc: "Индекс безопасности — система управления промышленной безопасностью",
   },
 ];
 
@@ -83,11 +88,11 @@ export default function Login() {
           {/* Логотип */}
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-2xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-200">
-              <Icon name="ShieldCheck" size={28} className="text-white" />
+              <Icon name="BookOpen" size={28} className="text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Индекс Безопасности</h1>
-              <p className="text-sm text-gray-500">Система управления промышленной безопасностью</p>
+              <h1 className="text-2xl font-bold text-gray-900">Интеллектуальная система подготовки</h1>
+              <p className="text-sm text-gray-500">Система дистанционного обучения персонала</p>
             </div>
           </div>
 
@@ -115,7 +120,7 @@ export default function Login() {
           {/* Заголовок формы */}
           <div className="flex items-center gap-3 mb-8">
             <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center">
-              <Icon name="ShieldCheck" size={20} className="text-emerald-600" />
+              <Icon name="BookOpen" size={20} className="text-emerald-600" />
             </div>
             <h2 className="text-xl font-bold text-gray-900">Вход в систему</h2>
           </div>
