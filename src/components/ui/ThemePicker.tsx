@@ -67,33 +67,39 @@ export default function ThemePicker({ collapsed, open, onToggle }: ThemePickerPr
 function ThemeButton({ t, active, onSelect }: { t: typeof themes[0]; active: boolean; onSelect: (id: ThemeId) => void }) {
   const label = t.label.split(" · ")[1];
   return (
-    <button
-      title={t.label}
-      onClick={() => onSelect(t.id)}
-      className={`flex flex-col items-center gap-1 p-1.5 rounded-xl transition-all ${active ? "bg-white/20 ring-2 ring-white/50" : "hover:bg-white/10"}`}
-    >
-      <span
-        className="w-6 h-6 rounded-full border-2 border-white/30 flex-shrink-0"
-        style={{ background: t.preview }}
-      />
-      <span className="text-white/60 text-[10px] leading-tight text-center">{label}</span>
-    </button>
+    <div className="relative group">
+      <button
+        onClick={() => onSelect(t.id)}
+        className={`flex items-center justify-center p-2 rounded-xl transition-all ${active ? "bg-white/20 ring-2 ring-white/50" : "hover:bg-white/10"}`}
+      >
+        <span
+          className="w-6 h-6 rounded-full border-2 border-white/30 flex-shrink-0"
+          style={{ background: t.preview }}
+        />
+      </button>
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 bg-gray-900 text-white text-[10px] rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+        {label}
+      </div>
+    </div>
   );
 }
 
 function ThemeButtonWide({ t, active, onSelect }: { t: typeof themes[0]; active: boolean; onSelect: (id: ThemeId) => void }) {
   const label = t.label.split(" · ")[1];
   return (
-    <button
-      title={t.label}
-      onClick={() => onSelect(t.id)}
-      className={`flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all ${active ? "bg-white/20 ring-2 ring-white/50" : "hover:bg-white/10"}`}
-    >
-      <span
-        className="w-5 h-5 rounded-full border-2 border-white/30 flex-shrink-0"
-        style={{ background: t.preview }}
-      />
-      <span className="text-white/70 text-xs font-medium">{label}</span>
-    </button>
+    <div className="relative group">
+      <button
+        onClick={() => onSelect(t.id)}
+        className={`w-full flex items-center justify-center p-2 rounded-xl transition-all ${active ? "bg-white/20 ring-2 ring-white/50" : "hover:bg-white/10"}`}
+      >
+        <span
+          className="w-5 h-5 rounded-full border-2 border-white/30 flex-shrink-0"
+          style={{ background: t.preview }}
+        />
+      </button>
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 bg-gray-900 text-white text-[10px] rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+        {label}
+      </div>
+    </div>
   );
 }
