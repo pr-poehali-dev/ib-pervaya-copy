@@ -22,6 +22,17 @@ const STATS = [
 ];
 
 function ProfilePanel() {
+  const [saved, setSaved] = useState(false);
+  const [name,  setName]  = useState("Иван Иванович Иванов");
+  const [email, setEmail] = useState("superadmin@platform.ru");
+  const [pass,  setPass]  = useState("");
+
+  function handleSave() {
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+    setPass("");
+  }
+
   return (
     <div className="max-w-lg space-y-5">
       <div className="bg-card rounded-2xl border border-border p-6 space-y-4">
@@ -31,24 +42,29 @@ function ProfilePanel() {
           </div>
           <div>
             <p className="font-bold text-lg">Суперадминистратор</p>
-            <p className="text-muted-foreground text-sm">superadmin@platform.ru</p>
+            <p className="text-muted-foreground text-sm">{email}</p>
           </div>
         </div>
         <div className="grid grid-cols-1 gap-3">
           <div className="space-y-1">
             <label className="text-xs text-muted-foreground">ФИО</label>
-            <input defaultValue="Иван Иванович Иванов" className="w-full h-9 px-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30" />
+            <input value={name} onChange={(e) => setName(e.target.value)} className="w-full h-9 px-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30" />
           </div>
           <div className="space-y-1">
             <label className="text-xs text-muted-foreground">Email</label>
-            <input defaultValue="superadmin@platform.ru" className="w-full h-9 px-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30" />
+            <input value={email} onChange={(e) => setEmail(e.target.value)} className="w-full h-9 px-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30" />
           </div>
           <div className="space-y-1">
             <label className="text-xs text-muted-foreground">Новый пароль</label>
-            <input type="password" placeholder="••••••••" className="w-full h-9 px-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30" />
+            <input type="password" value={pass} onChange={(e) => setPass(e.target.value)} placeholder="••••••••" className="w-full h-9 px-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30" />
           </div>
         </div>
-        <button className="w-full h-9 rounded-xl gradient-primary text-white text-sm font-medium">Сохранить изменения</button>
+        <button
+          onClick={handleSave}
+          className={`w-full h-9 rounded-xl text-sm font-medium transition-all ${saved ? "bg-emerald-500 text-white" : "gradient-primary text-white"}`}
+        >
+          {saved ? "✓ Сохранено" : "Сохранить изменения"}
+        </button>
       </div>
     </div>
   );

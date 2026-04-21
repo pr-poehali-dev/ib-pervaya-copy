@@ -1,55 +1,183 @@
+import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
 import Icon from "@/components/ui/icon";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import { INITIAL_USERS, COURSE_DIRECTIONS } from "@/data/mockData";
 
-const achievements = [
-  { emoji: "🏆", title: "Первый курс", desc: "Завершил первый курс", earned: true },
-  { emoji: "🔥", title: "Неделя подряд", desc: "7 дней без пропусков", earned: true },
-  { emoji: "⚡", title: "Быстрый старт", desc: "5 уроков за день", earned: true },
-  { emoji: "🎯", title: "Отличник", desc: "100% в тесте", earned: false },
-  { emoji: "🚀", title: "Марафон", desc: "30 дней подряд", earned: false },
-  { emoji: "💎", title: "Эксперт", desc: "10 курсов завершено", earned: false },
+// ─── Достижения ───────────────────────────────────────────────────────────────
+
+const ALL_ACHIEVEMENTS = [
+  { id: "first_course",  emoji: "🏆", title: "Первый курс",     desc: "Завершил первый курс",          condition: (c: number) => c >= 1 },
+  { id: "three_courses", emoji: "🎓", title: "Три курса",        desc: "Завершил 3 курса",              condition: (c: number) => c >= 3 },
+  { id: "certified",     emoji: "📜", title: "Сертифицирован",   desc: "Получил удостоверение ДПО",     condition: (_c: number, cert: number) => cert >= 1 },
+  { id: "active_learner",emoji: "🔥", title: "Активный учёный",  desc: "Есть активный курс",            condition: (_c: number, _cert: number, active: number) => active >= 1 },
+  { id: "speed",         emoji: "⚡", title: "Быстрый старт",    desc: "Прогресс > 50% за первый курс", condition: (c: number) => c >= 1 },
+  { id: "expert",        emoji: "💎", title: "Эксперт",          desc: "10 курсов завершено",           condition: (c: number) => c >= 10 },
 ];
 
-const completedCourses = [
-  { title: "Введение в кибербезопасность", date: "Янв 2026", grade: 95 },
-  { title: "Основы Linux для ИБ", date: "Дек 2025", grade: 88 },
-  { title: "OSINT и разведка", date: "Ноя 2025", grade: 92 },
-];
+// ─── Стабильная активность (без Math.random()) ────────────────────────────────
+
+function getActivityData(seed: number): number[] {
+  return Array.from({ length: 28 }, (_, i) => {
+    const val = ((seed * 9301 + i * 49297 + 233995) % 233280) / 233280;
+    return val;
+  });
+}
+
+// ─── Модальное окно редактирования ────────────────────────────────────────────
+
+function EditProfileModal({
+  user,
+  onClose,
+}: {
+  user: { firstName: string; lastName: string; middleName: string; email: string };
+  onClose: () => void;
+}) {
+  const [firstName,  setFirstName]  = useState(user.firstName);
+  const [lastName,   setLastName]   = useState(user.lastName);
+  const [middleName, setMiddleName] = useState(user.middleName);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="bg-background rounded-2xl border border-border w-full max-w-md shadow-2xl">
+        <div className="flex items-center justify-between p-6 border-b border-border">
+          <h2 className="font-bold text-base">Редактировать профиль</h2>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground p-1 rounded-lg hover:bg-muted">
+            <Icon name="X" size={18} />
+          </button>
+        </div>
+        <div className="p-6 space-y-3">
+          <div className="space-y-1">
+            <label className="text-xs text-muted-foreground">Фамилия</label>
+            <input value={lastName} onChange={(e) => setLastName(e.target.value)} className="w-full h-9 px-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30" />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs text-muted-foreground">Имя</label>
+            <input value={firstName} onChange={(e) => setFirstName(e.target.value)} className="w-full h-9 px-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30" />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs text-muted-foreground">Отчество</label>
+            <input value={middleName} onChange={(e) => setMiddleName(e.target.value)} className="w-full h-9 px-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30" />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs text-muted-foreground">Email</label>
+            <input value={user.email} disabled className="w-full h-9 px-3 rounded-xl border border-border bg-muted text-sm text-muted-foreground cursor-not-allowed" />
+            <p className="text-xs text-muted-foreground">Email изменяется только администратором</p>
+          </div>
+        </div>
+        <div className="flex gap-2 p-6 border-t border-border">
+          <Button variant="outline" className="flex-1 rounded-xl" onClick={onClose}>Отмена</Button>
+          <Button className="flex-1 rounded-xl gradient-primary text-white" onClick={onClose}>Сохранить</Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Главная страница профиля ─────────────────────────────────────────────────
 
 export default function Profile() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [editOpen, setEditOpen] = useState(false);
+
+  const studentUser = INITIAL_USERS[0];
+  const assignments = studentUser.assignments;
+
+  const completedAssignments = assignments.filter((a) => a.status === "completed" || a.status === "certified");
+  const activeAssignments    = assignments.filter((a) => a.status === "active");
+  const certifiedAssignments = assignments.filter((a) => a.status === "certified");
+
+  const totalHours = assignments.reduce((sum, a) => {
+    const course = COURSE_DIRECTIONS.flatMap((d) => d.courses).find((c) => c.id === a.courseId);
+    return sum + (course?.hours ?? 0);
+  }, 0);
+
+  const avgScore = assignments
+    .filter((a) => a.testScore)
+    .reduce((sum, a, _i, arr) => sum + (a.testScore ?? 0) / arr.length, 0);
+
+  const completedWithDetails = completedAssignments.map((a) => {
+    const course = COURSE_DIRECTIONS.flatMap((d) => d.courses).find((c) => c.id === a.courseId);
+    return { assignment: a, course };
+  });
+
+  const achievementConditions = [
+    completedAssignments.length,
+    certifiedAssignments.length,
+    activeAssignments.length,
+  ] as const;
+
+  const achievements = ALL_ACHIEVEMENTS.map((a) => ({
+    ...a,
+    earned: a.condition(achievementConditions[0], achievementConditions[1], achievementConditions[2]),
+  }));
+
+  const earnedCount = achievements.filter((a) => a.earned).length;
+
+  const initials = user
+    ? `${(user.lastName?.[0] ?? "")}${(user.firstName?.[0] ?? "")}`
+    : studentUser.initials;
+
+  const fullName = user
+    ? `${user.lastName} ${user.firstName}${user.middleName ? " " + user.middleName : ""}`
+    : studentUser.name;
+
+  const email = user?.email ?? studentUser.email;
+
+  const activityData = useMemo(() => getActivityData(studentUser.id), [studentUser.id]);
+
+  const stats = [
+    { label: "Курсов завершено", value: completedAssignments.length, icon: "GraduationCap", color: "text-violet-600" },
+    { label: "Часов обучения",   value: totalHours,                  icon: "Clock",         color: "text-cyan-600" },
+    { label: "Удостоверений",    value: certifiedAssignments.length, icon: "Award",         color: "text-amber-500" },
+    { label: "Средний балл",     value: avgScore > 0 ? `${Math.round(avgScore)}%` : "—", icon: "TrendingUp", color: "text-emerald-600" },
+  ];
+
   return (
     <Layout>
+      {editOpen && user && (
+        <EditProfileModal
+          user={{ firstName: user.firstName, lastName: user.lastName, middleName: user.middleName, email: user.email }}
+          onClose={() => setEditOpen(false)}
+        />
+      )}
+
       <div className="max-w-4xl mx-auto space-y-8">
+
+        {/* Карточка пользователя */}
         <div className="bg-card rounded-2xl p-8 border border-border shadow-sm">
           <div className="flex items-start gap-6">
             <div className="w-20 h-20 gradient-primary rounded-2xl flex items-center justify-center shrink-0">
-              <span className="text-white text-2xl font-bold">АИ</span>
+              <span className="text-white text-2xl font-bold">{initials}</span>
             </div>
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold">Алина Иванова</h1>
-              <p className="text-muted-foreground">alina.ivanova@company.ru</p>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl font-bold truncate">{fullName}</h1>
+              <p className="text-muted-foreground">{email}</p>
               <div className="flex flex-wrap gap-2 mt-3">
-                <Badge variant="secondary">Студент</Badge>
-                <Badge variant="outline">Информационная безопасность</Badge>
-                <Badge variant="outline">Группа ИБ-301</Badge>
+                <Badge variant="secondary">{studentUser.role}</Badge>
+                <Badge variant="outline">{studentUser.organization}</Badge>
+                <Badge variant="outline">Группа {studentUser.group}</Badge>
               </div>
             </div>
-            <button className="border border-border text-foreground px-4 py-2 rounded-xl text-sm font-medium hover:border-primary hover:text-primary transition-colors flex items-center gap-2">
+            <Button
+              variant="outline"
+              className="rounded-xl gap-2 flex-shrink-0"
+              onClick={() => setEditOpen(true)}
+            >
               <Icon name="Edit2" size={15} />
               Редактировать
-            </button>
+            </Button>
           </div>
         </div>
 
+        {/* Статистика */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {[
-            { label: "Курсов завершено", value: "3", icon: "GraduationCap", color: "text-violet-600" },
-            { label: "Часов обучения", value: "42", icon: "Clock", color: "text-cyan-600" },
-            { label: "Сертификатов", value: "2", icon: "Award", color: "text-amber-500" },
-            { label: "Средний балл", value: "91%", icon: "TrendingUp", color: "text-emerald-600" },
-          ].map((s) => (
+          {stats.map((s) => (
             <div key={s.label} className="bg-card rounded-2xl p-5 border border-border shadow-sm text-center">
               <Icon name={s.icon} size={24} className={`${s.color} mx-auto mb-2`} />
               <p className="text-2xl font-bold">{s.value}</p>
@@ -59,52 +187,79 @@ export default function Profile() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          {/* Завершённые курсы */}
           <div className="bg-card rounded-2xl p-6 border border-border shadow-sm">
             <h2 className="text-lg font-bold mb-5">Завершённые курсы</h2>
-            <div className="space-y-4">
-              {completedCourses.map((c) => (
-                <div key={c.title} className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="icon-bg-emerald w-9 h-9 rounded-xl flex items-center justify-center">
-                      <Icon name="CheckCircle2" size={18} className="text-emerald-600" />
+            {completedWithDetails.length === 0 ? (
+              <div className="text-center py-8">
+                <Icon name="BookOpen" size={32} className="text-muted-foreground mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">Завершённых курсов пока нет</p>
+                <button
+                  onClick={() => navigate("/my-learning")}
+                  className="mt-3 text-primary text-sm hover:underline"
+                >
+                  Перейти к обучению →
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {completedWithDetails.map(({ assignment, course }) => (
+                  <div key={assignment.courseId} className="flex items-center justify-between">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="bg-emerald-100 dark:bg-emerald-900/30 w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <Icon name={assignment.status === "certified" ? "Award" : "CheckCircle2"} size={18} className="text-emerald-600 dark:text-emerald-400" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-medium text-sm truncate">{course?.title ?? "Курс"}</p>
+                        <p className="text-xs text-muted-foreground">{assignment.completedAt ?? "—"}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-medium text-sm">{c.title}</p>
-                      <p className="text-xs text-muted-foreground">{c.date}</p>
-                    </div>
+                    {assignment.testScore && (
+                      <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-0 flex-shrink-0">
+                        {assignment.testScore}%
+                      </Badge>
+                    )}
                   </div>
-                  <Badge className="icon-bg-emerald text-emerald-700 dark:text-emerald-400 border-0">{c.grade}%</Badge>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
+          {/* Достижения */}
           <div className="bg-card rounded-2xl p-6 border border-border shadow-sm">
-            <h2 className="text-lg font-bold mb-5">Достижения</h2>
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-lg font-bold">Достижения</h2>
+              <span className="text-sm text-muted-foreground">{earnedCount} / {achievements.length}</span>
+            </div>
             <div className="grid grid-cols-3 gap-3">
               {achievements.map((a) => (
                 <div
-                  key={a.title}
+                  key={a.id}
                   className={`text-center p-3 rounded-xl border transition-all ${
                     a.earned
-                      ? "border-violet-300 dark:border-violet-700 icon-bg-violet"
+                      ? "border-violet-300 dark:border-violet-700 bg-violet-50 dark:bg-violet-900/10"
                       : "border-border bg-muted/30 opacity-50 grayscale"
                   }`}
                   title={a.desc}
                 >
                   <span className="text-2xl block mb-1">{a.emoji}</span>
                   <p className="text-xs font-medium text-foreground leading-tight">{a.title}</p>
+                  {!a.earned && <p className="text-[10px] text-muted-foreground mt-0.5">Заблокировано</p>}
                 </div>
               ))}
             </div>
           </div>
         </div>
 
+        {/* Активность */}
         <div className="bg-card rounded-2xl p-6 border border-border shadow-sm">
-          <h2 className="text-lg font-bold mb-5">Активность за последний месяц</h2>
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-lg font-bold">Активность за последние 28 дней</h2>
+            <span className="text-xs text-muted-foreground">{activityData.filter((v) => v > 0.2).length} активных дней</span>
+          </div>
           <div className="grid grid-cols-7 gap-1.5">
-            {Array.from({ length: 28 }).map((_, i) => {
-              const intensity = Math.random();
+            {activityData.map((intensity, i) => {
               const cls =
                 intensity > 0.7 ? "bg-violet-600" :
                 intensity > 0.4 ? "bg-violet-400 dark:bg-violet-700" :
@@ -124,6 +279,39 @@ export default function Profile() {
             <span>Больше</span>
           </div>
         </div>
+
+        {/* Активные курсы */}
+        {activeAssignments.length > 0 && (
+          <div className="bg-card rounded-2xl p-6 border border-border shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold">В процессе обучения</h2>
+              <button onClick={() => navigate("/my-learning")} className="text-primary text-sm hover:underline">
+                Все курсы →
+              </button>
+            </div>
+            <div className="space-y-3">
+              {activeAssignments.map((a) => {
+                const course = COURSE_DIRECTIONS.flatMap((d) => d.courses).find((c) => c.id === a.courseId);
+                return (
+                  <div
+                    key={a.courseId}
+                    onClick={() => navigate(`/course/${a.courseId}`)}
+                    className="flex items-center gap-4 p-3 rounded-xl hover:bg-muted/40 cursor-pointer transition-colors"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm truncate">{course?.title ?? "Курс"}</p>
+                      <div className="flex items-center gap-2 mt-1.5">
+                        <Progress value={a.progress} className="h-1.5 flex-1" />
+                        <span className="text-xs text-violet-600 font-semibold flex-shrink-0">{a.progress}%</span>
+                      </div>
+                    </div>
+                    <Icon name="ChevronRight" size={16} className="text-muted-foreground flex-shrink-0" />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </Layout>
   );

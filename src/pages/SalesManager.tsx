@@ -3,7 +3,10 @@ import Layout from "@/components/layout/Layout";
 import Icon from "@/components/ui/icon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import Tip from "@/components/ui/tip";
+import { TENANTS } from "@/data/mockData";
+import type { Tenant } from "@/components/admin/types";
 
 type SalesTab = "tenants" | "stats" | "invoices" | "profile";
 
@@ -14,29 +17,15 @@ const TABS: { key: SalesTab; icon: string; label: string }[] = [
   { key: "profile",  icon: "User",       label: "Профиль" },
 ];
 
-const HEADER_STATS = [
-  { label: "Моих тенантов",     value: 3,   icon: "Building2",  color: "from-violet-500 to-purple-700" },
-  { label: "Выдано подписок",   value: 350, icon: "CreditCard", color: "from-cyan-500 to-blue-600" },
-  { label: "Использовано",      value: 266, icon: "CheckCircle",color: "from-emerald-500 to-teal-600" },
-  { label: "Счетов в месяце",   value: 2,   icon: "Receipt",    color: "from-amber-500 to-orange-600" },
-];
+const MY_TENANTS = TENANTS;
 
-interface Tenant {
-  id: number;
-  name: string;
-  inn: string;
-  type: "training_center" | "organization";
-  subscriptions: number;
-  usedSubscriptions: number;
-  studentsCount: number;
-  status: "active" | "inactive";
+function totalSubs(t: Tenant) {
+  return t.subscriptions.reduce((s, sub) => s + sub.total, 0);
+}
+function usedSubs(t: Tenant) {
+  return t.subscriptions.reduce((s, sub) => s + sub.used, 0);
 }
 
-const MY_TENANTS: Tenant[] = [
-  { id: 1, name: "ООО «ТехноПром»",    inn: "7701234567", type: "training_center", subscriptions: 100, usedSubscriptions: 43, studentsCount: 18, status: "active" },
-  { id: 2, name: "АО «СтройГрупп»",    inn: "7709876543", type: "organization",    subscriptions: 50,  usedSubscriptions: 28, studentsCount: 12, status: "active" },
-  { id: 3, name: "ГУП «Энергосеть»",   inn: "5001234000", type: "training_center", subscriptions: 200, usedSubscriptions: 195, studentsCount: 45, status: "active" },
-];
 
 function TenantsTab() {
   const [showSubModal, setShowSubModal] = useState<Tenant | null>(null);
@@ -56,6 +45,15 @@ function TenantsTab() {
               <label className="text-xs text-muted-foreground">Количество подписок</label>
               <input type="number" value={subsAmount} onChange={(e) => setSubsAmount(e.target.value)} min="1" className="w-full h-9 px-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30" />
             </div>
+            <div className="space-y-2">
+              <p className="text-xs text-muted-foreground">Текущий баланс по направлениям:</p>
+              {showSubModal.subscriptions.map((s) => (
+                <div key={s.type} className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground truncate max-w-[150px]">{s.label}</span>
+                  <span className="font-medium">{s.used} / {s.total}</span>
+                </div>
+              ))}
+            </div>
             <div className="flex gap-2">
               <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setShowSubModal(null)}>Отмена</Button>
               <Button className="flex-1 rounded-xl gradient-primary text-white" onClick={() => setShowSubModal(null)}>Выдать</Button>
@@ -70,16 +68,18 @@ function TenantsTab() {
             <tr className="border-b border-border bg-muted/40">
               <th className="px-4 py-3 text-left font-medium text-muted-foreground">Организация</th>
               <th className="px-4 py-3 text-left font-medium text-muted-foreground">Тип</th>
-              <th className="px-4 py-3 text-left font-medium text-muted-foreground">Подписки</th>
-              <th className="px-4 py-3 text-left font-medium text-muted-foreground">Слушателей</th>
+              <th className="px-4 py-3 text-left font-medium text-muted-foreground">Подписки (всего)</th>
+              <th className="px-4 py-3 text-left font-medium text-muted-foreground">Направлений</th>
               <th className="px-4 py-3 text-left font-medium text-muted-foreground">Статус</th>
               <th className="px-4 py-3 text-left font-medium text-muted-foreground">Действия</th>
             </tr>
           </thead>
           <tbody>
             {MY_TENANTS.map((t) => {
-              const pct = t.subscriptions > 0 ? Math.round((t.usedSubscriptions / t.subscriptions) * 100) : 0;
-              const warn = pct >= 90;
+              const total = totalSubs(t);
+              const used  = usedSubs(t);
+              const pct   = total > 0 ? Math.round((used / total) * 100) : 0;
+              const warn  = pct >= 85;
               return (
                 <tr key={t.id} className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors">
                   <td className="px-4 py-3">
@@ -92,20 +92,22 @@ function TenantsTab() {
                     </Badge>
                   </td>
                   <td className="px-4 py-3">
-                    <div className="space-y-1 min-w-[120px]">
+                    <div className="space-y-1 min-w-[130px]">
                       <div className="flex justify-between text-xs">
-                        <span className={warn ? "text-red-500 font-medium" : "text-muted-foreground"}>{t.usedSubscriptions} / {t.subscriptions}</span>
+                        <span className={warn ? "text-red-500 font-medium" : "text-muted-foreground"}>{used} / {total}</span>
                         <span className={warn ? "text-red-500 font-bold" : "text-muted-foreground"}>{pct}%</span>
                       </div>
-                      <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                        <div className={`h-full rounded-full ${warn ? "bg-red-500" : "bg-gradient-to-r from-violet-500 to-cyan-500"}`} style={{ width: `${pct}%` }} />
-                      </div>
+                      <Progress value={pct} className={`h-1.5 ${warn ? "[&>div]:bg-red-500" : ""}`} />
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-center">{t.studentsCount}</td>
+                  <td className="px-4 py-3 text-muted-foreground text-sm">{t.allowedDirections.length}</td>
                   <td className="px-4 py-3">
-                    <span className={`px-2.5 py-1 rounded-lg text-xs font-medium ${t.status === "active" ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300" : "bg-muted text-muted-foreground"}`}>
-                      {t.status === "active" ? "Активен" : "Неактивен"}
+                    <span className={`px-2.5 py-1 rounded-lg text-xs font-medium ${
+                      t.status === "active"    ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300" :
+                      t.status === "trial"     ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300" :
+                      "bg-muted text-muted-foreground"
+                    }`}>
+                      {t.status === "active" ? "Активен" : t.status === "trial" ? "Пробный" : "Приостановлен"}
                     </span>
                   </td>
                   <td className="px-4 py-3">
@@ -126,44 +128,57 @@ function TenantsTab() {
 }
 
 function StatsTab() {
-  const tenantStats = MY_TENANTS.map((t) => ({
-    ...t,
-    pct: t.subscriptions > 0 ? Math.round((t.usedSubscriptions / t.subscriptions) * 100) : 0,
-  }));
-
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {tenantStats.map((t) => (
-          <div key={t.id} className="bg-card rounded-2xl border border-border p-5 space-y-4">
-            <p className="font-semibold">{t.name}</p>
-            <div className="space-y-3">
+        {MY_TENANTS.map((t) => {
+          const total = totalSubs(t);
+          const used  = usedSubs(t);
+          const pct   = total > 0 ? Math.round((used / total) * 100) : 0;
+          return (
+            <div key={t.id} className="bg-card rounded-2xl border border-border p-5 space-y-4">
               <div>
-                <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                  <span>Использование подписок</span>
-                  <span className="font-medium">{t.pct}%</span>
-                </div>
-                <div className="h-2 bg-muted rounded-full overflow-hidden">
-                  <div className={`h-full rounded-full ${t.pct >= 90 ? "bg-red-500" : "bg-gradient-to-r from-violet-500 to-cyan-500"}`} style={{ width: `${t.pct}%` }} />
-                </div>
-                <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                  <span>{t.usedSubscriptions} использовано</span>
-                  <span>{t.subscriptions - t.usedSubscriptions} осталось</span>
-                </div>
+                <p className="font-semibold">{t.name}</p>
+                <p className="text-xs text-muted-foreground">{t.type === "training_center" ? "Учебный центр" : "Организация"}</p>
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="bg-muted/40 rounded-xl p-2.5 text-center">
-                  <p className="text-lg font-bold">{t.studentsCount}</p>
-                  <p className="text-[10px] text-muted-foreground">Слушателей</p>
+              <div className="space-y-3">
+                <div>
+                  <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                    <span>Подписки (всего)</span>
+                    <span className="font-medium">{pct}%</span>
+                  </div>
+                  <Progress value={pct} className={`h-2 ${pct >= 85 ? "[&>div]:bg-red-500" : ""}`} />
+                  <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                    <span>{used} использовано</span>
+                    <span>{total - used} осталось</span>
+                  </div>
                 </div>
-                <div className="bg-muted/40 rounded-xl p-2.5 text-center">
-                  <p className="text-lg font-bold">{t.subscriptions}</p>
-                  <p className="text-[10px] text-muted-foreground">Подписок</p>
+                <div className="space-y-1.5">
+                  {t.subscriptions.map((s) => {
+                    const sPct = s.total > 0 ? Math.round((s.used / s.total) * 100) : 0;
+                    return (
+                      <div key={s.type} className="flex items-center gap-2 text-xs">
+                        <span className="text-muted-foreground truncate flex-1">{s.label}</span>
+                        <span className="text-muted-foreground flex-shrink-0">{s.used}/{s.total}</span>
+                        <Progress value={sPct} className="w-12 h-1 flex-shrink-0" />
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="bg-muted/40 rounded-xl p-2.5 text-center">
+                    <p className="text-lg font-bold">{t.allowedDirections.length}</p>
+                    <p className="text-[10px] text-muted-foreground">Направлений</p>
+                  </div>
+                  <div className="bg-muted/40 rounded-xl p-2.5 text-center">
+                    <p className="text-lg font-bold">{total}</p>
+                    <p className="text-[10px] text-muted-foreground">Подписок</p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -283,6 +298,16 @@ function ProfilePanel() {
 export default function SalesManager() {
   const [activeTab, setActiveTab] = useState<SalesTab>("tenants");
 
+  const allTotal = MY_TENANTS.reduce((s, t) => s + totalSubs(t), 0);
+  const allUsed  = MY_TENANTS.reduce((s, t) => s + usedSubs(t), 0);
+
+  const headerStats = [
+    { label: "Моих тенантов",   value: MY_TENANTS.length, icon: "Building2",  color: "from-violet-500 to-purple-700" },
+    { label: "Выдано подписок", value: allTotal,           icon: "CreditCard", color: "from-cyan-500 to-blue-600" },
+    { label: "Использовано",    value: allUsed,            icon: "CheckCircle",color: "from-emerald-500 to-teal-600" },
+    { label: "Счетов в месяце", value: 2,                  icon: "Receipt",    color: "from-amber-500 to-orange-600" },
+  ];
+
   return (
     <Layout>
       <div className="max-w-6xl mx-auto space-y-6">
@@ -297,7 +322,7 @@ export default function SalesManager() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {HEADER_STATS.map((s) => (
+          {headerStats.map((s) => (
             <div key={s.label} className="bg-card rounded-2xl border border-border p-4 flex items-center gap-3">
               <div className={`w-10 h-10 bg-gradient-to-br ${s.color} rounded-xl flex items-center justify-center flex-shrink-0`}>
                 <Icon name={s.icon} size={18} className="text-white" />

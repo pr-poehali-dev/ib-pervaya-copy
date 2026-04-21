@@ -194,6 +194,7 @@ export default function Login() {
               <button
                 type="button"
                 className="text-sm text-emerald-600 hover:text-emerald-700 font-medium transition-colors"
+                onClick={() => alert("Обратитесь к администратору системы для восстановления пароля.")}
               >
                 Забыли пароль?
               </button>
