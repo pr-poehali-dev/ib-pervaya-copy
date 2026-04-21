@@ -6,141 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 import { COURSE_DIRECTIONS, INITIAL_USERS } from "@/data/mockData";
-
-// ─── Моковые данные вопросов ──────────────────────────────────────────────────
-
-const MOCK_QUESTIONS = [
-  {
-    id: 1,
-    text: "Какой орган осуществляет федеральный государственный надзор в области промышленной безопасности?",
-    options: [
-      "Министерство природных ресурсов РФ",
-      "Федеральная служба по экологическому, технологическому и атомному надзору (Ростехнадзор)",
-      "Министерство чрезвычайных ситуаций РФ",
-      "Федеральная служба по труду и занятости",
-    ],
-    correct: 1,
-    ntd: "Федеральный закон № 116-ФЗ «О промышленной безопасности опасных производственных объектов», статья 5.",
-    ntdRef: "ФЗ-116, ст. 5",
-  },
-  {
-    id: 2,
-    text: "К какому классу опасности относится опасный производственный объект, на котором получаются, используются, перерабатываются горючие вещества в количестве от 200 до 50 000 тонн?",
-    options: [
-      "I класс (чрезвычайно высокая опасность)",
-      "II класс (высокая опасность)",
-      "III класс (средняя опасность)",
-      "IV класс (низкая опасность)",
-    ],
-    correct: 1,
-    ntd: "ФЗ-116, Приложение 2 к Федеральному закону «О промышленной безопасности опасных производственных объектов».",
-    ntdRef: "ФЗ-116, Прил. 2",
-  },
-  {
-    id: 3,
-    text: "Кто несёт ответственность за организацию и осуществление производственного контроля?",
-    options: [
-      "Территориальный орган Ростехнадзора",
-      "Руководитель эксплуатирующей организации и работники, на которых возложены данные обязанности",
-      "Главный инженер проекта",
-      "Страховая организация",
-    ],
-    correct: 1,
-    ntd: "ФЗ-116, статья 11. Производственный контроль за соблюдением требований промышленной безопасности.",
-    ntdRef: "ФЗ-116, ст. 11",
-  },
-  {
-    id: 4,
-    text: "В какой срок организация обязана сообщить в Ростехнадзор об аварии на опасном производственном объекте?",
-    options: [
-      "В течение 24 часов",
-      "В течение 12 часов",
-      "Незамедлительно",
-      "В течение 72 часов",
-    ],
-    correct: 2,
-    ntd: "ФЗ-116, статья 12. Техническое расследование причин аварии.",
-    ntdRef: "ФЗ-116, ст. 12",
-  },
-  {
-    id: 5,
-    text: "Какой документ является обязательным при вводе в эксплуатацию опасного производственного объекта?",
-    options: [
-      "Декларация промышленной безопасности",
-      "Страховой полис",
-      "Разрешение на строительство",
-      "Технический регламент",
-    ],
-    correct: 0,
-    ntd: "ФЗ-116, статья 14. Декларация промышленной безопасности.",
-    ntdRef: "ФЗ-116, ст. 14",
-  },
-  {
-    id: 6,
-    text: "С какой периодичностью должна пересматриваться декларация промышленной безопасности?",
-    options: [
-      "Ежегодно",
-      "Один раз в 5 лет",
-      "Один раз в 10 лет или при изменении условий эксплуатации",
-      "По требованию Ростехнадзора",
-    ],
-    correct: 2,
-    ntd: "ФЗ-116, статья 14, пункт 4.",
-    ntdRef: "ФЗ-116, ст. 14, п. 4",
-  },
-  {
-    id: 7,
-    text: "Какой минимальный стаж работы требуется для назначения работника, ответственного за осуществление производственного контроля на ОПО I или II класса опасности?",
-    options: [
-      "Не менее 1 года",
-      "Не менее 3 лет",
-      "Не менее 5 лет",
-      "Требований по стажу нет",
-    ],
-    correct: 2,
-    ntd: "Постановление Правительства РФ № 263 «Об организации и осуществлении производственного контроля...».",
-    ntdRef: "ПП РФ № 263",
-  },
-  {
-    id: 8,
-    text: "Что такое инцидент на опасном производственном объекте?",
-    options: [
-      "Авария с разрушением сооружений и техническими устройствами",
-      "Отказ или повреждение технических устройств, применяемых на ОПО, отклонение от режима технологического процесса",
-      "Несчастный случай с тяжёлыми последствиями",
-      "Плановая остановка оборудования для ремонта",
-    ],
-    correct: 1,
-    ntd: "ФЗ-116, статья 1. Основные понятия.",
-    ntdRef: "ФЗ-116, ст. 1",
-  },
-  {
-    id: 9,
-    text: "На какой срок выдаётся лицензия на эксплуатацию взрывопожароопасных и химически опасных производственных объектов I, II и III классов опасности?",
-    options: [
-      "На 5 лет с возможностью продления",
-      "На 3 года",
-      "Бессрочно",
-      "На 10 лет",
-    ],
-    correct: 2,
-    ntd: "Федеральный закон № 99-ФЗ «О лицензировании отдельных видов деятельности».",
-    ntdRef: "ФЗ-99",
-  },
-  {
-    id: 10,
-    text: "Кто проводит техническое расследование причин аварии на опасном производственном объекте?",
-    options: [
-      "Комиссия, создаваемая эксплуатирующей организацией",
-      "Комиссия, возглавляемая представителем Ростехнадзора",
-      "Независимая экспертная организация",
-      "Прокуратура совместно с МЧС",
-    ],
-    correct: 1,
-    ntd: "ФЗ-116, статья 12, пункт 2.",
-    ntdRef: "ФЗ-116, ст. 12, п. 2",
-  },
-];
+import { getQuestionsForCourse, type Question } from "@/data/questionsBank";
 
 // ─── Типы ─────────────────────────────────────────────────────────────────────
 
@@ -161,7 +27,7 @@ function AdaptiveQuestion({
   answered,
   selected,
 }: {
-  question: typeof MOCK_QUESTIONS[0];
+  question: Question;
   onAnswer: (idx: number) => void;
   onNext: () => void;
   answered: boolean;
@@ -235,8 +101,8 @@ function AdaptiveQuestion({
 
 // ─── Итоговый тест ────────────────────────────────────────────────────────────
 
-function FinalTest({ onFinish, isFinal }: { onFinish: (answers: QuestionAnswer[]) => void; isFinal: boolean }) {
-  const questions = isFinal ? MOCK_QUESTIONS : MOCK_QUESTIONS.slice(0, 5);
+function FinalTest({ onFinish, isFinal, allQuestions }: { onFinish: (answers: QuestionAnswer[]) => void; isFinal: boolean; allQuestions: Question[] }) {
+  const questions = isFinal ? allQuestions.slice(0, 10) : allQuestions.slice(0, 5);
   const [current, setCurrent] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [answers, setAnswers] = useState<QuestionAnswer[]>([]);
@@ -320,11 +186,13 @@ function TestResult({
   isFinal,
   onRetry,
   onMenu,
+  allQuestions,
 }: {
   answers: QuestionAnswer[];
   isFinal: boolean;
   onRetry: () => void;
   onMenu: () => void;
+  allQuestions: Question[];
 }) {
   const correct = answers.filter((a) => a.isCorrect).length;
   const total   = answers.length;
@@ -389,7 +257,7 @@ function TestResult({
           </div>
           <div className="divide-y divide-border">
             {answers.map((ans, idx) => {
-              const q = MOCK_QUESTIONS.find((q) => q.id === ans.questionId);
+              const q = allQuestions.find((q) => q.id === ans.questionId);
               if (!q) return null;
               return (
                 <div key={ans.questionId} className="px-5 py-4 space-y-2">
@@ -425,12 +293,12 @@ function TestResult({
 
 // ─── Режим «Ответ на вопрос» ──────────────────────────────────────────────────
 
-function SearchAnswerMode({ onBack }: { onBack: () => void }) {
+function SearchAnswerMode({ onBack, allQuestions }: { onBack: () => void; allQuestions: Question[] }) {
   const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState<typeof MOCK_QUESTIONS[0] | null>(null);
+  const [selected, setSelected] = useState<Question | null>(null);
 
   const filtered = search.length > 2
-    ? MOCK_QUESTIONS.filter((q) =>
+    ? allQuestions.filter((q) =>
         q.text.toLowerCase().includes(search.toLowerCase()) ||
         q.ntdRef.toLowerCase().includes(search.toLowerCase())
       )
@@ -482,8 +350,8 @@ function SearchAnswerMode({ onBack }: { onBack: () => void }) {
               К поиску
             </Button>
             <Button className="flex-1 gradient-primary text-white rounded-xl gap-2" onClick={() => {
-              const idx = MOCK_QUESTIONS.findIndex((q) => q.id === selected.id);
-              const next = MOCK_QUESTIONS[(idx + 1) % MOCK_QUESTIONS.length];
+              const idx = allQuestions.findIndex((q) => q.id === selected.id);
+              const next = allQuestions[(idx + 1) % allQuestions.length];
               setSelected(next);
             }}>
               Следующий вопрос
@@ -566,6 +434,9 @@ export default function CoursePage() {
   const user     = INITIAL_USERS[0];
   const assign   = user.assignments.find((a) => a.courseId === courseId);
 
+  // Выбираем банк вопросов по направлению курса
+  const questions = getQuestionsForCourse(courseId);
+
   const [mode, setMode]       = useState<LearningMode>("menu");
   const [adaptIdx, setAdaptIdx] = useState(0);
   const [adaptAnswered, setAdaptAnswered] = useState(false);
@@ -578,7 +449,7 @@ export default function CoursePage() {
   }
 
   function handleAdaptNext() {
-    setAdaptIdx((p) => (p + 1) % MOCK_QUESTIONS.length);
+    setAdaptIdx((p) => (p + 1) % questions.length);
     setAdaptAnswered(false);
     setAdaptSelected(null);
   }
@@ -699,11 +570,16 @@ export default function CoursePage() {
                 </div>
               </div>
               <div className="space-y-1.5">
-                {[
-                  "ФЗ-116 «О промышленной безопасности опасных производственных объектов»",
-                  "ПП РФ № 263 «Об организации и осуществлении производственного контроля»",
-                  "Приказ Ростехнадзора № 471 «Об утверждении руководства по безопасности»",
-                ].map((doc) => (
+                {(dir?.id === 2
+                  ? ["ПТЭЭП «Правила технической эксплуатации электроустановок потребителей»", "ПОТЭУ «Правила по охране труда при эксплуатации электроустановок»", "ПУЭ «Правила устройства электроустановок»", "Приказ Минэнерго № 261 «Инструкция по применению средств защиты»"]
+                  : dir?.id === 3
+                  ? ["ТК РФ — Трудовой кодекс Российской Федерации", "ФЗ-426 «О специальной оценке условий труда»", "ФЗ-125 «Об обязательном социальном страховании от несчастных случаев»", "ПП РФ № 2464 «О порядке обучения по охране труда»"]
+                  : dir?.id === 4
+                  ? ["ФЗ-116 «О промышленной безопасности опасных производственных объектов»", "ПП РФ № 467 «Об аттестации экспертов в области промышленной безопасности»", "Приказ Ростехнадзора № 538 «Порядок осуществления экспертизы ПБ»"]
+                  : dir?.id === 5
+                  ? ["ФЗ-117 «О безопасности гидротехнических сооружений»", "ПП РФ № 986 «Критерии классификации ГТС»", "СП 39.13330.2012 «Плотины из грунтовых материалов»"]
+                  : ["ФЗ-116 «О промышленной безопасности опасных производственных объектов»", "ПП РФ № 263 «Об организации и осуществлении производственного контроля»", "Приказ Ростехнадзора № 471 «Об утверждении руководства по безопасности»"]
+                ).map((doc) => (
                   <div key={doc} className="flex items-center gap-3 px-3 py-2.5 bg-muted/40 rounded-xl">
                     <Icon name="FileText" size={14} className="text-muted-foreground flex-shrink-0" />
                     <span className="text-sm flex-1 min-w-0 truncate">{doc}</span>
@@ -726,10 +602,10 @@ export default function CoursePage() {
                 </div>
                 <p className="font-semibold text-sm">Адаптивный тренинг</p>
               </div>
-              <span className="text-xs text-muted-foreground">Вопрос {adaptIdx + 1} / {MOCK_QUESTIONS.length}</span>
+              <span className="text-xs text-muted-foreground">Вопрос {adaptIdx + 1} / {questions.length}</span>
             </div>
             <AdaptiveQuestion
-              question={MOCK_QUESTIONS[adaptIdx]}
+              question={questions[adaptIdx]}
               onAnswer={handleAdaptAnswer}
               onNext={handleAdaptNext}
               answered={adaptAnswered}
@@ -746,7 +622,7 @@ export default function CoursePage() {
               </div>
               <p className="font-semibold text-sm">Тест по разделу</p>
             </div>
-            <FinalTest onFinish={handleTestFinish} isFinal={false} />
+            <FinalTest onFinish={handleTestFinish} isFinal={false} allQuestions={questions} />
           </div>
         )}
 
@@ -761,10 +637,10 @@ export default function CoursePage() {
             <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-3 flex items-center gap-2">
               <Icon name="AlertCircle" size={15} className="text-amber-600 dark:text-amber-400 flex-shrink-0" />
               <p className="text-sm text-amber-800 dark:text-amber-300">
-                10 вопросов · 30 минут · Подсказки недоступны · Порог сдачи: 70%
+                {Math.min(10, questions.length)} вопросов · 30 минут · Подсказки недоступны · Порог сдачи: 70%
               </p>
             </div>
-            <FinalTest onFinish={handleTestFinish} isFinal={true} />
+            <FinalTest onFinish={handleTestFinish} isFinal={true} allQuestions={questions} />
           </div>
         )}
 
@@ -781,6 +657,7 @@ export default function CoursePage() {
               isFinal={true}
               onRetry={() => { setTestAnswers([]); setMode("final_test"); }}
               onMenu={resetToMenu}
+              allQuestions={questions}
             />
           </div>
         )}
@@ -793,7 +670,7 @@ export default function CoursePage() {
               </div>
               <p className="font-semibold text-sm">Ответ на вопрос</p>
             </div>
-            <SearchAnswerMode onBack={resetToMenu} />
+            <SearchAnswerMode onBack={resetToMenu} allQuestions={questions} />
           </div>
         )}
       </div>
