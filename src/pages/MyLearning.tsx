@@ -152,7 +152,7 @@ export default function MyLearning() {
                 <div
                   key={a.courseId}
                   className="bg-card rounded-2xl border border-border p-5 flex items-center gap-5 hover:shadow-md transition-all cursor-pointer group"
-                  onClick={() => a.status === "active" && navigate(`/lesson/${a.courseId}`)}
+                  onClick={() => (a.status === "active" || a.status === "completed" || a.status === "certified") && navigate(`/course/${a.courseId}`)}
                 >
                   {/* Иконка */}
                   <div className={`w-14 h-14 bg-gradient-to-br ${GRADIENTS[idx % GRADIENTS.length]} rounded-2xl flex items-center justify-center text-2xl flex-shrink-0`}>
@@ -219,7 +219,7 @@ export default function MyLearning() {
                   </div>
 
                   {/* Кнопка */}
-                  {a.status === "active" && (
+                  {(a.status === "active" || a.status === "completed" || a.status === "certified") && (
                     <div className="flex-shrink-0">
                       <div className="w-9 h-9 bg-violet-100 dark:bg-violet-900/30 rounded-xl flex items-center justify-center group-hover:bg-violet-600 transition-colors">
                         <Icon name="ChevronRight" size={18} className="text-violet-600 group-hover:text-white transition-colors" />

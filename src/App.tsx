@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-route
 import Dashboard from "./pages/Dashboard";
 import Courses from "./pages/Courses";
 import Lesson from "./pages/Lesson";
+import CoursePage from "./pages/CoursePage";
 import Profile from "./pages/Profile";
 import MyLearning from "./pages/MyLearning";
 import NotFound from "./pages/NotFound";
@@ -42,6 +43,7 @@ function AppRoutes() {
       <Route path="/" element={<RequireAuth><Dashboard /></RequireAuth>} />
       <Route path="/courses" element={<RequireAuth><Courses /></RequireAuth>} />
       <Route path="/lesson/:id" element={<RequireAuth><Lesson /></RequireAuth>} />
+      <Route path="/course/:id" element={<RequireAuth><CoursePage /></RequireAuth>} />
       <Route path="/my-learning" element={<RequireAuth><MyLearning /></RequireAuth>} />
       <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
       <Route path="/admin" element={<RequireAuth><Admin /></RequireAuth>} />
