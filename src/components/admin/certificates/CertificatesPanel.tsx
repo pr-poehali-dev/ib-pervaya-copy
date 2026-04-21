@@ -1,0 +1,394 @@
+import { useState, useRef } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import Icon from "@/components/ui/icon";
+import { CERTIFICATES } from "@/data/mockData";
+import type { Certificate, CertificateStatus } from "@/components/admin/types";
+
+// ─── Бейдж статуса удостоверения ─────────────────────────────────────────────
+
+function CertBadge({ status }: { status: CertificateStatus }) {
+  const map: Record<CertificateStatus, { label: string; cls: string }> = {
+    ready:  { label: "Готов к выдаче", cls: "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300" },
+    issued: { label: "Выдан",          cls: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300" },
+  };
+  const { label, cls } = map[status];
+  return <Badge className={`text-xs ${cls}`}>{label}</Badge>;
+}
+
+// ─── Шаблон удостоверения ─────────────────────────────────────────────────────
+
+function CertificateTemplate({ cert }: { cert: Certificate }) {
+  const today = new Date().toLocaleDateString("ru-RU", { day: "2-digit", month: "long", year: "numeric" });
+  const certNum = cert.certificateNumber ?? `ДПО-${new Date().getFullYear()}-${String(cert.id).padStart(3, "0")}`;
+
+  return (
+    <div
+      id="certificate-template"
+      className="bg-white text-black"
+      style={{
+        width: "297mm",
+        minHeight: "210mm",
+        padding: "20mm 25mm",
+        fontFamily: "Times New Roman, serif",
+        position: "relative",
+        boxSizing: "border-box",
+      }}
+    >
+      {/* Рамка */}
+      <div style={{
+        position: "absolute", inset: "8mm",
+        border: "3px solid #1a1a6e",
+        borderRadius: "4px",
+        pointerEvents: "none",
+      }} />
+      <div style={{
+        position: "absolute", inset: "10mm",
+        border: "1px solid #1a1a6e",
+        borderRadius: "3px",
+        pointerEvents: "none",
+      }} />
+
+      <div style={{ position: "relative", zIndex: 1, textAlign: "center" }}>
+        {/* Шапка */}
+        <p style={{ fontSize: "11pt", marginBottom: "4mm", color: "#1a1a6e", letterSpacing: "1px" }}>
+          МИНИСТЕРСТВО ОБРАЗОВАНИЯ И НАУКИ РОССИЙСКОЙ ФЕДЕРАЦИИ
+        </p>
+        <p style={{ fontSize: "12pt", fontWeight: "bold", marginBottom: "8mm", color: "#1a1a6e" }}>
+          ООО «УЦ ИСП»
+        </p>
+        <p style={{ fontSize: "10pt", marginBottom: "2mm", color: "#555" }}>
+          Лицензия на осуществление образовательной деятельности № 9999 от 09.02.2026
+        </p>
+
+        <div style={{ margin: "8mm 0 4mm", borderBottom: "1px solid #1a1a6e" }} />
+
+        {/* Заголовок */}
+        <p style={{ fontSize: "20pt", fontWeight: "bold", letterSpacing: "3px", color: "#1a1a6e", margin: "6mm 0 2mm" }}>
+          УДОСТОВЕРЕНИЕ
+        </p>
+        <p style={{ fontSize: "14pt", letterSpacing: "2px", color: "#1a1a6e", marginBottom: "8mm" }}>
+          О ПОВЫШЕНИИ КВАЛИФИКАЦИИ
+        </p>
+        <p style={{ fontSize: "9pt", color: "#777", marginBottom: "6mm" }}>№ {certNum}</p>
+
+        {/* Тело */}
+        <p style={{ fontSize: "12pt", marginBottom: "4mm" }}>
+          Настоящее удостоверение выдано
+        </p>
+        <p style={{ fontSize: "16pt", fontWeight: "bold", borderBottom: "1px solid #333", display: "inline-block", paddingBottom: "1mm", marginBottom: "6mm", minWidth: "200mm" }}>
+          {cert.userName}
+        </p>
+
+        <p style={{ fontSize: "11pt", marginBottom: "4mm", lineHeight: "1.6" }}>
+          в том, что он(а) в период с {cert.testPassedAt} по {cert.issuedAt ?? today} прошёл(а) обучение
+          по дополнительной профессиональной программе повышения квалификации:
+        </p>
+
+        <p style={{ fontSize: "13pt", fontWeight: "bold", fontStyle: "italic", margin: "4mm 0 2mm", color: "#1a1a6e" }}>
+          «{cert.courseTitle}»
+        </p>
+        {cert.courseCode && (
+          <p style={{ fontSize: "10pt", color: "#555", marginBottom: "2mm" }}>({cert.courseCode})</p>
+        )}
+        <p style={{ fontSize: "11pt", marginBottom: "6mm" }}>
+          Объём программы: <strong>{cert.courseHours ?? "—"} академических часов</strong>
+        </p>
+
+        <p style={{ fontSize: "11pt", marginBottom: "8mm" }}>
+          Итоговая аттестация пройдена с результатом: <strong>{cert.testScore}%</strong>
+        </p>
+
+        <div style={{ margin: "4mm 0", borderBottom: "1px solid #1a1a6e" }} />
+
+        {/* Подписи */}
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: "8mm", fontSize: "10pt" }}>
+          <div style={{ textAlign: "left" }}>
+            <p style={{ marginBottom: "12mm" }}>Дата выдачи: <strong>{cert.issuedAt ?? today}</strong></p>
+            <p>Регистрационный номер: <strong>{certNum}</strong></p>
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ width: "60mm", height: "60mm", border: "1px dashed #aaa", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#aaa", fontSize: "9pt" }}>
+              М.П.
+            </div>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <p style={{ marginBottom: "12mm" }}>Директор</p>
+            <p style={{ borderTop: "1px solid #333", paddingTop: "1mm" }}>
+              {cert.issuedBy ?? "________________"}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Модальное окно выдачи удостоверения ──────────────────────────────────────
+
+function IssueCertModal({
+  cert,
+  onClose,
+  onIssue,
+}: {
+  cert: Certificate;
+  onClose: () => void;
+  onIssue: (certNum: string, issuedBy: string) => void;
+}) {
+  const [certNum,  setCertNum]  = useState(`ДПО-${new Date().getFullYear()}-${String(cert.id).padStart(3, "0")}`);
+  const [issuedBy, setIssuedBy] = useState("Иванов И.И.");
+  const [showPreview, setShowPreview] = useState(false);
+  const printRef = useRef<HTMLDivElement>(null);
+
+  function handlePrint() {
+    const content = document.getElementById("certificate-template");
+    if (!content) return;
+    const win = window.open("", "_blank");
+    if (!win) return;
+    win.document.write(`
+      <html><head><title>Удостоверение ДПО</title>
+      <style>
+        @page { size: A4 landscape; margin: 0; }
+        body { margin: 0; }
+        #certificate-template { page-break-inside: avoid; }
+      </style>
+      </head><body>${content.outerHTML}</body></html>
+    `);
+    win.document.close();
+    win.focus();
+    win.print();
+  }
+
+  const previewCert: Certificate = {
+    ...cert,
+    certificateNumber: certNum,
+    issuedBy,
+    issuedAt: new Date().toLocaleDateString("ru-RU"),
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="bg-background rounded-2xl border border-border w-full max-w-lg shadow-2xl">
+        <div className="flex items-center justify-between p-6 border-b border-border">
+          <div>
+            <h2 className="font-bold text-base">Выдача удостоверения ДПО</h2>
+            <p className="text-xs text-muted-foreground">{cert.userName} · {cert.courseTitle}</p>
+          </div>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground p-1 rounded-lg hover:bg-muted">
+            <Icon name="X" size={18} />
+          </button>
+        </div>
+        <div className="p-6 space-y-4">
+          <div className="bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4 flex items-center gap-3">
+            <Icon name="CheckCircle" size={18} className="text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-emerald-800 dark:text-emerald-300">Тест сдан успешно</p>
+              <p className="text-xs text-emerald-700 dark:text-emerald-400">Результат: {cert.testScore}% · Дата: {cert.testPassedAt}</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">Номер удостоверения</label>
+              <input value={certNum} onChange={(e) => setCertNum(e.target.value)} className="w-full h-9 px-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30" />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">Подписант</label>
+              <input value={issuedBy} onChange={(e) => setIssuedBy(e.target.value)} className="w-full h-9 px-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30" />
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            className="w-full rounded-xl gap-2"
+            onClick={() => setShowPreview(!showPreview)}
+          >
+            <Icon name={showPreview ? "EyeOff" : "Eye"} size={15} />
+            {showPreview ? "Скрыть предпросмотр" : "Предпросмотр"}
+          </Button>
+
+          {showPreview && (
+            <div className="border border-border rounded-xl overflow-hidden" style={{ transform: "scale(0.35)", transformOrigin: "top left", height: "105mm", marginBottom: "-68%" }}>
+              <div ref={printRef}>
+                <CertificateTemplate cert={previewCert} />
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="flex gap-2 p-6 border-t border-border">
+          <Button variant="outline" className="flex-1 rounded-xl" onClick={onClose}>Отмена</Button>
+          <Button variant="outline" className="rounded-xl gap-2" onClick={handlePrint}>
+            <Icon name="Printer" size={15} />
+            Печать
+          </Button>
+          <Button className="flex-1 rounded-xl gradient-primary text-white gap-2" onClick={() => onIssue(certNum, issuedBy)}>
+            <Icon name="Award" size={15} />
+            Выдать
+          </Button>
+        </div>
+      </div>
+
+      {/* Скрытый шаблон для печати */}
+      {showPreview && (
+        <div style={{ position: "fixed", left: "-9999px", top: 0 }}>
+          <CertificateTemplate cert={previewCert} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Главная панель удостоверений ─────────────────────────────────────────────
+
+export default function CertificatesPanel() {
+  const [certs, setCerts] = useState<Certificate[]>(CERTIFICATES);
+  const [issueTarget, setIssueTarget] = useState<Certificate | null>(null);
+  const [tab, setTab] = useState<"ready" | "issued">("ready");
+
+  const ready  = certs.filter((c) => c.status === "ready");
+  const issued = certs.filter((c) => c.status === "issued");
+
+  function handleIssue(certNum: string, issuedBy: string) {
+    if (!issueTarget) return;
+    setCerts((prev) =>
+      prev.map((c) =>
+        c.id === issueTarget.id
+          ? {
+              ...c,
+              status: "issued",
+              issuedAt: new Date().toLocaleDateString("ru-RU"),
+              issuedBy,
+              certificateNumber: certNum,
+            }
+          : c
+      )
+    );
+    setIssueTarget(null);
+  }
+
+  const list = tab === "ready" ? ready : issued;
+
+  return (
+    <div className="space-y-4">
+      {issueTarget && (
+        <IssueCertModal
+          cert={issueTarget}
+          onClose={() => setIssueTarget(null)}
+          onIssue={handleIssue}
+        />
+      )}
+
+      {/* Переключатель */}
+      <div className="flex gap-2">
+        <button
+          onClick={() => setTab("ready")}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border transition-colors ${tab === "ready" ? "gradient-primary text-white border-transparent" : "border-border text-muted-foreground hover:bg-muted/60"}`}
+        >
+          <Icon name="Clock" size={15} />
+          Готовы к выдаче
+          {ready.length > 0 && (
+            <span className="bg-amber-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+              {ready.length}
+            </span>
+          )}
+        </button>
+        <button
+          onClick={() => setTab("issued")}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border transition-colors ${tab === "issued" ? "gradient-primary text-white border-transparent" : "border-border text-muted-foreground hover:bg-muted/60"}`}
+        >
+          <Icon name="Award" size={15} />
+          Выданные ({issued.length})
+        </button>
+      </div>
+
+      {/* Уведомление */}
+      {tab === "ready" && ready.length > 0 && (
+        <div className="flex items-center gap-3 px-4 py-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-2xl">
+          <Icon name="AlertCircle" size={16} className="text-amber-600 dark:text-amber-400 flex-shrink-0" />
+          <p className="text-sm text-amber-800 dark:text-amber-300">
+            <span className="font-semibold">{ready.length} слушателей</span> успешно сдали итоговый тест и ожидают выдачи удостоверения ДПО.
+          </p>
+        </div>
+      )}
+
+      {/* Таблица */}
+      <div className="bg-card rounded-2xl border border-border overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border bg-muted/40">
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Слушатель</th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Курс</th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Код</th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Часов</th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Результат</th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Дата теста</th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Статус</th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Действие</th>
+              </tr>
+            </thead>
+            <tbody>
+              {list.map((cert, idx) => (
+                <tr key={cert.id} className={`border-b border-border last:border-0 hover:bg-muted/20 transition-colors ${idx % 2 !== 0 ? "bg-muted/5" : ""}`}>
+                  <td className="px-4 py-3">
+                    <div>
+                      <p className="font-medium">{cert.userName}</p>
+                      <p className="text-xs text-muted-foreground">{cert.userEmail}</p>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <p className="text-sm max-w-[200px] truncate" title={cert.courseTitle}>{cert.courseTitle}</p>
+                  </td>
+                  <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{cert.courseCode ?? "—"}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{cert.courseHours ? `${cert.courseHours} ч` : "—"}</td>
+                  <td className="px-4 py-3">
+                    <span className={`font-semibold ${cert.testScore >= 80 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
+                      {cert.testScore}%
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground">{cert.testPassedAt}</td>
+                  <td className="px-4 py-3">
+                    <div className="space-y-1">
+                      <CertBadge status={cert.status} />
+                      {cert.status === "issued" && cert.certificateNumber && (
+                        <p className="text-xs text-muted-foreground font-mono">{cert.certificateNumber}</p>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    {cert.status === "ready" ? (
+                      <Button
+                        size="sm"
+                        className="rounded-lg gradient-primary text-white text-xs h-7 px-3 gap-1"
+                        onClick={() => setIssueTarget(cert)}
+                      >
+                        <Icon name="Award" size={12} />
+                        Выдать
+                      </Button>
+                    ) : (
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs text-muted-foreground">{cert.issuedAt}</span>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))}
+              {list.length === 0 && (
+                <tr>
+                  <td colSpan={8} className="px-4 py-12 text-center">
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="w-12 h-12 bg-muted/40 rounded-2xl flex items-center justify-center">
+                        <Icon name="Award" size={22} className="text-muted-foreground" />
+                      </div>
+                      <p className="text-muted-foreground text-sm">
+                        {tab === "ready" ? "Нет слушателей, готовых к получению удостоверения" : "Удостоверения ещё не выдавались"}
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -5,6 +5,7 @@ import SettingsCards from "./settings/SettingsCards";
 import OrgPanel from "./settings/OrgPanel";
 import UsersPanel from "./settings/UsersPanel";
 import EmailPanel from "./settings/EmailPanel";
+import ClientOrgsPanel from "./settings/ClientOrgsPanel";
 import { useStats } from "@/contexts/StatsContext";
 
 export default function AdminSettings() {
@@ -51,6 +52,10 @@ export default function AdminSettings() {
           onEmailSettingsChange={setEmailSettings}
           onBack={() => setActivePanel(null)}
         />
+      )}
+
+      {activePanel === "client_orgs" && (
+        <ClientOrgsPanel onBack={() => setActivePanel(null)} />
       )}
     </div>
   );

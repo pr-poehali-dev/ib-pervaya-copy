@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useStats } from "@/contexts/StatsContext";
 import { useRole } from "@/contexts/RoleContext";
 import { useAdminData } from "@/hooks/useAdminData";
+import { CERTIFICATES } from "@/data/mockData";
 import Layout from "@/components/layout/Layout";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AddUserDialog from "@/components/admin/AddUserDialog";
@@ -26,6 +27,7 @@ export default function Admin() {
   const { role } = useRole();
   const isManager = role === "manager";
   const [activeTab, setActiveTab] = useState<AdminTabKey>("stp");
+  const certReadyCount = CERTIFICATES.filter((c) => c.status === "ready").length;
 
   // ─── Диалог добавления группы ─────────────────────────────────────────────
   const [showAddGroup, setShowAddGroup] = useState(false);
@@ -57,12 +59,6 @@ export default function Admin() {
 
   const toggleDirection = (id: number) =>
     setOpenDirections((p) => (p.includes(id) ? p.filter((d) => d !== id) : [...p, id]));
-
-  // ─── STP фильтры ─────────────────────────────────────────────────────────
-  const [stpFilterStatus, setStpFilterStatus] = useState("Все");
-  const [stpFilterOrgs, setStpFilterOrgs] = useState<string[]>([]);
-  const [stpFilterFio, setStpFilterFio] = useState<string[]>([]);
-  const [stpFilterCourse, setStpFilterCourse] = useState("");
 
   // ─── Обработчик добавления слушателя ────────────────────────────────────
   const handleAddUser = () => {
@@ -178,17 +174,13 @@ export default function Admin() {
           onSave={handleAddUser}
         />
 
-        <AdminTabBar activeTab={activeTab} setActiveTab={setActiveTab} hideSettings={isManager} />
+        <AdminTabBar activeTab={activeTab} setActiveTab={setActiveTab} hideSettings={isManager} certReadyCount={certReadyCount} />
 
         <AdminTabContent
           activeTab={activeTab}
           users={users}
           filteredUsers={filteredUsers}
           toggleCourse={toggleCourse}
-          stpFilterStatus={stpFilterStatus} setStpFilterStatus={setStpFilterStatus}
-          stpFilterOrgs={stpFilterOrgs} setStpFilterOrgs={setStpFilterOrgs}
-          stpFilterFio={stpFilterFio} setStpFilterFio={setStpFilterFio}
-          stpFilterCourse={stpFilterCourse} setStpFilterCourse={setStpFilterCourse}
         />
       </div>
     </Layout>

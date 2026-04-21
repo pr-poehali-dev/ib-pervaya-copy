@@ -1,5 +1,6 @@
 import Icon from "@/components/ui/icon";
 import { ActivePanel, OrgData, SystemUser } from "./types";
+import { useRole } from "@/contexts/RoleContext";
 
 interface SettingsCardsProps {
   org: OrgData;
@@ -8,6 +9,9 @@ interface SettingsCardsProps {
 }
 
 export default function SettingsCards({ org, systemUsers, setActivePanel }: SettingsCardsProps) {
+  const { tenantType } = useRole();
+  const isUC = tenantType === "training_center";
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
       {/* Карточка: Данные организации */}
@@ -82,6 +86,27 @@ export default function SettingsCards({ org, systemUsers, setActivePanel }: Sett
           <span className="text-sm text-muted-foreground">SMTP настроен</span>
         </div>
       </div>
+
+      {/* Карточка: Организации-клиенты (только для УЦ) */}
+      {isUC && (
+        <div
+          className="bg-card rounded-2xl border border-border p-6 cursor-pointer hover:border-amber-400 hover:shadow-lg hover:shadow-amber-100 dark:hover:shadow-amber-900/20 transition-all duration-200 group"
+          onClick={() => setActivePanel("client_orgs")}
+        >
+          <div className="flex items-start justify-between mb-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center">
+              <Icon name="Building" size={22} className="text-white" />
+            </div>
+            <Icon name="ChevronRight" size={18} className="text-muted-foreground group-hover:text-amber-500 transition-colors mt-1" />
+          </div>
+          <h3 className="font-bold text-base mb-1">Организации-клиенты</h3>
+          <p className="text-muted-foreground text-sm mb-4">Компании, для сотрудников которых проводится обучение</p>
+          <div className="flex items-center gap-2">
+            <Icon name="Building2" size={14} className="text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">Управление списком клиентов</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

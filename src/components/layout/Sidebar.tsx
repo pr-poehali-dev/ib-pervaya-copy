@@ -6,6 +6,7 @@ import { useStats } from "@/contexts/StatsContext";
 import { useRole } from "@/contexts/RoleContext";
 import { useAuth } from "@/contexts/AuthContext";
 import ThemePicker from "@/components/ui/ThemePicker";
+import { TENANTS } from "@/data/mockData";
 
 type NavItem = { to: string; icon: string; label: string };
 
@@ -186,21 +187,29 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
         </div>
       )}
 
-      {/* Прогресс-бар подписок */}
+      {/* Подписки по направлениям */}
       {showStats && !collapsed && (
         <div className="px-3 pb-2">
-          <div className="bg-white/5 rounded-xl px-3 py-2.5 space-y-1.5">
-            <div className="flex items-center justify-between text-[10px]">
-              <span className="text-white/50">Подписки использованы</span>
-              <span className="text-white/70 font-semibold">{stats.subscriptionsUsed} / {totalSubs}</span>
-            </div>
-            <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full transition-all"
-                style={{ width: `${leftPct}%` }}
-              />
-            </div>
-            <p className="text-[10px] text-white/40">{stats.subscriptionsLeft} осталось доступных</p>
+          <div className="bg-white/5 rounded-xl px-3 py-2.5 space-y-2">
+            <p className="text-[10px] text-white/50 font-medium uppercase tracking-wider">Подписки</p>
+            {TENANTS[0].subscriptions.map((s) => {
+              const pct = s.total > 0 ? Math.round((s.used / s.total) * 100) : 0;
+              const warn = pct >= 85;
+              return (
+                <div key={s.type} className="space-y-0.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-white/50 truncate max-w-[110px]" title={s.label}>{s.label}</span>
+                    <span className={`text-[10px] font-semibold ${warn ? "text-red-400" : "text-white/70"}`}>{s.used}/{s.total}</span>
+                  </div>
+                  <div className="h-1 bg-white/10 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all ${warn ? "bg-red-400" : "bg-gradient-to-r from-emerald-400 to-teal-500"}`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

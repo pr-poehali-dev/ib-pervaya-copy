@@ -1,8 +1,6 @@
 import { useState } from "react";
-import Icon from "@/components/ui/icon";
-import { User, allCourses } from "@/components/admin/types";
+import { User } from "@/components/admin/types";
 import { useRole } from "@/contexts/RoleContext";
-import { MultiSelect, SearchSelect, FilterTags } from "@/components/admin/shared/FilterControls";
 import AdminUsers from "@/components/admin/users/AdminUsers";
 import AdminGroups from "@/components/admin/groups/AdminGroups";
 import AdminSettings from "@/components/admin/AdminSettings";
@@ -10,6 +8,8 @@ import AdminCatalogPanel from "@/components/admin/catalog/AdminCatalogPanel";
 import StatsModal from "@/components/admin/reports/StatsModal";
 import CertRegistryModal from "@/components/admin/reports/CertRegistryModal";
 import SubscriptionReportModal from "@/components/admin/reports/SubscriptionReportModal";
+import STPPanel from "@/components/admin/stp/STPPanel";
+import CertificatesPanel from "@/components/admin/certificates/CertificatesPanel";
 
 import { AdminTabKey } from "@/components/admin/AdminTabBar";
 
@@ -18,14 +18,7 @@ interface AdminTabContentProps {
   users: User[];
   filteredUsers: User[];
   toggleCourse: (userId: number, courseId: number) => void;
-  // STP фильтры
-  stpFilterStatus: string; setStpFilterStatus: (v: string) => void;
-  stpFilterOrgs: string[]; setStpFilterOrgs: (v: string[]) => void;
-  stpFilterFio: string[]; setStpFilterFio: (v: string[]) => void;
-  stpFilterCourse: string; setStpFilterCourse: (v: string) => void;
 }
-
-const stpStatusOptions = ["Все", "Ожидает", "В обработке", "Завершена"];
 
 const reportItems = [
   {
@@ -59,19 +52,12 @@ const reportItems = [
 
 export default function AdminTabContent({
   activeTab, users, filteredUsers, toggleCourse,
-  stpFilterStatus, setStpFilterStatus,
-  stpFilterOrgs, setStpFilterOrgs,
-  stpFilterFio, setStpFilterFio,
-  stpFilterCourse, setStpFilterCourse,
 }: AdminTabContentProps) {
   const [showStatsModal, setShowStatsModal] = useState(false);
   const [showCertModal, setShowCertModal] = useState(false);
   const [showSubModal, setShowSubModal] = useState(false);
   const { tenantType } = useRole();
   const canIssueCert = tenantType === "training_center";
-  const stpOrgOptions = [...new Set(users.map((u) => u.group))];
-  const stpFioOptions = users.map((u) => u.name);
-  const stpCourseOptions = allCourses.map((c) => c.title);
 
   if (activeTab === "users") {
     return (
@@ -88,53 +74,11 @@ export default function AdminTabContent({
   }
 
   if (activeTab === "stp") {
-    return (
-      <div className="space-y-4">
-        <div className="bg-card rounded-2xl border border-border px-4 pt-3 pb-3 space-y-2.5">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">Статус заявки</p>
-              <SearchSelect options={stpStatusOptions} value={stpFilterStatus} onChange={setStpFilterStatus} placeholder="Все статусы" />
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">Организация</p>
-              <MultiSelect options={stpOrgOptions} selected={stpFilterOrgs} onChange={setStpFilterOrgs} placeholder="Все организации" />
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">ФИО обучающегося</p>
-              <MultiSelect options={stpFioOptions} selected={stpFilterFio} onChange={setStpFilterFio} placeholder="Все слушатели" />
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">Курс обучения</p>
-              <SearchSelect options={stpCourseOptions} value={stpFilterCourse} onChange={setStpFilterCourse} placeholder="Все курсы" />
-            </div>
-          </div>
-          <FilterTags
-            filterStatus={stpFilterStatus} setFilterStatus={setStpFilterStatus} defaultStatus="Все"
-            filterOrgs={stpFilterOrgs} setFilterOrgs={setStpFilterOrgs}
-            filterFio={stpFilterFio} setFilterFio={setStpFilterFio}
-            filterCourse={stpFilterCourse} setFilterCourse={setStpFilterCourse}
-            onReset={() => { setStpFilterStatus("Все"); setStpFilterOrgs([]); setStpFilterFio([]); setStpFilterCourse(""); }}
-          />
-        </div>
+    return <STPPanel />;
+  }
 
-        <div className="bg-card rounded-2xl border border-border p-8 flex flex-col items-center justify-center text-center space-y-4">
-          <div className="w-14 h-14 icon-bg-violet rounded-2xl flex items-center justify-center">
-            <Icon name="FileInput" size={26} className="text-violet-500" />
-          </div>
-          <div>
-            <p className="font-bold text-base">Заявки из STP</p>
-            <p className="text-muted-foreground text-sm mt-1">
-              Заявки на обучение будут поступать автоматически после подключения интеграции с STP.
-            </p>
-          </div>
-          <div className="flex items-center gap-2 px-4 py-2 icon-bg-amber border border-amber-200 dark:border-amber-800 rounded-xl">
-            <Icon name="Clock" size={14} className="text-amber-500" />
-            <span className="text-amber-700 dark:text-amber-400 text-sm font-medium">Ожидает интеграции</span>
-          </div>
-        </div>
-      </div>
-    );
+  if (activeTab === "certificates") {
+    return <CertificatesPanel />;
   }
 
   if (activeTab === "groups") {
