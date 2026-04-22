@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Icon from "@/components/ui/icon";
 import { User } from "@/components/admin/types";
 import { useRole } from "@/contexts/RoleContext";
 import AdminUsers from "@/components/admin/users/AdminUsers";
