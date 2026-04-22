@@ -94,8 +94,8 @@ function CourseRow({
 }) {
   const [open,           setOpen]           = useState(false);
   const [showRejection,  setShowRejection]  = useState(false);
-  const mats = course.editorData?.materials ?? [];
-  const ntds = course.editorData?.ntdFiles  ?? [];
+  const mats = course.editorData?.materials ?? course.materials ?? [];
+  const ntds = course.editorData?.ntdFiles  ?? course.ntdFiles  ?? [];
   const hasMeta = mats.length > 0 || ntds.length > 0;
   const isRejected = course.status === "rejected" && !!course.rejectionReason;
 
@@ -140,17 +140,8 @@ function CourseRow({
           {course.dpoAvailable ? <Icon name="Award" size={15} className="text-violet-500" /> : <Icon name="Minus" size={15} className="text-muted-foreground" />}
         </td>
         <td className="px-4 py-3">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <StatusBadge status={course.status} />
-            {isRejected && (
-              <button
-                onClick={(e) => { e.stopPropagation(); setShowRejection(true); }}
-                className="p-1 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 text-red-400 hover:text-red-600 transition-colors"
-                title="Замечания суперадминистратора"
-              >
-                <Icon name="MessageSquare" size={13} />
-              </button>
-            )}
             {hasMeta && !isRejected && (
               <span className="text-xs text-muted-foreground">
                 {mats.length > 0 && `${mats.length} файл${mats.length > 1 ? "а" : ""}`}
@@ -159,7 +150,20 @@ function CourseRow({
             )}
           </div>
         </td>
-        <td className="px-4 py-3 text-xs text-muted-foreground">{course.createdAt}</td>
+        <td className="px-4 py-3 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <span>{course.createdAt}</span>
+            {isRejected && (
+              <button
+                onClick={(e) => { e.stopPropagation(); setShowRejection(true); }}
+                className="flex items-center gap-1 px-2 py-1 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors text-xs font-medium whitespace-nowrap"
+              >
+                <Icon name="MessageSquare" size={11} />
+                Замечания
+              </button>
+            )}
+          </div>
+        </td>
       </tr>
       {open && hasMeta && (
         <tr className="border-b border-border bg-muted/10">
