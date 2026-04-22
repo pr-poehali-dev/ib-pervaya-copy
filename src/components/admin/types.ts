@@ -74,6 +74,25 @@ export type CourseMaterial = {
   approvedAt?: string;
 };
 
+/** Материал курса тенанта (облегчённый, для отображения) */
+export type TenantCourseMaterial = {
+  id: number;
+  title: string;
+  type: "video" | "lecture" | "presentation" | "audio";
+  ext: string;
+  duration?: string;
+};
+
+/** Документ НТД, прикреплённый к курсу тенанта */
+export type TenantCourseNtd = {
+  id: number;
+  title: string;
+  ext: string;
+};
+
+/** Режим теста в курсе тенанта */
+export type TenantCourseTestMode = "adaptive" | "section" | "final";
+
 /** Курс созданный тенантом самостоятельно */
 export type TenantCourse = {
   id: number;
@@ -87,6 +106,13 @@ export type TenantCourse = {
   rejectionReason?: string;
   createdAt: string;
   approvedAt?: string;
+  description?: string;
+  testModes?: TenantCourseTestMode[];
+  finalTestQuestions?: number;
+  finalTestPassScore?: number;
+  finalTestTime?: number;
+  materials?: TenantCourseMaterial[];
+  ntdFiles?: TenantCourseNtd[];
 };
 
 // ─── Подписки ─────────────────────────────────────────────────────────────────

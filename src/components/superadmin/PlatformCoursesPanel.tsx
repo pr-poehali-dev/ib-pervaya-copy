@@ -197,35 +197,250 @@ function PlatformCatalog() {
   );
 }
 
-// ─── Иконки типов материалов ──────────────────────────────────────────────────
+// ─── Карта иконок и цветов материалов ────────────────────────────────────────
 
-const MAT_ICON: Record<string, string> = {
-  lecture: "FileText", presentation: "Presentation", video: "Video", audio: "Mic", other: "Paperclip",
+const MAT_META: Record<string, { icon: string; color: string }> = {
+  video:        { icon: "Video",        color: "from-rose-500 to-pink-600"     },
+  lecture:      { icon: "FileText",     color: "from-violet-500 to-purple-600" },
+  presentation: { icon: "Presentation", color: "from-blue-500 to-indigo-600"   },
+  audio:        { icon: "Mic",          color: "from-amber-500 to-orange-600"  },
 };
 
-// ─── Моковые материалы привязанные к курсам тенантов ────────────────────────
-
-type MockMaterial = { id: number; title: string; type: string; ext: string };
-
-const MOCK_COURSE_MATERIALS: Record<number, MockMaterial[]> = {
-  1: [
-    { id: 101, title: "Лекция 1. Основные понятия и определения", type: "lecture",      ext: "PDF"  },
-    { id: 102, title: "Презентация. Требования ФЗ-116",           type: "presentation", ext: "PPTX" },
-    { id: 103, title: "Видеолекция. Введение в курс",             type: "video",        ext: "MP4"  },
-  ],
-  2: [
-    { id: 201, title: "Аудиолекция. Ключевые требования ПБ",      type: "audio",        ext: "MP3"  },
-    { id: 202, title: "Презентация. Нормативная база",             type: "presentation", ext: "PPTX" },
-  ],
+const TEST_MODE_LABELS: Record<string, string> = {
+  adaptive: "Адаптивный тренинг",
+  section:  "Тест по разделу",
+  final:    "Итоговый тест",
 };
 
 // ─── Список курсов тенантов на утверждение ────────────────────────────────────
 
+type ExpandTab = "materials" | "ntd" | "test";
+
+function CourseCard({
+  course,
+  onApprove,
+  onReject,
+}: {
+  course: TenantCourse;
+  onApprove: () => void;
+  onReject: () => void;
+}) {
+  const [open,       setOpen]       = useState(false);
+  const [expandTab,  setExpandTab]  = useState<ExpandTab>("materials");
+
+  const mats = course.materials ?? [];
+  const ntds = course.ntdFiles  ?? [];
+  const hasMeta = mats.length > 0 || ntds.length > 0 || (course.testModes && course.testModes.length > 0);
+
+  const statusIconColor =
+    course.status === "pending_approval" ? "bg-amber-100 dark:bg-amber-900/30"   :
+    course.status === "approved"         ? "bg-emerald-100 dark:bg-emerald-900/30" :
+                                           "bg-red-100 dark:bg-red-900/30";
+  const statusTextColor =
+    course.status === "pending_approval" ? "text-amber-600"  :
+    course.status === "approved"         ? "text-emerald-600" :
+                                           "text-red-500";
+
+  return (
+    <div className={`bg-card rounded-2xl border overflow-hidden transition-all ${course.status === "pending_approval" ? "border-amber-200 dark:border-amber-800" : "border-border"}`}>
+      <div className="p-5">
+        <div className="flex items-start justify-between gap-3">
+          {/* Иконка + мета */}
+          <div className="flex items-start gap-3 flex-1 min-w-0">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${statusIconColor}`}>
+              <Icon name="BookOpen" size={18} className={statusTextColor} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="font-semibold text-sm">{course.title}</p>
+                {course.code && <span className="text-xs font-mono text-muted-foreground">{course.code}</span>}
+                <ApprovalBadge status={course.status} />
+                {course.dpoAvailable && (
+                  <span className="flex items-center gap-1 text-xs bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 px-2 py-0.5 rounded-full">
+                    <Icon name="Award" size={11} />ДПО
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {TENANTS.find((t) => t.id === course.tenantId)?.name ?? `Тенант #${course.tenantId}`}
+                {" · "}{course.hours ? `${course.hours} ч` : "—"}
+                {" · "}Создан {course.createdAt}
+              </p>
+              {course.description && (
+                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{course.description}</p>
+              )}
+              {course.status === "rejected" && course.rejectionReason && (
+                <div className="mt-2 px-3 py-2 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-lg">
+                  <p className="text-xs text-red-600 dark:text-red-400">
+                    <span className="font-semibold">Замечания: </span>{course.rejectionReason}
+                  </p>
+                </div>
+              )}
+              {course.status === "approved" && course.approvedAt && (
+                <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">Одобрен {course.approvedAt}</p>
+              )}
+            </div>
+          </div>
+
+          {/* Кнопки действий */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {course.status === "pending_approval" && (
+              <>
+                <button
+                  onClick={onApprove}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-xs font-medium hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition-colors"
+                >
+                  <Icon name="CheckCircle" size={13} />
+                  Одобрить
+                </button>
+                <button
+                  onClick={onReject}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-xs font-medium hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
+                >
+                  <Icon name="XCircle" size={13} />
+                  Отклонить
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Счётчики и кнопка раскрытия */}
+        <div className="flex items-center gap-3 mt-3">
+          {mats.length > 0 && (
+            <span className="text-xs text-muted-foreground flex items-center gap-1">
+              <Icon name="FolderOpen" size={12} />{mats.length} матер.
+            </span>
+          )}
+          {ntds.length > 0 && (
+            <span className="text-xs text-muted-foreground flex items-center gap-1">
+              <Icon name="FileCheck" size={12} />{ntds.length} НТД
+            </span>
+          )}
+          {course.testModes && course.testModes.length > 0 && (
+            <span className="text-xs text-muted-foreground flex items-center gap-1">
+              <Icon name="ClipboardList" size={12} />{course.testModes.length} режима теста
+            </span>
+          )}
+          {hasMeta && (
+            <button
+              onClick={() => setOpen((v) => !v)}
+              className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Icon name={open ? "ChevronUp" : "ChevronDown"} size={13} />
+              {open ? "Свернуть" : "Просмотреть"}
+            </button>
+          )}
+          {!hasMeta && (
+            <span className="text-xs text-muted-foreground">Материалы не прикреплены</span>
+          )}
+        </div>
+      </div>
+
+      {/* Раскрытый блок с вкладками */}
+      {open && hasMeta && (
+        <div className="border-t border-border bg-muted/10">
+          {/* Вкладки */}
+          <div className="flex gap-0 border-b border-border px-5">
+            {([
+              { key: "materials" as ExpandTab, label: `Материалы (${mats.length})`,     icon: "FolderOpen",    show: mats.length > 0 },
+              { key: "ntd"       as ExpandTab, label: `НТД (${ntds.length})`,            icon: "FileCheck",     show: ntds.length > 0 },
+              { key: "test"      as ExpandTab, label: "Тест",                            icon: "ClipboardList", show: !!(course.testModes && course.testModes.length > 0) },
+            ] as { key: ExpandTab; label: string; icon: string; show: boolean }[])
+              .filter((t) => t.show)
+              .map((t) => (
+                <button
+                  key={t.key}
+                  onClick={() => setExpandTab(t.key)}
+                  className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium border-b-2 transition-all -mb-px ${expandTab === t.key ? "border-violet-500 text-violet-600 dark:text-violet-400" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+                >
+                  <Icon name={t.icon} size={13} />
+                  {t.label}
+                </button>
+              ))
+            }
+          </div>
+
+          {/* Содержимое вкладки Материалы */}
+          {expandTab === "materials" && mats.length > 0 && (
+            <div className="px-5 py-4 space-y-2">
+              {mats.map((m) => {
+                const meta = MAT_META[m.type] ?? { icon: "FileText", color: "from-slate-500 to-gray-600" };
+                return (
+                  <div key={m.id} className="flex items-center gap-3 p-3 bg-background rounded-xl border border-border">
+                    <div className={`w-8 h-8 bg-gradient-to-br ${meta.color} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                      <Icon name={meta.icon} size={14} className="text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{m.title}</p>
+                      <p className="text-xs text-muted-foreground font-mono">{m.ext}{m.duration ? ` · ${m.duration}` : ""}</p>
+                    </div>
+                    <button className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground transition-colors flex-shrink-0" title="Скачать">
+                      <Icon name="Download" size={13} />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Содержимое вкладки НТД */}
+          {expandTab === "ntd" && ntds.length > 0 && (
+            <div className="px-5 py-4 space-y-2">
+              {ntds.map((f) => (
+                <div key={f.id} className="flex items-center gap-3 p-3 bg-background rounded-xl border border-border">
+                  <div className="w-8 h-8 bg-gradient-to-br from-slate-500 to-gray-700 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Icon name="FileText" size={14} className="text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{f.title}</p>
+                    <p className="text-xs text-muted-foreground font-mono">{f.ext}</p>
+                  </div>
+                  <button className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground transition-colors flex-shrink-0" title="Скачать">
+                    <Icon name="Download" size={13} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Содержимое вкладки Тест */}
+          {expandTab === "test" && course.testModes && course.testModes.length > 0 && (
+            <div className="px-5 py-4 space-y-3">
+              <div className="flex flex-wrap gap-2">
+                {course.testModes.map((m) => (
+                  <span key={m} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-violet-100 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300 text-xs font-medium">
+                    <Icon name="CheckCircle" size={12} />
+                    {TEST_MODE_LABELS[m] ?? m}
+                  </span>
+                ))}
+              </div>
+              {course.testModes.includes("final") && (
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { label: "Вопросов",      val: course.finalTestQuestions ? `${course.finalTestQuestions} шт.` : "—" },
+                    { label: "Проходной балл", val: course.finalTestPassScore  ? `${course.finalTestPassScore}%`    : "—" },
+                    { label: "Время",          val: course.finalTestTime       ? course.finalTestTime === 0 ? "Без ограничений" : `${course.finalTestTime} мин` : "—" },
+                  ].map((s) => (
+                    <div key={s.label} className="bg-background border border-border rounded-xl px-3 py-2.5 text-center">
+                      <p className="text-xs text-muted-foreground">{s.label}</p>
+                      <p className="font-semibold text-sm mt-0.5">{s.val}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function TenantApprovalPanel() {
-  const [courses,       setCourses]      = useState<TenantCourse[]>(TENANT_COURSES);
-  const [rejectTarget,  setRejectTarget] = useState<TenantCourse | null>(null);
-  const [expandedId,    setExpandedId]   = useState<number | null>(null);
-  const [filter,        setFilter]       = useState<TenantCourseStatus | "all">("pending_approval");
+  const [courses,      setCourses]     = useState<TenantCourse[]>(TENANT_COURSES);
+  const [rejectTarget, setRejectTarget] = useState<TenantCourse | null>(null);
+  const [filter,       setFilter]       = useState<TenantCourseStatus | "all">("pending_approval");
 
   function approve(id: number) {
     setCourses((prev) => prev.map((c) =>
@@ -236,10 +451,6 @@ function TenantApprovalPanel() {
   function reject(id: number, reason: string) {
     setCourses((prev) => prev.map((c) => c.id === id ? { ...c, status: "rejected", rejectionReason: reason } : c));
     setRejectTarget(null);
-  }
-
-  function getTenantName(tenantId: number) {
-    return TENANTS.find((t) => t.id === tenantId)?.name ?? `Тенант #${tenantId}`;
   }
 
   const counts = {
@@ -289,7 +500,7 @@ function TenantApprovalPanel() {
         ))}
       </div>
 
-      {/* Карточки курсов */}
+      {/* Карточки */}
       {visible.length === 0 ? (
         <div className="bg-card rounded-2xl border border-border p-10 text-center">
           <Icon name="FolderOpen" size={32} className="text-muted-foreground mx-auto mb-2" />
@@ -297,94 +508,14 @@ function TenantApprovalPanel() {
         </div>
       ) : (
         <div className="space-y-3">
-          {visible.map((course) => {
-            const mats = MOCK_COURSE_MATERIALS[course.id] ?? [];
-            const isExpanded = expandedId === course.id;
-            return (
-              <div key={course.id} className={`bg-card rounded-2xl border overflow-hidden transition-all ${course.status === "pending_approval" ? "border-amber-200 dark:border-amber-800" : "border-border"}`}>
-                {/* Шапка карточки */}
-                <div className="p-5">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-3 flex-1 min-w-0">
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${course.status === "pending_approval" ? "bg-amber-100 dark:bg-amber-900/30" : course.status === "approved" ? "bg-emerald-100 dark:bg-emerald-900/30" : "bg-red-100 dark:bg-red-900/30"}`}>
-                        <Icon name="BookOpen" size={18} className={course.status === "pending_approval" ? "text-amber-600" : course.status === "approved" ? "text-emerald-600" : "text-red-500"} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <p className="font-semibold text-sm">{course.title}</p>
-                          {course.code && <span className="text-xs font-mono text-muted-foreground">{course.code}</span>}
-                          <ApprovalBadge status={course.status} />
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">{getTenantName(course.tenantId)} · {course.hours ? `${course.hours} ч` : "—"} · Создан {course.createdAt}</p>
-                        {course.status === "rejected" && course.rejectionReason && (
-                          <div className="mt-2 px-3 py-2 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-lg">
-                            <p className="text-xs text-red-600 dark:text-red-400"><span className="font-semibold">Замечания:</span> {course.rejectionReason}</p>
-                          </div>
-                        )}
-                        {course.status === "approved" && course.approvedAt && (
-                          <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">Одобрен {course.approvedAt}</p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Кнопки */}
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      {course.status === "pending_approval" && (
-                        <>
-                          <button
-                            onClick={() => approve(course.id)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-xs font-medium hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition-colors"
-                          >
-                            <Icon name="CheckCircle" size={13} />
-                            Одобрить
-                          </button>
-                          <button
-                            onClick={() => setRejectTarget(course)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-xs font-medium hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
-                          >
-                            <Icon name="XCircle" size={13} />
-                            Отклонить
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Кнопка раскрытия материалов */}
-                  {mats.length > 0 && (
-                    <button
-                      onClick={() => setExpandedId(isExpanded ? null : course.id)}
-                      className="mt-3 flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      <Icon name={isExpanded ? "ChevronUp" : "ChevronDown"} size={13} />
-                      {isExpanded ? "Скрыть" : "Показать"} материалы ({mats.length})
-                    </button>
-                  )}
-                  {mats.length === 0 && (
-                    <p className="mt-2 text-xs text-muted-foreground">Материалы не прикреплены</p>
-                  )}
-                </div>
-
-                {/* Список материалов */}
-                {isExpanded && mats.length > 0 && (
-                  <div className="border-t border-border bg-muted/10 px-5 py-3 space-y-2">
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Материалы курса</p>
-                    {mats.map((m) => (
-                      <div key={m.id} className="flex items-center gap-3 p-2.5 bg-background rounded-xl border border-border">
-                        <div className="w-7 h-7 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <Icon name={MAT_ICON[m.type] ?? "FileText"} size={13} className="text-white" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{m.title}</p>
-                          <p className="text-xs text-muted-foreground font-mono">{m.ext}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+          {visible.map((course) => (
+            <CourseCard
+              key={course.id}
+              course={course}
+              onApprove={() => approve(course.id)}
+              onReject={() => setRejectTarget(course)}
+            />
+          ))}
         </div>
       )}
     </div>
