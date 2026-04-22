@@ -34,6 +34,12 @@ export type CourseEditorData = {
   finalTestTime: string;
   materials: CourseMaterialFile[];
   ntdFiles: NtdFile[];
+  directionId?: number;
+};
+
+export type EditorDirection = {
+  id: number;
+  title: string;
 };
 
 // ─── Карта материалов ─────────────────────────────────────────────────────────
@@ -79,9 +85,29 @@ function downloadTemplate() {
 
 // ─── Шаг 1: Описание курса ────────────────────────────────────────────────────
 
-function Step1({ data, onChange }: { data: CourseEditorData; onChange: (p: Partial<CourseEditorData>) => void }) {
+function Step1({ data, onChange, directions }: { data: CourseEditorData; onChange: (p: Partial<CourseEditorData>) => void; directions?: EditorDirection[] }) {
   return (
     <div className="space-y-5 max-w-2xl mx-auto">
+      {directions && directions.length > 0 && (
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium">Направление *</label>
+          <div className="flex flex-wrap gap-2">
+            {directions.map((d) => {
+              const active = data.directionId === d.id;
+              return (
+                <button
+                  key={d.id}
+                  onClick={() => onChange({ directionId: d.id })}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-xl border-2 text-sm font-medium transition-all ${active ? "border-violet-500 bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300" : "border-border text-muted-foreground hover:border-violet-300"}`}
+                >
+                  {active && <Icon name="CheckCircle" size={14} />}
+                  {d.title}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
       <div className="space-y-1.5">
         <label className="text-sm font-medium">Название курса *</label>
         <input
@@ -508,9 +534,11 @@ interface CourseEditorProps {
   onClose: () => void;
   onSave: (data: CourseEditorData) => void;
   initialData?: Partial<CourseEditorData>;
+  directions?: EditorDirection[];
+  saveLabel?: string;
 }
 
-export default function CourseEditor({ onClose, onSave, initialData }: CourseEditorProps) {
+export default function CourseEditor({ onClose, onSave, initialData, directions, saveLabel }: CourseEditorProps) {
   const [step,      setStep]      = useState(1);
   const [stepError, setStepError] = useState("");
 
@@ -526,12 +554,14 @@ export default function CourseEditor({ onClose, onSave, initialData }: CourseEdi
     finalTestTime:      initialData?.finalTestTime      ?? "60",
     materials:          initialData?.materials          ?? [],
     ntdFiles:           initialData?.ntdFiles           ?? [],
+    directionId:        initialData?.directionId        ?? directions?.[0]?.id,
   });
 
   function patch(p: Partial<CourseEditorData>) { setData((prev) => ({ ...prev, ...p })); }
 
   function goNext() {
     if (step === 1) {
+      if (directions && directions.length > 0 && !data.directionId) { setStepError("Выберите направление курса"); return; }
       if (!data.title.trim()) { setStepError("Введите название курса"); return; }
       if (!data.hours || Number(data.hours) < 1) { setStepError("Укажите количество часов"); return; }
     }
@@ -587,7 +617,7 @@ export default function CourseEditor({ onClose, onSave, initialData }: CourseEdi
       {/* Контент */}
       <div className="flex-1 overflow-y-auto">
         <div className="px-6 py-6">
-          {step === 1 && <Step1 data={data} onChange={patch} />}
+          {step === 1 && <Step1 data={data} onChange={patch} directions={directions} />}
           {step === 2 && <Step2 data={data} onChange={patch} />}
           {step === 3 && <Step3 data={data} onChange={patch} />}
           {step === 4 && <Step4 data={data} onChange={patch} />}
@@ -619,7 +649,7 @@ export default function CourseEditor({ onClose, onSave, initialData }: CourseEdi
           ) : (
             <Button className="gradient-primary text-white rounded-xl gap-1.5 px-5" onClick={handleSave}>
               <Icon name="Send" size={15} />
-              Отправить на проверку
+              {saveLabel ?? "Отправить на проверку"}
             </Button>
           )}
         </div>

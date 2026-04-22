@@ -3,7 +3,8 @@ import Icon from "@/components/ui/icon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { COURSE_DIRECTIONS, TENANT_COURSES, TENANTS } from "@/data/mockData";
-import type { TenantCourse, TenantCourseStatus, DirectionCourse } from "@/components/admin/types";
+import type { TenantCourse, TenantCourseStatus } from "@/components/admin/types";
+import CourseEditor, { CourseEditorData } from "@/components/admin/catalog/CourseEditor";
 
 type PanelTab = "platform" | "tenant_approval";
 
@@ -18,73 +19,6 @@ function ApprovalBadge({ status }: { status: TenantCourseStatus }) {
   };
   const { label, cls, icon } = map[status];
   return <Badge className={`text-xs gap-1 ${cls}`}><Icon name={icon} size={11} />{label}</Badge>;
-}
-
-// ─── Модальное окно добавления/редактирования курса платформы ─────────────────
-
-function CourseModal({ course, directionId, onClose }: {
-  course: DirectionCourse | null;
-  directionId: number;
-  onClose: () => void;
-}) {
-  const direction = COURSE_DIRECTIONS.find((d) => d.id === directionId);
-  const [title,   setTitle]   = useState(course?.title ?? "");
-  const [code,    setCode]    = useState(course?.code ?? "");
-  const [hours,   setHours]   = useState(String(course?.hours ?? ""));
-  const [hasTest, setHasTest] = useState(course?.hasTest ?? true);
-  const [dpo,     setDpo]     = useState(course?.dpoAvailable ?? false);
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="bg-background rounded-2xl border border-border w-full max-w-lg shadow-2xl">
-        <div className="flex items-center justify-between p-6 border-b border-border">
-          <div>
-            <h2 className="font-bold text-base">{course ? "Редактировать курс" : "Добавить курс"}</h2>
-            <p className="text-xs text-muted-foreground">{direction?.title}</p>
-          </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground p-1 rounded-lg hover:bg-muted">
-            <Icon name="X" size={18} />
-          </button>
-        </div>
-        <div className="p-6 space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1 col-span-2">
-              <label className="text-xs text-muted-foreground">Название курса</label>
-              <input value={title} onChange={(e) => setTitle(e.target.value)} className="w-full h-9 px-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30" placeholder="Название курса" />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs text-muted-foreground">Код курса</label>
-              <input value={code} onChange={(e) => setCode(e.target.value)} className="w-full h-9 px-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30" placeholder="А.1." />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs text-muted-foreground">Количество часов</label>
-              <input type="number" value={hours} onChange={(e) => setHours(e.target.value)} className="w-full h-9 px-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30" placeholder="72" />
-            </div>
-          </div>
-          <div className="flex flex-col gap-2">
-            <label className="flex items-center gap-2.5 cursor-pointer p-3 rounded-xl border border-border hover:bg-muted/40 transition-colors">
-              <input type="checkbox" checked={hasTest} onChange={(e) => setHasTest(e.target.checked)} className="rounded accent-violet-600 w-4 h-4" />
-              <div>
-                <p className="text-sm font-medium">Итоговый тест</p>
-                <p className="text-xs text-muted-foreground">Курс содержит итоговый аттестационный тест</p>
-              </div>
-            </label>
-            <label className="flex items-center gap-2.5 cursor-pointer p-3 rounded-xl border border-border hover:bg-muted/40 transition-colors">
-              <input type="checkbox" checked={dpo} onChange={(e) => setDpo(e.target.checked)} className="rounded accent-violet-600 w-4 h-4" />
-              <div>
-                <p className="text-sm font-medium">Удостоверение ДПО</p>
-                <p className="text-xs text-muted-foreground">При успешной сдаче теста выдаётся удостоверение о повышении квалификации</p>
-              </div>
-            </label>
-          </div>
-        </div>
-        <div className="flex gap-2 p-6 border-t border-border">
-          <Button variant="outline" className="flex-1 rounded-xl" onClick={onClose}>Отмена</Button>
-          <Button className="flex-1 rounded-xl gradient-primary text-white" onClick={onClose}>Сохранить</Button>
-        </div>
-      </div>
-    </div>
-  );
 }
 
 // ─── Модальное окно отклонения курса с материалами ───────────────────────────
@@ -136,13 +70,21 @@ function RejectModal({ course, onClose, onReject }: {
 
 // ─── Каталог курсов платформы ─────────────────────────────────────────────────
 
+const PLATFORM_DIRS = COURSE_DIRECTIONS.filter((d) => d.id !== 6).map((d) => ({ id: d.id, title: d.title }));
+
 function PlatformCatalog() {
-  const [openDirs,   setOpenDirs]   = useState<number[]>([1]);
-  const [editCourse, setEditCourse] = useState<{ course: DirectionCourse | null; dirId: number } | null>(null);
-  const [search,     setSearch]     = useState("");
+  const [openDirs,    setOpenDirs]    = useState<number[]>([1]);
+  const [showEditor,  setShowEditor]  = useState(false);
+  const [editorInit,  setEditorInit]  = useState<Partial<CourseEditorData>>({});
+  const [search,      setSearch]      = useState("");
 
   function toggleDir(id: number) {
     setOpenDirs((prev) => prev.includes(id) ? prev.filter((d) => d !== id) : [...prev, id]);
+  }
+
+  function openAdd(dirId: number) {
+    setEditorInit({ directionId: dirId });
+    setShowEditor(true);
   }
 
   const dirs = COURSE_DIRECTIONS.filter((d) => d.id !== 6);
@@ -153,17 +95,29 @@ function PlatformCatalog() {
       : d.courses,
   })).filter((d) => !search || d.courses.length > 0);
 
+  if (showEditor) {
+    return (
+      <CourseEditor
+        onClose={() => setShowEditor(false)}
+        onSave={() => setShowEditor(false)}
+        initialData={editorInit}
+        directions={PLATFORM_DIRS}
+        saveLabel="Добавить в каталог"
+      />
+    );
+  }
+
   return (
     <div className="space-y-3">
-      {editCourse && (
-        <CourseModal course={editCourse.course} directionId={editCourse.dirId} onClose={() => setEditCourse(null)} />
-      )}
-
       <div className="flex gap-3">
         <div className="relative flex-1">
           <Icon name="Search" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Поиск по названию или коду курса..." className="w-full h-9 pl-9 pr-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30" />
         </div>
+        <Button className="gradient-primary text-white rounded-xl gap-2 h-9 flex-shrink-0" onClick={() => openAdd(dirs[0]?.id ?? 1)}>
+          <Icon name="Plus" size={15} />
+          Добавить курс
+        </Button>
       </div>
 
       <div className="space-y-2">
@@ -186,7 +140,7 @@ function PlatformCatalog() {
                 </div>
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={(e) => { e.stopPropagation(); setEditCourse({ course: null, dirId: dir.id }); }}
+                    onClick={(e) => { e.stopPropagation(); openAdd(dir.id); }}
                     className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
                     title="Добавить курс в направление"
                   >
@@ -222,7 +176,10 @@ function PlatformCatalog() {
                             {course.dpoAvailable ? <Icon name="Award" size={15} className="text-violet-500" /> : <Icon name="Minus" size={15} className="text-muted-foreground" />}
                           </td>
                           <td className="px-4 py-3">
-                            <button onClick={() => setEditCourse({ course, dirId: dir.id })} className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
+                            <button
+                              onClick={() => { setEditorInit({ title: course.title, code: course.code, hours: String(course.hours ?? ""), dpoAvailable: course.dpoAvailable ?? false, directionId: dir.id }); setShowEditor(true); }}
+                              className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+                            >
                               <Icon name="Pencil" size={14} />
                             </button>
                           </td>
