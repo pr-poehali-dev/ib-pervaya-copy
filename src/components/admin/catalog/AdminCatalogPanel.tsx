@@ -26,14 +26,89 @@ function StatusBadge({ status }: { status: TenantCourseStatus }) {
 
 type OwnCourse = TenantCourse & { editorData?: CourseEditorData };
 
-function CourseRow({ course }: { course: OwnCourse }) {
-  const [open, setOpen] = useState(false);
+// Модал замечаний суперадмина
+function RejectionModal({
+  course,
+  onClose,
+  onEdit,
+  onResubmit,
+}: {
+  course: OwnCourse;
+  onClose: () => void;
+  onEdit: () => void;
+  onResubmit: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="bg-background rounded-2xl border border-border w-full max-w-md shadow-2xl">
+        <div className="flex items-start gap-3 p-5 border-b border-border">
+          <div className="w-9 h-9 rounded-xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <Icon name="XCircle" size={18} className="text-red-600 dark:text-red-400" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h2 className="font-bold text-base">Курс отклонён</h2>
+            <p className="text-xs text-muted-foreground mt-0.5 truncate" title={course.title}>{course.title}</p>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors flex-shrink-0">
+            <Icon name="X" size={16} />
+          </button>
+        </div>
+        <div className="p-5 space-y-4">
+          <div>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Замечания суперадминистратора</p>
+            <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-xl px-4 py-3">
+              <p className="text-sm text-red-700 dark:text-red-300 leading-relaxed">{course.rejectionReason}</p>
+            </div>
+          </div>
+          <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-3 flex items-start gap-2">
+            <Icon name="Info" size={14} className="text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-amber-700 dark:text-amber-300">
+              Скорректируйте курс согласно замечаниям и отправьте повторно на рассмотрение.
+            </p>
+          </div>
+        </div>
+        <div className="flex gap-2 px-5 pb-5">
+          <Button variant="outline" className="flex-1 rounded-xl" onClick={onClose}>Закрыть</Button>
+          <Button variant="outline" className="flex-1 rounded-xl gap-1.5 border-violet-300 text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20" onClick={onEdit}>
+            <Icon name="Pencil" size={14} />
+            Скорректировать
+          </Button>
+          <Button className="flex-1 rounded-xl gradient-primary text-white gap-1.5" onClick={onResubmit}>
+            <Icon name="Send" size={14} />
+            Отправить
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CourseRow({
+  course,
+  onEdit,
+  onResubmit,
+}: {
+  course: OwnCourse;
+  onEdit: (course: OwnCourse) => void;
+  onResubmit: (id: number) => void;
+}) {
+  const [open,           setOpen]           = useState(false);
+  const [showRejection,  setShowRejection]  = useState(false);
   const mats = course.editorData?.materials ?? [];
-  const ntds = course.editorData?.ntdFiles ?? [];
+  const ntds = course.editorData?.ntdFiles  ?? [];
   const hasMeta = mats.length > 0 || ntds.length > 0;
+  const isRejected = course.status === "rejected" && !!course.rejectionReason;
 
   return (
     <>
+      {showRejection && isRejected && (
+        <RejectionModal
+          course={course}
+          onClose={() => setShowRejection(false)}
+          onEdit={() => { setShowRejection(false); onEdit(course); }}
+          onResubmit={() => { setShowRejection(false); onResubmit(course.id); }}
+        />
+      )}
       <tr
         className="border-b border-border hover:bg-muted/20 transition-colors cursor-pointer"
         onClick={() => hasMeta && setOpen((v) => !v)}
@@ -43,10 +118,15 @@ function CourseRow({ course }: { course: OwnCourse }) {
             {hasMeta && <Icon name={open ? "ChevronDown" : "ChevronRight"} size={14} className="text-muted-foreground flex-shrink-0" />}
             <div className="min-w-0 overflow-hidden">
               <p className="font-medium text-sm truncate" title={course.title}>{course.title}</p>
-              {course.status === "rejected" && course.rejectionReason && (
-                <p className="text-xs text-red-500 mt-0.5 truncate" title={course.rejectionReason}>
-                  {course.rejectionReason}
-                </p>
+              {isRejected && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); setShowRejection(true); }}
+                  className="text-xs text-red-500 hover:text-red-600 mt-0.5 flex items-center gap-1 truncate max-w-full"
+                  title="Посмотреть замечания"
+                >
+                  <Icon name="AlertCircle" size={11} className="flex-shrink-0" />
+                  <span className="truncate">{course.rejectionReason}</span>
+                </button>
               )}
             </div>
           </div>
@@ -62,7 +142,16 @@ function CourseRow({ course }: { course: OwnCourse }) {
         <td className="px-4 py-3">
           <div className="flex items-center gap-2">
             <StatusBadge status={course.status} />
-            {hasMeta && (
+            {isRejected && (
+              <button
+                onClick={(e) => { e.stopPropagation(); setShowRejection(true); }}
+                className="p-1 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 text-red-400 hover:text-red-600 transition-colors"
+                title="Замечания суперадминистратора"
+              >
+                <Icon name="MessageSquare" size={13} />
+              </button>
+            )}
+            {hasMeta && !isRejected && (
               <span className="text-xs text-muted-foreground">
                 {mats.length > 0 && `${mats.length} файл${mats.length > 1 ? "а" : ""}`}
                 {ntds.length > 0 && ` · ${ntds.length} НТД`}
@@ -113,11 +202,12 @@ function CourseRow({ course }: { course: OwnCourse }) {
 export default function AdminCatalogPanel() {
   const { tenantType } = useRole();
 
-  const [tab,        setTab]        = useState<CatalogTab>("platform");
-  const [search,     setSearch]     = useState("");
-  const [openDirs,   setOpenDirs]   = useState<number[]>([1]);
-  const [showEditor, setShowEditor] = useState(false);
-  const [ownCourses, setOwnCourses] = useState<OwnCourse[]>(
+  const [tab,          setTab]          = useState<CatalogTab>("platform");
+  const [search,       setSearch]       = useState("");
+  const [openDirs,     setOpenDirs]     = useState<number[]>([1]);
+  const [showEditor,   setShowEditor]   = useState(false);
+  const [editingCourse, setEditingCourse] = useState<OwnCourse | null>(null);
+  const [ownCourses,   setOwnCourses]   = useState<OwnCourse[]>(
     TENANT_COURSES.map((c) => ({ ...c }))
   );
 
@@ -126,19 +216,40 @@ export default function AdminCatalogPanel() {
   }
 
   function handleSaveCourse(data: CourseEditorData) {
-    const newCourse: OwnCourse = {
-      id:           Math.max(...ownCourses.map((c) => c.id), 1000) + 1,
-      tenantId:     1,
-      title:        data.title,
-      code:         data.code || undefined,
-      hours:        Number(data.hours) || 8,
-      hasTest:      data.testModes.includes("final"),
-      dpoAvailable: data.dpoAvailable,
-      status:       "pending_approval",
-      createdAt:    new Date().toLocaleDateString("ru-RU"),
-      editorData:   data,
-    };
-    setOwnCourses((prev) => [newCourse, ...prev]);
+    if (editingCourse) {
+      // Обновляем существующий курс и отправляем на проверку
+      setOwnCourses((prev) => prev.map((c) =>
+        c.id === editingCourse.id
+          ? { ...c, title: data.title, code: data.code || undefined, hours: Number(data.hours) || 8, hasTest: data.testModes.includes("final"), dpoAvailable: data.dpoAvailable, status: "pending_approval", rejectionReason: undefined, editorData: data }
+          : c
+      ));
+      setEditingCourse(null);
+    } else {
+      const newCourse: OwnCourse = {
+        id:           Math.max(...ownCourses.map((c) => c.id), 1000) + 1,
+        tenantId:     1,
+        title:        data.title,
+        code:         data.code || undefined,
+        hours:        Number(data.hours) || 8,
+        hasTest:      data.testModes.includes("final"),
+        dpoAvailable: data.dpoAvailable,
+        status:       "pending_approval",
+        createdAt:    new Date().toLocaleDateString("ru-RU"),
+        editorData:   data,
+      };
+      setOwnCourses((prev) => [newCourse, ...prev]);
+    }
+  }
+
+  function handleEditCourse(course: OwnCourse) {
+    setEditingCourse(course);
+    setShowEditor(true);
+  }
+
+  function handleResubmit(id: number) {
+    setOwnCourses((prev) => prev.map((c) =>
+      c.id === id ? { ...c, status: "pending_approval", rejectionReason: undefined } : c
+    ));
   }
 
   const currentTenant = TENANTS[0];
@@ -174,10 +285,12 @@ export default function AdminCatalogPanel() {
   if (showEditor) {
     return (
       <CourseEditor
-        onClose={() => setShowEditor(false)}
+        onClose={() => { setShowEditor(false); setEditingCourse(null); }}
         onSave={handleSaveCourse}
+        initialData={editingCourse?.editorData}
         directions={editorDirs}
         onAddDirection={handleAddDirection}
+        saveLabel={editingCourse ? "Отправить на проверку" : undefined}
       />
     );
   }
@@ -341,7 +454,7 @@ export default function AdminCatalogPanel() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredOwn.map((c) => <CourseRow key={c.id} course={c} />)}
+                  {filteredOwn.map((c) => <CourseRow key={c.id} course={c} onEdit={handleEditCourse} onResubmit={handleResubmit} />)}
                 </tbody>
               </table>
             </div>
