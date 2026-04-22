@@ -150,13 +150,13 @@ function CourseRow({
             )}
           </div>
         </td>
-        <td className="px-4 py-3 text-xs text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <span>{course.createdAt}</span>
+        <td className="px-4 py-3">
+          <div className="flex flex-col gap-1">
+            <span className="text-xs text-muted-foreground">{course.createdAt}</span>
             {isRejected && (
               <button
                 onClick={(e) => { e.stopPropagation(); setShowRejection(true); }}
-                className="flex items-center gap-1 px-2 py-1 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors text-xs font-medium whitespace-nowrap"
+                className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors text-xs font-medium w-fit"
               >
                 <Icon name="MessageSquare" size={11} />
                 Замечания
@@ -454,7 +454,7 @@ export default function AdminCatalogPanel() {
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground w-12">Тест</th>
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground w-12">ДПО</th>
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground w-28">Статус</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground w-24">Добавлен</th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground w-36">Добавлен</th>
                   </tr>
                 </thead>
                 <tbody>
