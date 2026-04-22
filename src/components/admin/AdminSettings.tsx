@@ -6,7 +6,6 @@ import OrgPanel from "./settings/OrgPanel";
 import UsersPanel from "./settings/UsersPanel";
 import EmailPanel from "./settings/EmailPanel";
 import ClientOrgsPanel from "./settings/ClientOrgsPanel";
-import CourseMaterialsPanel from "./materials/CourseMaterialsPanel";
 import { useStats } from "@/contexts/StatsContext";
 
 export default function AdminSettings() {
@@ -59,17 +58,7 @@ export default function AdminSettings() {
         <ClientOrgsPanel onBack={() => setActivePanel(null)} />
       )}
 
-      {activePanel === "materials" && (
-        <div className="space-y-4">
-          <button
-            onClick={() => setActivePanel(null)}
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <span>←</span> Назад к настройкам
-          </button>
-          <CourseMaterialsPanel />
-        </div>
-      )}
+
     </div>
   );
 }

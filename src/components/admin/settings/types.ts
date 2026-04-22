@@ -1,6 +1,6 @@
 export type OrgType = "Юридическое лицо" | "ИП" | "Физическое лицо";
 export type OpfType = "ООО" | "АО" | "ПАО" | "ГБУ" | "ФГБУ" | "ИП";
-export type ActivePanel = null | "org" | "users" | "email" | "client_orgs" | "materials";
+export type ActivePanel = null | "org" | "users" | "email" | "client_orgs";
 
 export interface OrgData {
   type: OrgType;
