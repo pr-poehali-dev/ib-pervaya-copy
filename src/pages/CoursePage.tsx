@@ -588,23 +588,14 @@ function SearchAnswerMode({ onBack, allQuestions }: { onBack: () => void; allQue
           <div className="bg-card rounded-2xl border border-border p-5 space-y-4">
             <p className="font-semibold leading-relaxed">{selected.text}</p>
             <div className="space-y-2">
-              {isMulti(selected) && (
-                <p className="text-xs text-muted-foreground">Верных ответов: {correctArr(selected).length}</p>
-              )}
-              {selected.options.map((opt, idx) => {
-                const isCorrectOpt = correctArr(selected).includes(idx);
-                return (
-                  <div key={idx} className={`px-4 py-3 rounded-xl flex items-center gap-3 ${isCorrectOpt ? "bg-emerald-50 dark:bg-emerald-900/20 border-2 border-emerald-500" : "bg-muted/40 border border-border"}`}>
-                    <span className={`w-7 h-7 rounded-${isMulti(selected) ? "lg" : "full"} flex items-center justify-center text-sm font-bold flex-shrink-0 ${isCorrectOpt ? "bg-emerald-500 text-white" : "bg-muted text-muted-foreground"}`}>
-                      {isMulti(selected)
-                        ? isCorrectOpt ? <Icon name="Check" size={13} className="text-white" /> : String.fromCharCode(65 + idx)
-                        : String.fromCharCode(65 + idx)}
-                    </span>
-                    <span className="text-sm">{opt}</span>
-                    {isCorrectOpt && <Icon name="CheckCircle" size={15} className="text-emerald-500 ml-auto" />}
+              {correctArr(selected).map((correctIdx) => (
+                <div key={correctIdx} className="px-4 py-3 rounded-xl flex items-center gap-3 bg-emerald-50 dark:bg-emerald-900/20 border-2 border-emerald-500">
+                  <div className="w-7 h-7 bg-emerald-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Icon name="Check" size={13} className="text-white" />
                   </div>
-                );
-              })}
+                  <span className="text-sm font-medium">{selected.options[correctIdx]}</span>
+                </div>
+              ))}
             </div>
             <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-xl px-4 py-3 flex items-start gap-2">
               <Icon name="BookOpen" size={15} className="text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
