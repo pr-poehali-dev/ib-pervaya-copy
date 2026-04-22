@@ -5,7 +5,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import Courses from "./pages/Courses";
-import Lesson from "./pages/Lesson";
 import CoursePage from "./pages/CoursePage";
 import Profile from "./pages/Profile";
 import MyLearning from "./pages/MyLearning";
@@ -44,7 +43,6 @@ function AppRoutes() {
       />
       <Route path="/" element={<RequireAuth><Dashboard /></RequireAuth>} />
       <Route path="/courses" element={<RequireAuth><Courses /></RequireAuth>} />
-      <Route path="/lesson/:id" element={<RequireAuth><Lesson /></RequireAuth>} />
       <Route path="/course/:id" element={<RequireAuth><CoursePage /></RequireAuth>} />
       <Route path="/my-learning"   element={<RequireAuth><MyLearning /></RequireAuth>} />
       <Route path="/schedule"      element={<RequireAuth><Schedule /></RequireAuth>} />
