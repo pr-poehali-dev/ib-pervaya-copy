@@ -90,13 +90,14 @@ function exportToExcel(
   periodLabel: string,
   months: number[],
   year: number,
+  tenantsList: Tenant[],
 ) {
   const rows: string[][] = [];
   rows.push([`Закрытие периода: ${periodLabel}`]);
   rows.push([]);
   rows.push(["Тенант", "ИНН", "Направление", "Лимит", "Списано за период", "Остаток", "% использования"]);
 
-  TENANTS.forEach((tenant) => {
+  tenantsList.forEach((tenant) => {
     const writeoffs = getWriteoffsForMonths(tenant, months, year);
     writeoffs.forEach((s, idx) => {
       const pct = s.total > 0 ? Math.round((s.writeoff / s.total) * 100) : 0;
@@ -137,7 +138,13 @@ function StatusDot({ status }: { status: Tenant["status"] }) {
 
 // ─── Главный компонент ────────────────────────────────────────────────────────
 
-export default function ReportsPanel() {
+interface ReportsPanelProps {
+  tenants?: Tenant[];
+}
+
+export default function ReportsPanel({ tenants: tenantsProp }: ReportsPanelProps = {}) {
+  const tenantsList = tenantsProp ?? TENANTS;
+
   const { month: curMonth, year: curYear } = getCurrentDate();
 
   const [periodMode, setPeriodMode] = useState<PeriodMode>("month");
@@ -146,7 +153,7 @@ export default function ReportsPanel() {
   const [year,     setYear]     = useState(curYear);
   const [customFrom, setCustomFrom] = useState({ month: 0,        year: curYear });
   const [customTo,   setCustomTo]   = useState({ month: curMonth, year: curYear });
-  const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set([TENANTS[0]?.id]));
+  const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set([tenantsList[0]?.id]));
 
   function toggleRow(id: number) {
     setExpandedRows((prev) => {
@@ -160,11 +167,11 @@ export default function ReportsPanel() {
     periodMode, month, quarter, customFrom, customTo, year
   );
 
-  const totalWriteoffAll = TENANTS.reduce((sum, t) => {
+  const totalWriteoffAll = tenantsList.reduce((sum, t) => {
     const wo = getWriteoffsForMonths(t, activeMonths, activeYear);
     return sum + wo.reduce((a, s) => a + s.writeoff, 0);
   }, 0);
-  const totalLimitAll = TENANTS.reduce((sum, t) =>
+  const totalLimitAll = tenantsList.reduce((sum, t) =>
     sum + t.subscriptions.reduce((a, s) => a + s.total, 0), 0
   );
 
@@ -276,7 +283,7 @@ export default function ReportsPanel() {
 
           <Button
             className="h-9 gap-2 rounded-xl gradient-primary text-white flex-shrink-0 ml-auto"
-            onClick={() => exportToExcel(periodLabel, activeMonths, activeYear)}
+            onClick={() => exportToExcel(periodLabel, activeMonths, activeYear, tenantsList)}
           >
             <Icon name="Download" size={15} />
             Скачать Excel
@@ -287,7 +294,7 @@ export default function ReportsPanel() {
         <div className="grid grid-cols-3 gap-3">
           <div className="bg-muted/40 rounded-xl px-4 py-3 text-center">
             <p className="text-xs text-muted-foreground mb-1">Тенантов в периоде</p>
-            <p className="text-2xl font-bold">{TENANTS.length}</p>
+            <p className="text-2xl font-bold">{tenantsList.length}</p>
           </div>
           <div className="bg-muted/40 rounded-xl px-4 py-3 text-center">
             <p className="text-xs text-muted-foreground mb-1">Списано подписок</p>
@@ -302,7 +309,7 @@ export default function ReportsPanel() {
 
       {/* Таблица по тенантам */}
       <div className="space-y-2">
-        {TENANTS.map((tenant) => {
+        {tenantsList.map((tenant) => {
           const writeoffs     = getWriteoffsForMonths(tenant, activeMonths, activeYear);
           const totalWriteoff = writeoffs.reduce((a, s) => a + s.writeoff, 0);
           const totalLimit    = writeoffs.reduce((a, s) => a + s.total, 0);

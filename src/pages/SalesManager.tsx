@@ -9,12 +9,13 @@ import { TENANTS } from "@/data/mockData";
 import type { Tenant } from "@/components/admin/types";
 import ReportsPanel from "@/components/superadmin/ReportsPanel";
 import TenantsPanel from "@/components/superadmin/TenantsPanel";
+import PlatformCoursesPanel from "@/components/superadmin/PlatformCoursesPanel";
 
-type SalesTab = "tenants" | "stats" | "invoices" | "reports" | "profile";
+type SalesTab = "tenants" | "courses" | "invoices" | "reports" | "profile";
 
 const TABS: { key: SalesTab; icon: string; label: string }[] = [
   { key: "tenants",  icon: "Building2",  label: "Тенанты" },
-  { key: "stats",    icon: "BarChart2",  label: "Статистика" },
+  { key: "courses",  icon: "BookOpen",   label: "Каталог курсов" },
   { key: "invoices", icon: "Receipt",    label: "Счета" },
   { key: "reports",  icon: "BarChart3",  label: "Отчёты" },
   { key: "profile",  icon: "User",       label: "Профиль" },
@@ -356,9 +357,9 @@ export default function SalesManager() {
         </div>
 
         {activeTab === "tenants"  && <TenantsPanel initialTenants={MY_TENANTS} canCreate={false} />}
-        {activeTab === "stats"    && <StatsTab />}
+        {activeTab === "courses"  && <PlatformCoursesPanel readOnly />}
         {activeTab === "invoices" && <InvoicesTab />}
-        {activeTab === "reports"  && <ReportsPanel />}
+        {activeTab === "reports"  && <ReportsPanel tenants={MY_TENANTS} />}
         {activeTab === "profile"  && <ProfilePanel />}
       </div>
     </Layout>

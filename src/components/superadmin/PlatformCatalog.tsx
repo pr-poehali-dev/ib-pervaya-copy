@@ -6,7 +6,7 @@ import CourseEditor, { type CourseEditorData } from "@/components/admin/catalog/
 
 const PLATFORM_DIRS = COURSE_DIRECTIONS.filter((d) => d.id !== 6).map((d) => ({ id: d.id, title: d.title }));
 
-export function PlatformCatalog() {
+export function PlatformCatalog({ readOnly = false }: { readOnly?: boolean }) {
   const [openDirs,   setOpenDirs]   = useState<number[]>([1]);
   const [showEditor, setShowEditor] = useState(false);
   const [editorInit, setEditorInit] = useState<Partial<CourseEditorData>>({});
@@ -48,10 +48,12 @@ export function PlatformCatalog() {
           <Icon name="Search" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Поиск по названию или коду курса..." className="w-full h-9 pl-9 pr-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30" />
         </div>
-        <Button className="gradient-primary text-white rounded-xl gap-2 h-9 flex-shrink-0" onClick={() => openAdd(dirs[0]?.id ?? 1)}>
-          <Icon name="Plus" size={15} />
-          Добавить курс
-        </Button>
+        {!readOnly && (
+          <Button className="gradient-primary text-white rounded-xl gap-2 h-9 flex-shrink-0" onClick={() => openAdd(dirs[0]?.id ?? 1)}>
+            <Icon name="Plus" size={15} />
+            Добавить курс
+          </Button>
+        )}
       </div>
 
       <div className="space-y-2">
@@ -73,13 +75,15 @@ export function PlatformCatalog() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button
-                    onClick={(e) => { e.stopPropagation(); openAdd(dir.id); }}
-                    className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-                    title="Добавить курс в направление"
-                  >
-                    <Icon name="Plus" size={15} />
-                  </button>
+                  {!readOnly && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); openAdd(dir.id); }}
+                      className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+                      title="Добавить курс в направление"
+                    >
+                      <Icon name="Plus" size={15} />
+                    </button>
+                  )}
                   <Icon name={isOpen ? "ChevronUp" : "ChevronDown"} size={16} className="text-muted-foreground" />
                 </div>
               </div>
@@ -94,7 +98,7 @@ export function PlatformCatalog() {
                         <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground">Часов</th>
                         <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground">Тест</th>
                         <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground">ДПО</th>
-                        <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground"></th>
+                        {!readOnly && <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground"></th>}
                       </tr>
                     </thead>
                     <tbody>
@@ -109,6 +113,7 @@ export function PlatformCatalog() {
                           <td className="px-4 py-3">
                             {course.dpoAvailable ? <Icon name="Award" size={15} className="text-violet-500" /> : <Icon name="Minus" size={15} className="text-muted-foreground" />}
                           </td>
+                          {!readOnly && (
                           <td className="px-4 py-3">
                             <button
                               onClick={() => { setEditorInit({ title: course.title, code: course.code, hours: String(course.hours ?? ""), dpoAvailable: course.dpoAvailable ?? false, directionId: dir.id }); setShowEditor(true); }}
@@ -117,6 +122,7 @@ export function PlatformCatalog() {
                               <Icon name="Pencil" size={14} />
                             </button>
                           </td>
+                          )}
                         </tr>
                       ))}
                     </tbody>
