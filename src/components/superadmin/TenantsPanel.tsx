@@ -156,7 +156,7 @@ export default function TenantsPanel({ initialTenants, canCreate = true }: Tenan
       )}
 
       {/* Панель фильтров */}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3 sticky top-0 z-10 bg-background/95 backdrop-blur-sm py-2 -mx-1 px-1 rounded-xl">
         <div className="relative flex-1 min-w-[200px]">
           <Icon name="Search" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
@@ -206,11 +206,11 @@ export default function TenantsPanel({ initialTenants, canCreate = true }: Tenan
 
       {/* ── Таблица ─────────────────────────────────────────────────────────── */}
       {viewMode === "table" && (
-        <div className="bg-card rounded-2xl border border-border overflow-hidden">
-          <div className="overflow-x-auto">
+        <div className="bg-card rounded-2xl border border-border overflow-x-auto">
+          <div>
             <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border bg-muted/40">
+              <thead className="sticky top-[56px] z-10">
+                <tr className="border-b border-border bg-muted/95 backdrop-blur-sm">
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Менеджер продаж</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Организация</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">ИНН</th>
