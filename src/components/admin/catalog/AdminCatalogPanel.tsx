@@ -41,8 +41,8 @@ function CourseRow({ course }: { course: OwnCourse }) {
         <td className="px-4 py-3">
           <div className="flex items-center gap-2">
             {hasMeta && <Icon name={open ? "ChevronDown" : "ChevronRight"} size={14} className="text-muted-foreground flex-shrink-0" />}
-            <div className="min-w-0">
-              <p className="font-medium text-sm truncate max-w-[200px]">{course.title}</p>
+            <div className="min-w-0 overflow-hidden">
+              <p className="font-medium text-sm truncate" title={course.title}>{course.title}</p>
               {course.status === "rejected" && course.rejectionReason && (
                 <p className="text-xs text-red-500 mt-0.5 truncate" title={course.rejectionReason}>
                   {course.rejectionReason}
@@ -264,21 +264,21 @@ export default function AdminCatalogPanel() {
                 </button>
                 {isOpen && (
                   <div className="border-t border-border">
-                    <table className="w-full text-sm">
+                    <table className="w-full text-sm table-fixed">
                       <thead>
                         <tr className="bg-muted/30">
-                          <th className="px-5 py-2.5 text-left text-xs font-medium text-muted-foreground">Код</th>
+                          <th className="px-5 py-2.5 text-left text-xs font-medium text-muted-foreground w-24">Код</th>
                           <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground">Название курса</th>
-                          <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground">Часов</th>
-                          <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground">Тест</th>
-                          <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground">ДПО</th>
+                          <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground w-16">Часов</th>
+                          <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground w-12">Тест</th>
+                          <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground w-12">ДПО</th>
                         </tr>
                       </thead>
                       <tbody>
                         {dir.courses.map((course, idx) => (
                           <tr key={course.id} className={`border-t border-border hover:bg-muted/20 transition-colors ${idx % 2 !== 0 ? "bg-muted/5" : ""}`}>
                             <td className="px-5 py-3 font-mono text-xs text-muted-foreground whitespace-nowrap">{course.code}</td>
-                            <td className="px-4 py-3 font-medium">{course.title}</td>
+                            <td className="px-4 py-3 font-medium min-w-0"><span className="block truncate" title={course.title}>{course.title}</span></td>
                             <td className="px-4 py-3 text-muted-foreground">{course.hours} ч</td>
                             <td className="px-4 py-3">
                               {course.hasTest ? <Icon name="CheckCircle" size={15} className="text-emerald-500" /> : <Icon name="Minus" size={15} className="text-muted-foreground" />}
@@ -328,16 +328,16 @@ export default function AdminCatalogPanel() {
             </div>
           ) : (
             <div className="bg-card rounded-2xl border border-border overflow-hidden">
-              <table className="w-full text-sm">
+              <table className="w-full text-sm table-fixed">
                 <thead>
                   <tr className="border-b border-border bg-muted/40">
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">Курс</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Код</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Часов</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Тест</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">ДПО</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Статус</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Добавлен</th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground w-20">Код</th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground w-16">Часов</th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground w-12">Тест</th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground w-12">ДПО</th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground w-28">Статус</th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground w-24">Добавлен</th>
                   </tr>
                 </thead>
                 <tbody>
