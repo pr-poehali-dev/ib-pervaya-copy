@@ -301,7 +301,7 @@ export default function TenantsPanel({ initialTenants, canCreate = true }: Tenan
               <TenantCard
                 key={t.id}
                 tenant={t}
-                canEdit={canCreate}
+                canEdit={true}
                 onCreds={() => setViewCreds(t)}
                 onEdit={() => setEditTenant(t)}
                 onSubs={() => setViewSubs(t)}
