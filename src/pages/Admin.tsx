@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { useStats } from "@/contexts/StatsContext";
 import { useRole } from "@/contexts/RoleContext";
 import { useAdminData } from "@/hooks/useAdminData";
@@ -26,7 +27,9 @@ export default function Admin() {
 
   const { role } = useRole();
   const isManager = role === "manager";
-  const [activeTab, setActiveTab] = useState<AdminTabKey>("stp");
+  const location = useLocation();
+  const initialTab = (new URLSearchParams(location.search).get("tab") as AdminTabKey) || "stp";
+  const [activeTab, setActiveTab] = useState<AdminTabKey>(initialTab);
   const certReadyCount = CERTIFICATES.filter((c) => c.status === "ready").length;
 
   // ─── Диалог добавления группы ─────────────────────────────────────────────

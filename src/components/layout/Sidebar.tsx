@@ -190,7 +190,17 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
       {showStats && !collapsed && (
         <div className="px-3 pb-2">
           <div className="bg-white/5 rounded-xl px-3 py-2.5 space-y-2">
-            <p className="text-[10px] text-white/50 font-medium uppercase tracking-wider">Подписки</p>
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] text-white/50 font-medium uppercase tracking-wider">Подписки</p>
+              <NavLink
+                to="/admin?tab=reports"
+                className="flex items-center gap-1 text-[10px] text-white/40 hover:text-white/80 transition-colors"
+                title="Отчёт по подпискам"
+              >
+                <Icon name="FileSpreadsheet" size={11} />
+                Отчёт
+              </NavLink>
+            </div>
             {TENANTS[0].subscriptions.map((s) => {
               const pct = s.total > 0 ? Math.round((s.used / s.total) * 100) : 0;
               const warn = pct >= 85;
