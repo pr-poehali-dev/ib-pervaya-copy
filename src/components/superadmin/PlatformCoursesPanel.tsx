@@ -125,9 +125,9 @@ function PlatformCatalog() {
           const isOpen = openDirs.includes(dir.id) || !!search;
           return (
             <div key={dir.id} className="bg-card rounded-2xl border border-border overflow-hidden">
-              <button
+              <div
                 onClick={() => toggleDir(dir.id)}
-                className="w-full flex items-center justify-between px-5 py-4 hover:bg-muted/30 transition-colors"
+                className="w-full flex items-center justify-between px-5 py-4 hover:bg-muted/30 transition-colors cursor-pointer"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
@@ -148,7 +148,7 @@ function PlatformCatalog() {
                   </button>
                   <Icon name={isOpen ? "ChevronUp" : "ChevronDown"} size={16} className="text-muted-foreground" />
                 </div>
-              </button>
+              </div>
 
               {isOpen && (
                 <div className="border-t border-border">
@@ -440,7 +440,7 @@ function CourseCard({
 function TenantApprovalPanel() {
   const [courses,      setCourses]     = useState<TenantCourse[]>(TENANT_COURSES);
   const [rejectTarget, setRejectTarget] = useState<TenantCourse | null>(null);
-  const [filter,       setFilter]       = useState<TenantCourseStatus | "all">("pending_approval");
+  const [filter,       setFilter]       = useState<TenantCourseStatus | "all">("all");
 
   function approve(id: number) {
     setCourses((prev) => prev.map((c) =>
