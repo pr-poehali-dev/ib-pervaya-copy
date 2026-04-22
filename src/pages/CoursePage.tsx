@@ -954,22 +954,20 @@ export default function CoursePage() {
                           </button>
                         </div>
                       )}
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 mt-1">
                         <button
                           onClick={() => setMode(m.key)}
                           className={`flex-1 py-2 rounded-xl text-xs font-semibold text-white bg-gradient-to-r ${m.color} hover:opacity-90 transition-opacity`}
                         >
                           {finalTestHistory.length > 0 ? "Пройти ещё раз" : "Начать тест"}
                         </button>
-                        {finalTestHistory.length > 0 && (
-                          <button
-                            onClick={() => setShowHistory(true)}
-                            className="px-3 py-2 rounded-xl text-xs font-medium border border-border bg-background/60 hover:bg-muted/40 transition-colors flex items-center gap-1"
-                          >
-                            <Icon name="History" size={13} />
-                            История
-                          </button>
-                        )}
+                        <button
+                          onClick={() => setShowHistory(true)}
+                          className="px-3 py-2 rounded-xl text-xs font-medium border border-border bg-background/60 hover:bg-muted/40 transition-colors flex items-center gap-1.5"
+                        >
+                          <Icon name="History" size={13} />
+                          История
+                        </button>
                       </div>
                     </div>
                   );
