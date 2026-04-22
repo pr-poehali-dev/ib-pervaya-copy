@@ -14,100 +14,176 @@ type LearningMode = "menu" | "adaptive" | "section_test" | "final_test" | "searc
 
 interface QuestionAnswer {
   questionId: number;
-  selected: number | null;
+  selected: number[];
   isCorrect: boolean;
+}
+
+// ─── Вспомогательные функции ─────────────────────────────────────────────────
+
+function isMulti(q: Question): boolean {
+  return Array.isArray(q.correct);
+}
+
+function correctArr(q: Question): number[] {
+  return Array.isArray(q.correct) ? q.correct : [q.correct];
+}
+
+function checkCorrect(q: Question, selected: number[]): boolean {
+  const correct = correctArr(q).slice().sort();
+  const sel = selected.slice().sort();
+  return correct.length === sel.length && correct.every((v, i) => v === sel[i]);
+}
+
+// ─── Единый компонент вариантов ответа ───────────────────────────────────────
+
+function AnswerOptions({
+  question,
+  selected,
+  answered,
+  onToggle,
+}: {
+  question: Question;
+  selected: number[];
+  answered: boolean;
+  onToggle: (idx: number) => void;
+}) {
+  const multi = isMulti(question);
+  const correct = correctArr(question);
+
+  return (
+    <div className="space-y-2.5">
+      {multi && !answered && (
+        <p className="text-xs text-muted-foreground px-1">Выберите все верные варианты</p>
+      )}
+      {question.options.map((opt, idx) => {
+        const isSelected = selected.includes(idx);
+        const isCorrectOpt = correct.includes(idx);
+
+        let cls = "border-border bg-background hover:border-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/10 cursor-pointer";
+        if (!answered && isSelected) {
+          cls = "border-violet-500 bg-violet-50 dark:bg-violet-900/20";
+        } else if (answered) {
+          if (isCorrectOpt) cls = "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20";
+          else if (isSelected && !isCorrectOpt) cls = "border-red-400 bg-red-50 dark:bg-red-900/20";
+          else cls = "border-border bg-muted/40 opacity-60";
+        }
+
+        const markerCls = answered && isCorrectOpt ? "bg-emerald-500 text-white" :
+          answered && isSelected && !isCorrectOpt ? "bg-red-400 text-white" :
+          !answered && isSelected ? "bg-violet-600 text-white" :
+          "bg-muted text-muted-foreground";
+
+        return (
+          <button
+            key={idx}
+            disabled={answered}
+            onClick={() => onToggle(idx)}
+            className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all flex items-center gap-3 ${cls}`}
+          >
+            {multi ? (
+              <span className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 border-2 transition-all ${
+                answered && isCorrectOpt ? "bg-emerald-500 border-emerald-500" :
+                answered && isSelected && !isCorrectOpt ? "bg-red-400 border-red-400" :
+                !answered && isSelected ? "bg-violet-600 border-violet-600" :
+                "border-muted-foreground/40 bg-background"
+              }`}>
+                {((!answered && isSelected) || (answered && (isCorrectOpt || (isSelected && !isCorrectOpt)))) && (
+                  <Icon name="Check" size={13} className="text-white" />
+                )}
+              </span>
+            ) : (
+              <span className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${markerCls}`}>
+                {String.fromCharCode(65 + idx)}
+              </span>
+            )}
+            <span className="text-sm flex-1">{opt}</span>
+            {answered && isCorrectOpt && (
+              <Icon name="CheckCircle" size={16} className="text-emerald-500 ml-auto flex-shrink-0" />
+            )}
+            {answered && isSelected && !isCorrectOpt && (
+              <Icon name="XCircle" size={16} className="text-red-400 ml-auto flex-shrink-0" />
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Блок с результатом и НТД ─────────────────────────────────────────────────
+
+function AnswerResult({
+  question,
+  isCorrect,
+  onNext,
+  nextLabel,
+}: {
+  question: Question;
+  isCorrect: boolean;
+  onNext: () => void;
+  nextLabel: string;
+}) {
+  const correctText = correctArr(question).map((i) => question.options[i]).join("; ");
+  return (
+    <div className={`rounded-2xl border p-5 space-y-3 ${isCorrect ? "bg-emerald-50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-800" : "bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800"}`}>
+      <div className="flex items-center gap-2">
+        <Icon name={isCorrect ? "CheckCircle" : "XCircle"} size={18} className={isCorrect ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"} />
+        <p className={`font-semibold ${isCorrect ? "text-emerald-800 dark:text-emerald-300" : "text-red-800 dark:text-red-300"}`}>
+          {isCorrect ? "Верно!" : `Неверно. Правильный ответ: ${correctText}`}
+        </p>
+      </div>
+      <div className="flex items-start gap-2">
+        <Icon name="BookOpen" size={15} className="text-muted-foreground flex-shrink-0 mt-0.5" />
+        <div>
+          <p className="text-xs text-muted-foreground font-medium mb-0.5">{question.ntdRef}</p>
+          <p className="text-sm text-muted-foreground">{question.ntd}</p>
+        </div>
+      </div>
+      <Button className="gradient-primary text-white rounded-xl w-full gap-2" onClick={onNext}>
+        {nextLabel}
+        <Icon name="ChevronRight" size={15} />
+      </Button>
+    </div>
+  );
 }
 
 // ─── Компонент вопроса (адаптивный тренинг) ──────────────────────────────────
 
 function AdaptiveQuestion({
   question,
-  onAnswer,
+  onToggle,
   onNext,
+  onSubmit,
   answered,
   selected,
-  onSubmit,
 }: {
   question: Question;
-  onAnswer: (idx: number) => void;
+  onToggle: (idx: number) => void;
   onNext: () => void;
   onSubmit: () => void;
   answered: boolean;
-  selected: number | null;
+  selected: number[];
 }) {
-  const isCorrect = selected === question.correct;
+  const isCorrect = checkCorrect(question, selected);
 
   return (
     <div className="space-y-5">
       <div className="bg-card rounded-2xl border border-border p-6">
         <p className="font-semibold text-base leading-relaxed mb-5">{question.text}</p>
-        <div className="space-y-2.5">
-          {question.options.map((opt, idx) => {
-            let cls = "border-border bg-background hover:border-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/10 cursor-pointer";
-            if (!answered && selected === idx) {
-              cls = "border-violet-500 bg-violet-50 dark:bg-violet-900/20";
-            } else if (answered) {
-              if (idx === question.correct) cls = "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20";
-              else if (idx === selected && !isCorrect) cls = "border-red-400 bg-red-50 dark:bg-red-900/20";
-              else cls = "border-border bg-muted/40 opacity-60";
-            }
-            return (
-              <button
-                key={idx}
-                disabled={answered}
-                onClick={() => onAnswer(idx)}
-                className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all flex items-center gap-3 ${cls}`}
-              >
-                <span className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
-                  answered && idx === question.correct ? "bg-emerald-500 text-white" :
-                  answered && idx === selected && !isCorrect ? "bg-red-400 text-white" :
-                  !answered && selected === idx ? "bg-violet-600 text-white" :
-                  "bg-muted text-muted-foreground"
-                }`}>
-                  {String.fromCharCode(65 + idx)}
-                </span>
-                <span className="text-sm">{opt}</span>
-                {answered && idx === question.correct && (
-                  <Icon name="CheckCircle" size={16} className="text-emerald-500 ml-auto flex-shrink-0" />
-                )}
-                {answered && idx === selected && !isCorrect && (
-                  <Icon name="XCircle" size={16} className="text-red-400 ml-auto flex-shrink-0" />
-                )}
-              </button>
-            );
-          })}
-        </div>
+        <AnswerOptions question={question} selected={selected} answered={answered} onToggle={onToggle} />
       </div>
 
       {!answered ? (
         <Button
           className="w-full gradient-primary text-white rounded-xl gap-2"
-          disabled={selected === null}
+          disabled={selected.length === 0}
           onClick={onSubmit}
         >
           Ответить
           <Icon name="CheckCircle" size={15} />
         </Button>
       ) : (
-        <div className={`rounded-2xl border p-5 space-y-3 ${isCorrect ? "bg-emerald-50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-800" : "bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800"}`}>
-          <div className="flex items-center gap-2">
-            <Icon name={isCorrect ? "CheckCircle" : "XCircle"} size={18} className={isCorrect ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"} />
-            <p className={`font-semibold ${isCorrect ? "text-emerald-800 dark:text-emerald-300" : "text-red-800 dark:text-red-300"}`}>
-              {isCorrect ? "Верно!" : `Неверно. Правильный ответ: ${question.options[question.correct]}`}
-            </p>
-          </div>
-          <div className="flex items-start gap-2">
-            <Icon name="BookOpen" size={15} className="text-muted-foreground flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="text-xs text-muted-foreground font-medium mb-0.5">{question.ntdRef}</p>
-              <p className="text-sm text-muted-foreground">{question.ntd}</p>
-            </div>
-          </div>
-          <Button className="gradient-primary text-white rounded-xl w-full gap-2" onClick={onNext}>
-            Следующий вопрос
-            <Icon name="ChevronRight" size={15} />
-          </Button>
-        </div>
+        <AnswerResult question={question} isCorrect={isCorrect} onNext={onNext} nextLabel="Следующий вопрос" />
       )}
     </div>
   );
@@ -118,30 +194,34 @@ function AdaptiveQuestion({
 function FinalTest({ onFinish, isFinal, allQuestions }: { onFinish: (answers: QuestionAnswer[]) => void; isFinal: boolean; allQuestions: Question[] }) {
   const questions = isFinal ? allQuestions.slice(0, 10) : allQuestions.slice(0, 5);
   const [current,   setCurrent]   = useState(0);
-  const [selected,  setSelected]  = useState<number | null>(null);
+  const [selected,  setSelected]  = useState<number[]>([]);
   const [submitted, setSubmitted] = useState(false);
   const [answers,   setAnswers]   = useState<QuestionAnswer[]>([]);
   const timeLimit = isFinal ? 30 : 15;
 
   const q = questions[current];
-  const isCorrect = selected !== null && selected === q.correct;
+  const isCorrect = checkCorrect(q, selected);
   const progress = Math.round((current / questions.length) * 100);
 
+  function handleToggle(idx: number) {
+    if (submitted) return;
+    if (isMulti(q)) {
+      setSelected((prev) => prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]);
+    } else {
+      setSelected([idx]);
+    }
+  }
+
   function handleSubmit() {
-    if (selected === null) return;
+    if (selected.length === 0) return;
     setSubmitted(true);
   }
 
   function handleNext() {
-    if (selected === null) return;
-    const ans: QuestionAnswer = {
-      questionId: q.id,
-      selected,
-      isCorrect: selected === q.correct,
-    };
+    const ans: QuestionAnswer = { questionId: q.id, selected, isCorrect };
     const newAnswers = [...answers, ans];
     setAnswers(newAnswers);
-    setSelected(null);
+    setSelected([]);
     setSubmitted(false);
     if (current + 1 >= questions.length) {
       onFinish(newAnswers);
@@ -167,69 +247,25 @@ function FinalTest({ onFinish, isFinal, allQuestions }: { onFinish: (answers: Qu
 
       <div className="bg-card rounded-2xl border border-border p-6">
         <p className="font-semibold text-base leading-relaxed mb-5">{q.text}</p>
-        <div className="space-y-2.5">
-          {q.options.map((opt, idx) => {
-            let cls = "border-border bg-background hover:border-violet-400 hover:bg-violet-50/50 dark:hover:bg-violet-900/10 cursor-pointer";
-            if (!submitted && selected === idx) {
-              cls = "border-violet-500 bg-violet-50 dark:bg-violet-900/20";
-            } else if (submitted) {
-              if (idx === q.correct) cls = "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20";
-              else if (idx === selected && !isCorrect) cls = "border-red-400 bg-red-50 dark:bg-red-900/20";
-              else cls = "border-border bg-muted/40 opacity-60";
-            }
-            return (
-              <button
-                key={idx}
-                disabled={submitted}
-                onClick={() => setSelected(idx)}
-                className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all flex items-center gap-3 ${cls}`}
-              >
-                <span className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
-                  submitted && idx === q.correct ? "bg-emerald-500 text-white" :
-                  submitted && idx === selected && !isCorrect ? "bg-red-400 text-white" :
-                  !submitted && selected === idx ? "bg-violet-600 text-white" :
-                  "bg-muted text-muted-foreground"
-                }`}>
-                  {String.fromCharCode(65 + idx)}
-                </span>
-                <span className="text-sm">{opt}</span>
-                {submitted && idx === q.correct && <Icon name="CheckCircle" size={16} className="text-emerald-500 ml-auto flex-shrink-0" />}
-                {submitted && idx === selected && !isCorrect && <Icon name="XCircle" size={16} className="text-red-400 ml-auto flex-shrink-0" />}
-              </button>
-            );
-          })}
-        </div>
+        <AnswerOptions question={q} selected={selected} answered={submitted} onToggle={handleToggle} />
       </div>
 
       {!submitted ? (
         <Button
           className="w-full gradient-primary text-white rounded-xl gap-2"
-          disabled={selected === null}
+          disabled={selected.length === 0}
           onClick={handleSubmit}
         >
           Ответить
           <Icon name="CheckCircle" size={15} />
         </Button>
       ) : (
-        <div className={`rounded-2xl border p-5 space-y-3 ${isCorrect ? "bg-emerald-50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-800" : "bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800"}`}>
-          <div className="flex items-center gap-2">
-            <Icon name={isCorrect ? "CheckCircle" : "XCircle"} size={18} className={isCorrect ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"} />
-            <p className={`font-semibold ${isCorrect ? "text-emerald-800 dark:text-emerald-300" : "text-red-800 dark:text-red-300"}`}>
-              {isCorrect ? "Верно!" : `Неверно. Правильный ответ: ${q.options[q.correct]}`}
-            </p>
-          </div>
-          <div className="flex items-start gap-2">
-            <Icon name="BookOpen" size={15} className="text-muted-foreground flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="text-xs text-muted-foreground font-medium mb-0.5">{q.ntdRef}</p>
-              <p className="text-sm text-muted-foreground">{q.ntd}</p>
-            </div>
-          </div>
-          <Button className="w-full gradient-primary text-white rounded-xl gap-2" onClick={handleNext}>
-            {current + 1 >= questions.length ? "Завершить тест" : "Следующий вопрос"}
-            <Icon name={current + 1 >= questions.length ? "CheckCircle" : "ChevronRight"} size={15} />
-          </Button>
-        </div>
+        <AnswerResult
+          question={q}
+          isCorrect={isCorrect}
+          onNext={handleNext}
+          nextLabel={current + 1 >= questions.length ? "Завершить тест" : "Следующий вопрос"}
+        />
       )}
     </div>
   );
@@ -324,11 +360,13 @@ function TestResult({
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium leading-snug">{idx + 1}. {q.text}</p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Ваш ответ: <span className={ans.isCorrect ? "text-emerald-600 dark:text-emerald-400" : "text-red-500"}>{ans.selected !== null ? q.options[ans.selected] : "—"}</span>
+                        Ваш ответ: <span className={ans.isCorrect ? "text-emerald-600 dark:text-emerald-400" : "text-red-500"}>
+                          {ans.selected.length > 0 ? ans.selected.map((i) => q.options[i]).join("; ") : "—"}
+                        </span>
                       </p>
                       {!ans.isCorrect && (
                         <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">
-                          Верно: {q.options[q.correct]}
+                          Верно: {correctArr(q).map((i) => q.options[i]).join("; ")}
                         </p>
                       )}
                       <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
@@ -383,15 +421,23 @@ function SearchAnswerMode({ onBack, allQuestions }: { onBack: () => void; allQue
           <div className="bg-card rounded-2xl border border-border p-5 space-y-4">
             <p className="font-semibold leading-relaxed">{selected.text}</p>
             <div className="space-y-2">
-              {selected.options.map((opt, idx) => (
-                <div key={idx} className={`px-4 py-3 rounded-xl flex items-center gap-3 ${idx === selected.correct ? "bg-emerald-50 dark:bg-emerald-900/20 border-2 border-emerald-500" : "bg-muted/40 border border-border"}`}>
-                  <span className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${idx === selected.correct ? "bg-emerald-500 text-white" : "bg-muted text-muted-foreground"}`}>
-                    {String.fromCharCode(65 + idx)}
-                  </span>
-                  <span className="text-sm">{opt}</span>
-                  {idx === selected.correct && <Icon name="CheckCircle" size={15} className="text-emerald-500 ml-auto" />}
-                </div>
-              ))}
+              {isMulti(selected) && (
+                <p className="text-xs text-muted-foreground">Верных ответов: {correctArr(selected).length}</p>
+              )}
+              {selected.options.map((opt, idx) => {
+                const isCorrectOpt = correctArr(selected).includes(idx);
+                return (
+                  <div key={idx} className={`px-4 py-3 rounded-xl flex items-center gap-3 ${isCorrectOpt ? "bg-emerald-50 dark:bg-emerald-900/20 border-2 border-emerald-500" : "bg-muted/40 border border-border"}`}>
+                    <span className={`w-7 h-7 rounded-${isMulti(selected) ? "lg" : "full"} flex items-center justify-center text-sm font-bold flex-shrink-0 ${isCorrectOpt ? "bg-emerald-500 text-white" : "bg-muted text-muted-foreground"}`}>
+                      {isMulti(selected)
+                        ? isCorrectOpt ? <Icon name="Check" size={13} className="text-white" /> : String.fromCharCode(65 + idx)
+                        : String.fromCharCode(65 + idx)}
+                    </span>
+                    <span className="text-sm">{opt}</span>
+                    {isCorrectOpt && <Icon name="CheckCircle" size={15} className="text-emerald-500 ml-auto" />}
+                  </div>
+                );
+              })}
             </div>
             <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-xl px-4 py-3 flex items-start gap-2">
               <Icon name="BookOpen" size={15} className="text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
@@ -488,23 +534,28 @@ export default function CoursePage() {
   const [mode, setMode]       = useState<LearningMode>("menu");
   const [adaptIdx, setAdaptIdx] = useState(0);
   const [adaptAnswered, setAdaptAnswered] = useState(false);
-  const [adaptSelected, setAdaptSelected] = useState<number | null>(null);
+  const [adaptSelected, setAdaptSelected] = useState<number[]>([]);
   const [testAnswers, setTestAnswers] = useState<QuestionAnswer[]>([]);
 
-  function handleAdaptAnswer(idx: number) {
+  function handleAdaptToggle(idx: number) {
     if (adaptAnswered) return;
-    setAdaptSelected(idx);
+    const q = questions[adaptIdx];
+    if (isMulti(q)) {
+      setAdaptSelected((prev) => prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]);
+    } else {
+      setAdaptSelected([idx]);
+    }
   }
 
   function handleAdaptSubmit() {
-    if (adaptSelected === null) return;
+    if (adaptSelected.length === 0) return;
     setAdaptAnswered(true);
   }
 
   function handleAdaptNext() {
     setAdaptIdx((p) => (p + 1) % questions.length);
     setAdaptAnswered(false);
-    setAdaptSelected(null);
+    setAdaptSelected([]);
   }
 
   function handleTestFinish(answers: QuestionAnswer[]) {
@@ -639,7 +690,7 @@ export default function CoursePage() {
             </div>
             <AdaptiveQuestion
               question={questions[adaptIdx]}
-              onAnswer={handleAdaptAnswer}
+              onToggle={handleAdaptToggle}
               onSubmit={handleAdaptSubmit}
               onNext={handleAdaptNext}
               answered={adaptAnswered}
