@@ -153,15 +153,27 @@ function CourseRow({
         <td className="px-4 py-3">
           <div className="flex flex-col gap-1">
             <span className="text-xs text-muted-foreground">{course.createdAt}</span>
-            {isRejected && (
-              <button
-                onClick={(e) => { e.stopPropagation(); setShowRejection(true); }}
-                className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors text-xs font-medium w-fit"
-              >
-                <Icon name="MessageSquare" size={11} />
-                Замечания
-              </button>
-            )}
+            <div className="flex items-center gap-1 flex-wrap">
+              {isRejected && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); setShowRejection(true); }}
+                  className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors text-xs font-medium"
+                >
+                  <Icon name="MessageSquare" size={11} />
+                  Замечания
+                </button>
+              )}
+              {course.status !== "pending_approval" && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onEdit(course); }}
+                  className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-muted hover:bg-violet-100 dark:hover:bg-violet-900/30 text-muted-foreground hover:text-violet-600 dark:hover:text-violet-400 transition-colors text-xs font-medium"
+                  title="Редактировать курс"
+                >
+                  <Icon name="Pencil" size={11} />
+                  Изменить
+                </button>
+              )}
+            </div>
           </div>
         </td>
       </tr>
