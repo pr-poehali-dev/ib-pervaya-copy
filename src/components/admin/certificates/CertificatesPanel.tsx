@@ -480,6 +480,7 @@ export default function CertificatesPanel() {
               <div className="flex justify-between py-1 border-b border-border/50 gap-4"><span className="text-muted-foreground shrink-0">Курс</span><span className="text-right">{viewCert.courseTitle}</span></div>
               <div className="flex justify-between py-1 border-b border-border/50"><span className="text-muted-foreground">Код</span><span className="font-mono">{viewCert.courseCode ?? "—"}</span></div>
               <div className="flex justify-between py-1 border-b border-border/50"><span className="text-muted-foreground">Часов</span><span>{viewCert.courseHours ? `${viewCert.courseHours} ч` : "—"}</span></div>
+              <div className="flex justify-between py-1 border-b border-border/50"><span className="text-muted-foreground">Начало обучения</span><span>{viewCert.activatedAt ?? "—"}</span></div>
               <div className="flex justify-between py-1 border-b border-border/50"><span className="text-muted-foreground">Результат</span><span className="font-semibold text-emerald-600 dark:text-emerald-400">{viewCert.testScore}%</span></div>
               <div className="flex justify-between py-1 border-b border-border/50"><span className="text-muted-foreground">Дата теста</span><span>{viewCert.testPassedAt}</span></div>
               <div className="flex justify-between py-1 border-b border-border/50"><span className="text-muted-foreground">Дата выдачи</span><span>{viewCert.issuedAt ?? "—"}</span></div>
