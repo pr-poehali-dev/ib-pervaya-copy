@@ -3,6 +3,7 @@ import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { COURSE_DIRECTIONS } from "@/data/mockData";
 import CourseEditor, { type CourseEditorData } from "@/components/admin/catalog/CourseEditor";
+import { getQuestionsForCourse } from "@/data/questionsBank";
 
 const PLATFORM_DIRS = COURSE_DIRECTIONS.filter((d) => d.id !== 6).map((d) => ({ id: d.id, title: d.title }));
 
@@ -95,6 +96,7 @@ export function PlatformCatalog({ readOnly = false }: { readOnly?: boolean }) {
                       <tr className="bg-muted/30">
                         <th className="px-5 py-2.5 text-left text-xs font-medium text-muted-foreground">Код</th>
                         <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground">Название курса</th>
+                        <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground">Вопросов</th>
                         <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground">Часов</th>
                         <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground">Тест</th>
                         <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground">ДПО</th>
@@ -106,6 +108,9 @@ export function PlatformCatalog({ readOnly = false }: { readOnly?: boolean }) {
                         <tr key={course.id} className={`border-t border-border hover:bg-muted/20 transition-colors ${idx % 2 !== 0 ? "bg-muted/5" : ""}`}>
                           <td className="px-5 py-3 font-mono text-xs text-muted-foreground whitespace-nowrap">{course.code}</td>
                           <td className="px-4 py-3 font-medium">{course.title}</td>
+                          <td className="px-4 py-3 text-muted-foreground text-xs">
+                            {(() => { const n = getQuestionsForCourse(course.id).length; return n > 0 ? <span className="flex items-center gap-1"><Icon name="HelpCircle" size={12} className="text-violet-400" />{n}</span> : <span className="text-muted-foreground/50">—</span>; })()}
+                          </td>
                           <td className="px-4 py-3 text-muted-foreground">{course.hours} ч</td>
                           <td className="px-4 py-3">
                             {course.hasTest ? <Icon name="CheckCircle" size={15} className="text-emerald-500" /> : <Icon name="Minus" size={15} className="text-muted-foreground" />}
