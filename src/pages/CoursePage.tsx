@@ -879,6 +879,8 @@ export default function CoursePage() {
   const [historyProtocol, setHistoryProtocol]   = useState<TestAttempt | null>(null);
 
   type CourseMaterial = { icon: string; type: string; label: string; ext: string; url: string };
+  type NtdDoc = { label: string; url: string };
+  const [openNtd, setOpenNtd] = useState<NtdDoc | null>(null);
   const [openMaterial, setOpenMaterial] = useState<CourseMaterial | null>(null);
 
   const COURSE_MATERIALS: CourseMaterial[] = [
@@ -1302,6 +1304,35 @@ export default function CoursePage() {
               </div>
             </div>
 
+            {/* Модалка просмотра НТД */}
+            {openNtd && (
+              <div className="fixed inset-0 z-50 flex flex-col bg-background">
+                <div className="flex items-center gap-3 px-5 py-3 border-b border-border bg-card flex-shrink-0">
+                  <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-blue-700 rounded-lg flex items-center justify-center">
+                    <Icon name="FileText" size={15} className="text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm truncate">{openNtd.label}</p>
+                    <p className="text-xs text-muted-foreground">Нормативно-технический документ · PDF</p>
+                  </div>
+                  <button
+                    onClick={() => setOpenNtd(null)}
+                    className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground hover:text-foreground flex-shrink-0"
+                  >
+                    <Icon name="X" size={18} />
+                  </button>
+                </div>
+                <div className="flex-1 overflow-hidden">
+                  <iframe
+                    key={openNtd.url}
+                    src={`https://docs.google.com/viewer?url=${encodeURIComponent(openNtd.url)}&embedded=true`}
+                    className="w-full h-full border-0"
+                    title={openNtd.label}
+                  />
+                </div>
+              </div>
+            )}
+
             {/* Библиотека НТД */}
             <div className="bg-card rounded-2xl border border-border p-5">
               <div className="flex items-center gap-3 mb-3">
@@ -1315,22 +1346,47 @@ export default function CoursePage() {
               </div>
               <div className="space-y-1.5">
                 {(dir?.id === 2
-                  ? ["ПТЭЭП «Правила технической эксплуатации электроустановок потребителей»", "ПОТЭУ «Правила по охране труда при эксплуатации электроустановок»", "ПУЭ «Правила устройства электроустановок»", "Приказ Минэнерго № 261 «Инструкция по применению средств защиты»"]
+                  ? [
+                      { label: "ПТЭЭП «Правила технической эксплуатации электроустановок потребителей»", url: "https://docs.cntd.ru/document/1200031625" },
+                      { label: "ПОТЭУ «Правила по охране труда при эксплуатации электроустановок»",      url: "https://www.consultant.ru/document/cons_doc_LAW_171985/" },
+                      { label: "ПУЭ «Правила устройства электроустановок»",                              url: "https://docs.cntd.ru/document/1200030216" },
+                      { label: "Приказ Минэнерго № 261 «Инструкция по применению средств защиты»",      url: "https://docs.cntd.ru/document/1200069862" },
+                    ]
                   : dir?.id === 3
-                  ? ["ТК РФ — Трудовой кодекс Российской Федерации", "ФЗ-426 «О специальной оценке условий труда»", "ФЗ-125 «Об обязательном социальном страховании от несчастных случаев»", "ПП РФ № 2464 «О порядке обучения по охране труда»"]
+                  ? [
+                      { label: "ТК РФ — Трудовой кодекс Российской Федерации",                                    url: "https://www.consultant.ru/document/cons_doc_LAW_34683/" },
+                      { label: "ФЗ-426 «О специальной оценке условий труда»",                                     url: "https://www.consultant.ru/document/cons_doc_LAW_156555/" },
+                      { label: "ФЗ-125 «Об обязательном социальном страховании от несчастных случаев»",           url: "https://www.consultant.ru/document/cons_doc_LAW_17696/" },
+                      { label: "ПП РФ № 2464 «О порядке обучения по охране труда»",                              url: "https://www.consultant.ru/document/cons_doc_LAW_428609/" },
+                    ]
                   : dir?.id === 4
-                  ? ["ФЗ-116 «О промышленной безопасности опасных производственных объектов»", "ПП РФ № 467 «Об аттестации экспертов в области промышленной безопасности»", "Приказ Ростехнадзора № 538 «Порядок осуществления экспертизы ПБ»"]
+                  ? [
+                      { label: "ФЗ-116 «О промышленной безопасности опасных производственных объектов»",  url: "https://www.consultant.ru/document/cons_doc_LAW_15234/" },
+                      { label: "ПП РФ № 467 «Об аттестации экспертов в области промышленной безопасности»", url: "https://www.consultant.ru/document/cons_doc_LAW_194838/" },
+                      { label: "Приказ Ростехнадзора № 538 «Порядок осуществления экспертизы ПБ»",         url: "https://docs.cntd.ru/document/499031789" },
+                    ]
                   : dir?.id === 5
-                  ? ["ФЗ-117 «О безопасности гидротехнических сооружений»", "ПП РФ № 986 «Критерии классификации ГТС»", "СП 39.13330.2012 «Плотины из грунтовых материалов»"]
-                  : ["ФЗ-116 «О промышленной безопасности опасных производственных объектов»", "ПП РФ № 263 «Об организации и осуществлении производственного контроля»", "Приказ Ростехнадзора № 471 «Об утверждении руководства по безопасности»"]
+                  ? [
+                      { label: "ФЗ-117 «О безопасности гидротехнических сооружений»",   url: "https://www.consultant.ru/document/cons_doc_LAW_16446/" },
+                      { label: "ПП РФ № 986 «Критерии классификации ГТС»",               url: "https://www.consultant.ru/document/cons_doc_LAW_49455/" },
+                      { label: "СП 39.13330.2012 «Плотины из грунтовых материалов»",    url: "https://docs.cntd.ru/document/1200092717" },
+                    ]
+                  : [
+                      { label: "ФЗ-116 «О промышленной безопасности опасных производственных объектов»", url: "https://www.consultant.ru/document/cons_doc_LAW_15234/" },
+                      { label: "ПП РФ № 263 «Об организации и осуществлении производственного контроля»", url: "https://www.consultant.ru/document/cons_doc_LAW_36585/" },
+                      { label: "Приказ Ростехнадзора № 471 «Об утверждении руководства по безопасности»", url: "https://docs.cntd.ru/document/499032558" },
+                    ]
                 ).map((doc) => (
-                  <div key={doc} className="flex items-center gap-3 px-3 py-2.5 bg-muted/40 rounded-xl">
+                  <button
+                    key={doc.label}
+                    onClick={() => setOpenNtd(doc)}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 bg-muted/40 hover:bg-muted/70 rounded-xl transition-colors group text-left"
+                  >
                     <Icon name="FileText" size={14} className="text-muted-foreground flex-shrink-0" />
-                    <span className="text-sm flex-1 min-w-0 truncate">{doc}</span>
-                    <button className="text-primary hover:opacity-80 flex-shrink-0">
-                      <Icon name="Download" size={14} />
-                    </button>
-                  </div>
+                    <span className="text-sm flex-1 min-w-0 truncate group-hover:text-foreground transition-colors">{doc.label}</span>
+                    <span className="text-[10px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded flex-shrink-0">PDF</span>
+                    <Icon name="ChevronRight" size={14} className="text-muted-foreground flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </button>
                 ))}
               </div>
             </div>
