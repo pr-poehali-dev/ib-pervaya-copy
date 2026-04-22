@@ -878,6 +878,18 @@ export default function CoursePage() {
   const [showHistory, setShowHistory]           = useState(false);
   const [historyProtocol, setHistoryProtocol]   = useState<TestAttempt | null>(null);
 
+  type CourseMaterial = { icon: string; type: string; label: string; ext: string };
+  const [openMaterial, setOpenMaterial] = useState<CourseMaterial | null>(null);
+
+  const COURSE_MATERIALS: CourseMaterial[] = [
+    { icon: "FileText",     type: "Лекция",       label: "Лекция 1. Основные понятия и определения",           ext: "PDF"  },
+    { icon: "FileText",     type: "Лекция",       label: "Лекция 2. Требования нормативных документов",         ext: "PDF"  },
+    { icon: "Presentation", type: "Презентация",  label: "Презентация. Обзор законодательной базы",            ext: "PPTX" },
+    { icon: "Presentation", type: "Презентация",  label: "Презентация. Практические примеры и разбор случаев", ext: "PPTX" },
+    { icon: "Video",        type: "Видео",        label: "Видеолекция. Введение в курс",                        ext: "MP4"  },
+    { icon: "Mic",          type: "Аудио",        label: "Аудиолекция. Ключевые требования и нормы",            ext: "MP3"  },
+  ];
+
   // Трекинг адаптивного тренинга
   const [adaptiveRecords, setAdaptiveRecords] = useState<Record<number, AdaptiveRecord>>({});
   // Трекинг теста по разделу
@@ -1161,6 +1173,82 @@ export default function CoursePage() {
               })}
             </div>
 
+            {/* Модалка просмотра материала */}
+            {openMaterial && (
+              <div className="fixed inset-0 z-50 flex flex-col bg-background">
+                {/* Шапка */}
+                <div className="flex items-center gap-3 px-5 py-3 border-b border-border bg-card flex-shrink-0">
+                  <div className="w-8 h-8 bg-gradient-to-br from-violet-500 to-purple-700 rounded-lg flex items-center justify-center">
+                    <Icon name={openMaterial.icon} size={15} className="text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm truncate">{openMaterial.label}</p>
+                    <p className="text-xs text-muted-foreground">{openMaterial.type} · {openMaterial.ext}</p>
+                  </div>
+                  <button
+                    onClick={() => setOpenMaterial(null)}
+                    className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground hover:text-foreground flex-shrink-0"
+                  >
+                    <Icon name="X" size={18} />
+                  </button>
+                </div>
+
+                {/* Область просмотра */}
+                <div className="flex-1 flex items-center justify-center bg-muted/20 overflow-hidden">
+                  {openMaterial.ext === "MP4" ? (
+                    <div className="w-full max-w-4xl px-6 space-y-4">
+                      <div className="aspect-video bg-black rounded-2xl flex items-center justify-center">
+                        <div className="text-center space-y-3">
+                          <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto">
+                            <Icon name="Play" size={28} className="text-white ml-1" />
+                          </div>
+                          <p className="text-white/60 text-sm">Видеоплеер будет доступен после подключения сервера</p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : openMaterial.ext === "MP3" ? (
+                    <div className="w-full max-w-xl px-6 space-y-6 text-center">
+                      <div className="w-24 h-24 bg-gradient-to-br from-violet-500 to-purple-700 rounded-full flex items-center justify-center mx-auto shadow-2xl">
+                        <Icon name="Mic" size={36} className="text-white" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-lg">{openMaterial.label}</p>
+                        <p className="text-muted-foreground text-sm mt-1">Аудиоматериал</p>
+                      </div>
+                      <div className="bg-card rounded-2xl border border-border p-5 space-y-4">
+                        <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                          <div className="h-full w-0 bg-violet-500 rounded-full" />
+                        </div>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <span>0:00</span><span>—:——</span>
+                        </div>
+                        <div className="flex items-center justify-center gap-4">
+                          <button className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground"><Icon name="SkipBack" size={18} /></button>
+                          <button className="w-12 h-12 gradient-primary rounded-full flex items-center justify-center shadow-lg">
+                            <Icon name="Play" size={20} className="text-white ml-0.5" />
+                          </button>
+                          <button className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground"><Icon name="SkipForward" size={18} /></button>
+                        </div>
+                        <p className="text-xs text-center text-muted-foreground">Аудиоплеер будет доступен после подключения сервера</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center flex-col gap-4 px-6">
+                      <div className="w-20 h-20 bg-muted rounded-2xl flex items-center justify-center">
+                        <Icon name={openMaterial.icon} size={36} className="text-muted-foreground" />
+                      </div>
+                      <div className="text-center">
+                        <p className="font-semibold">{openMaterial.label}</p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Просмотр {openMaterial.ext}-файлов будет доступен после подключения сервера
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Материалы курса */}
             <div className="bg-card rounded-2xl border border-border p-5">
               <div className="flex items-center gap-3 mb-3">
@@ -1173,24 +1261,17 @@ export default function CoursePage() {
                 </div>
               </div>
               <div className="space-y-1.5">
-                {[
-                  { icon: "FileText",   type: "Лекция",       label: "Лекция 1. Основные понятия и определения",            ext: "PDF"  },
-                  { icon: "FileText",   type: "Лекция",       label: "Лекция 2. Требования нормативных документов",          ext: "PDF"  },
-                  { icon: "Presentation", type: "Презентация", label: "Презентация. Обзор законодательной базы",             ext: "PPTX" },
-                  { icon: "Presentation", type: "Презентация", label: "Презентация. Практические примеры и разбор случаев",  ext: "PPTX" },
-                  { icon: "Video",      type: "Видео",        label: "Видеолекция. Введение в курс",                         ext: "MP4"  },
-                  { icon: "Mic",        type: "Аудио",        label: "Аудиолекция. Ключевые требования и нормы",             ext: "MP3"  },
-                ].map((m) => (
-                  <div key={m.label} className="flex items-center gap-3 px-3 py-2.5 bg-muted/40 rounded-xl group">
+                {COURSE_MATERIALS.map((m) => (
+                  <button
+                    key={m.label}
+                    onClick={() => setOpenMaterial(m)}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 bg-muted/40 hover:bg-muted/70 rounded-xl transition-colors group text-left"
+                  >
                     <Icon name={m.icon} size={14} className="text-muted-foreground flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <span className="text-sm truncate block">{m.label}</span>
-                    </div>
+                    <span className="text-sm flex-1 min-w-0 truncate group-hover:text-foreground transition-colors">{m.label}</span>
                     <span className="text-[10px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded flex-shrink-0">{m.ext}</span>
-                    <button className="text-primary hover:opacity-80 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Icon name="Download" size={14} />
-                    </button>
-                  </div>
+                    <Icon name="ChevronRight" size={14} className="text-muted-foreground flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </button>
                 ))}
               </div>
             </div>
