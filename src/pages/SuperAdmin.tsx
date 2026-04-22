@@ -4,14 +4,16 @@ import Icon from "@/components/ui/icon";
 import TenantsPanel from "@/components/superadmin/TenantsPanel";
 import PlatformCoursesPanel from "@/components/superadmin/PlatformCoursesPanel";
 import SalesManagersPanel from "@/components/superadmin/SalesManagersPanel";
+import ReportsPanel from "@/components/superadmin/ReportsPanel";
 
-type SuperTab = "tenants" | "courses" | "sales" | "profile";
+type SuperTab = "tenants" | "courses" | "sales" | "reports" | "profile";
 
 const TABS: { key: SuperTab; icon: string; label: string }[] = [
   { key: "tenants", icon: "Building2",     label: "Тенанты" },
   { key: "courses", icon: "BookOpen",      label: "Каталог курсов" },
-  { key: "sales",   icon: "Briefcase",     label: "Менеджеры продаж" },
-  { key: "profile", icon: "User",          label: "Профиль" },
+  { key: "sales",    icon: "Briefcase",     label: "Менеджеры продаж" },
+  { key: "reports",  icon: "BarChart3",     label: "Отчёты" },
+  { key: "profile",  icon: "User",          label: "Профиль" },
 ];
 
 const STATS = [
@@ -123,8 +125,9 @@ export default function SuperAdmin() {
         {/* Контент */}
         {activeTab === "tenants" && <TenantsPanel />}
         {activeTab === "courses" && <PlatformCoursesPanel />}
-        {activeTab === "sales"   && <SalesManagersPanel />}
-        {activeTab === "profile" && <ProfilePanel />}
+        {activeTab === "sales"    && <SalesManagersPanel />}
+        {activeTab === "reports"  && <ReportsPanel />}
+        {activeTab === "profile"  && <ProfilePanel />}
       </div>
     </Layout>
   );
