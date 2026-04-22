@@ -50,6 +50,30 @@ export type CourseDirection = {
   courses: DirectionCourse[];
 };
 
+/** Статус файла материала курса */
+export type MaterialStatus = "pending_approval" | "approved" | "rejected";
+
+/** Тип файла материала */
+export type MaterialType = "lecture" | "presentation" | "video" | "audio" | "other";
+
+/** Материал курса, загруженный тенантом */
+export type CourseMaterial = {
+  id: number;
+  tenantId: number;
+  courseId?: number;       // ID платформенного курса (если привязан)
+  tenantCourseId?: number; // ID своего курса (если привязан)
+  courseTitle: string;     // Название для отображения
+  title: string;           // Название файла/материала
+  type: MaterialType;
+  ext: string;             // PDF, MP4, MP3, PPTX
+  url: string;             // URL файла
+  size?: string;           // Размер файла (напр. "2.4 МБ")
+  status: MaterialStatus;
+  rejectionReason?: string;
+  uploadedAt: string;
+  approvedAt?: string;
+};
+
 /** Курс созданный тенантом самостоятельно */
 export type TenantCourse = {
   id: number;
