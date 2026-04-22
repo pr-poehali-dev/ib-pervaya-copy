@@ -349,14 +349,6 @@ function SearchAnswerMode({ onBack, allQuestions }: { onBack: () => void; allQue
             <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setSelected(null)}>
               К поиску
             </Button>
-            <Button className="flex-1 gradient-primary text-white rounded-xl gap-2" onClick={() => {
-              const idx = allQuestions.findIndex((q) => q.id === selected.id);
-              const next = allQuestions[(idx + 1) % allQuestions.length];
-              setSelected(next);
-            }}>
-              Следующий вопрос
-              <Icon name="ChevronRight" size={15} />
-            </Button>
           </div>
         </div>
       ) : (
