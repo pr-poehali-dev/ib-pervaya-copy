@@ -90,7 +90,20 @@ function Step1({ data, onChange, directions }: { data: CourseEditorData; onChang
     <div className="space-y-5 max-w-2xl mx-auto">
       {directions && directions.length > 0 && (
         <div className="space-y-1.5">
-          <label className="text-sm font-medium">Направление *</label>
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-medium">Направление *</label>
+            <button
+              type="button"
+              className="flex items-center gap-1.5 text-xs text-violet-600 dark:text-violet-400 hover:underline"
+              onClick={() => {
+                const name = window.prompt("Название нового направления:");
+                if (name?.trim()) onChange({ directionId: -1 });
+              }}
+            >
+              <Icon name="Plus" size={12} />
+              Добавить направление
+            </button>
+          </div>
           <div className="flex flex-wrap gap-2">
             {directions.map((d) => {
               const active = data.directionId === d.id;
