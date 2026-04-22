@@ -878,16 +878,34 @@ export default function CoursePage() {
   const [showHistory, setShowHistory]           = useState(false);
   const [historyProtocol, setHistoryProtocol]   = useState<TestAttempt | null>(null);
 
-  type CourseMaterial = { icon: string; type: string; label: string; ext: string };
+  type CourseMaterial = { icon: string; type: string; label: string; ext: string; url: string };
   const [openMaterial, setOpenMaterial] = useState<CourseMaterial | null>(null);
 
   const COURSE_MATERIALS: CourseMaterial[] = [
-    { icon: "FileText",     type: "Лекция",       label: "Лекция 1. Основные понятия и определения",           ext: "PDF"  },
-    { icon: "FileText",     type: "Лекция",       label: "Лекция 2. Требования нормативных документов",         ext: "PDF"  },
-    { icon: "Presentation", type: "Презентация",  label: "Презентация. Обзор законодательной базы",            ext: "PPTX" },
-    { icon: "Presentation", type: "Презентация",  label: "Презентация. Практические примеры и разбор случаев", ext: "PPTX" },
-    { icon: "Video",        type: "Видео",        label: "Видеолекция. Введение в курс",                        ext: "MP4"  },
-    { icon: "Mic",          type: "Аудио",        label: "Аудиолекция. Ключевые требования и нормы",            ext: "MP3"  },
+    {
+      icon: "FileText", type: "Лекция", label: "Лекция 1. Основные понятия и определения", ext: "PDF",
+      url: "https://www.w3.org/WAI/WCAG21/Techniques/pdf/pdf-techniques.pdf",
+    },
+    {
+      icon: "FileText", type: "Лекция", label: "Лекция 2. Требования нормативных документов", ext: "PDF",
+      url: "https://unec.edu.az/application/uploads/2014/12/pdf-sample.pdf",
+    },
+    {
+      icon: "Presentation", type: "Презентация", label: "Презентация. Обзор законодательной базы", ext: "PPTX",
+      url: "https://docs.google.com/presentation/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms/edit",
+    },
+    {
+      icon: "Presentation", type: "Презентация", label: "Презентация. Практические примеры и разбор случаев", ext: "PPTX",
+      url: "https://docs.google.com/presentation/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms/edit",
+    },
+    {
+      icon: "Video", type: "Видео", label: "Видеолекция. Введение в курс", ext: "MP4",
+      url: "https://www.w3schools.com/html/mov_bbb.mp4",
+    },
+    {
+      icon: "Mic", type: "Аудио", label: "Аудиолекция. Ключевые требования и нормы", ext: "MP3",
+      url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+    },
   ];
 
   // Трекинг адаптивного тренинга
@@ -1194,56 +1212,64 @@ export default function CoursePage() {
                 </div>
 
                 {/* Область просмотра */}
-                <div className="flex-1 flex items-center justify-center bg-muted/20 overflow-hidden">
-                  {openMaterial.ext === "MP4" ? (
-                    <div className="w-full max-w-4xl px-6 space-y-4">
-                      <div className="aspect-video bg-black rounded-2xl flex items-center justify-center">
-                        <div className="text-center space-y-3">
-                          <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto">
-                            <Icon name="Play" size={28} className="text-white ml-1" />
-                          </div>
-                          <p className="text-white/60 text-sm">Видеоплеер будет доступен после подключения сервера</p>
+                <div className="flex-1 overflow-hidden relative">
+                  {openMaterial.ext === "MP4" && (
+                    <div className="w-full h-full flex items-center justify-center bg-black p-4">
+                      <video
+                        key={openMaterial.url}
+                        src={openMaterial.url}
+                        controls
+                        autoPlay
+                        className="max-w-full max-h-full rounded-xl shadow-2xl"
+                        style={{ maxHeight: "calc(100vh - 64px)" }}
+                      >
+                        Ваш браузер не поддерживает видео.
+                      </video>
+                    </div>
+                  )}
+
+                  {openMaterial.ext === "MP3" && (
+                    <div className="w-full h-full flex items-center justify-center p-6">
+                      <div className="w-full max-w-lg space-y-6 text-center">
+                        <div className="w-28 h-28 bg-gradient-to-br from-violet-500 to-purple-700 rounded-full flex items-center justify-center mx-auto shadow-2xl">
+                          <Icon name="Mic" size={44} className="text-white" />
+                        </div>
+                        <div>
+                          <p className="font-bold text-xl">{openMaterial.label}</p>
+                          <p className="text-muted-foreground text-sm mt-1">Аудиоматериал курса</p>
+                        </div>
+                        <div className="bg-card rounded-2xl border border-border p-5">
+                          <audio
+                            key={openMaterial.url}
+                            src={openMaterial.url}
+                            controls
+                            autoPlay
+                            className="w-full"
+                          >
+                            Ваш браузер не поддерживает аудио.
+                          </audio>
                         </div>
                       </div>
                     </div>
-                  ) : openMaterial.ext === "MP3" ? (
-                    <div className="w-full max-w-xl px-6 space-y-6 text-center">
-                      <div className="w-24 h-24 bg-gradient-to-br from-violet-500 to-purple-700 rounded-full flex items-center justify-center mx-auto shadow-2xl">
-                        <Icon name="Mic" size={36} className="text-white" />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-lg">{openMaterial.label}</p>
-                        <p className="text-muted-foreground text-sm mt-1">Аудиоматериал</p>
-                      </div>
-                      <div className="bg-card rounded-2xl border border-border p-5 space-y-4">
-                        <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                          <div className="h-full w-0 bg-violet-500 rounded-full" />
-                        </div>
-                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                          <span>0:00</span><span>—:——</span>
-                        </div>
-                        <div className="flex items-center justify-center gap-4">
-                          <button className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground"><Icon name="SkipBack" size={18} /></button>
-                          <button className="w-12 h-12 gradient-primary rounded-full flex items-center justify-center shadow-lg">
-                            <Icon name="Play" size={20} className="text-white ml-0.5" />
-                          </button>
-                          <button className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground"><Icon name="SkipForward" size={18} /></button>
-                        </div>
-                        <p className="text-xs text-center text-muted-foreground">Аудиоплеер будет доступен после подключения сервера</p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center flex-col gap-4 px-6">
-                      <div className="w-20 h-20 bg-muted rounded-2xl flex items-center justify-center">
-                        <Icon name={openMaterial.icon} size={36} className="text-muted-foreground" />
-                      </div>
-                      <div className="text-center">
-                        <p className="font-semibold">{openMaterial.label}</p>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Просмотр {openMaterial.ext}-файлов будет доступен после подключения сервера
-                        </p>
-                      </div>
-                    </div>
+                  )}
+
+                  {openMaterial.ext === "PDF" && (
+                    <iframe
+                      key={openMaterial.url}
+                      src={`https://docs.google.com/viewer?url=${encodeURIComponent(openMaterial.url)}&embedded=true`}
+                      className="w-full h-full border-0"
+                      title={openMaterial.label}
+                    />
+                  )}
+
+                  {openMaterial.ext === "PPTX" && (
+                    <iframe
+                      key={openMaterial.url}
+                      src={`${openMaterial.url.replace("/edit", "/embed")}`}
+                      className="w-full h-full border-0"
+                      title={openMaterial.label}
+                      allowFullScreen
+                    />
                   )}
                 </div>
               </div>
