@@ -47,12 +47,12 @@ function AnswerOptions({
   answered: boolean;
   onToggle: (idx: number) => void;
 }) {
-  const multi = isMulti(question);
   const correct = correctArr(question);
+  const multiAnswer = isMulti(question);
 
   return (
     <div className="space-y-2.5">
-      {multi && !answered && (
+      {multiAnswer && !answered && (
         <p className="text-xs text-muted-foreground px-1">Выберите все верные варианты</p>
       )}
       {question.options.map((opt, idx) => {
@@ -68,11 +68,6 @@ function AnswerOptions({
           else cls = "border-border bg-muted/40 opacity-60";
         }
 
-        const markerCls = answered && isCorrectOpt ? "bg-emerald-500 text-white" :
-          answered && isSelected && !isCorrectOpt ? "bg-red-400 text-white" :
-          !answered && isSelected ? "bg-violet-600 text-white" :
-          "bg-muted text-muted-foreground";
-
         return (
           <button
             key={idx}
@@ -80,22 +75,16 @@ function AnswerOptions({
             onClick={() => onToggle(idx)}
             className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all flex items-center gap-3 ${cls}`}
           >
-            {multi ? (
-              <span className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 border-2 transition-all ${
-                answered && isCorrectOpt ? "bg-emerald-500 border-emerald-500" :
-                answered && isSelected && !isCorrectOpt ? "bg-red-400 border-red-400" :
-                !answered && isSelected ? "bg-violet-600 border-violet-600" :
-                "border-muted-foreground/40 bg-background"
-              }`}>
-                {((!answered && isSelected) || (answered && (isCorrectOpt || (isSelected && !isCorrectOpt)))) && (
-                  <Icon name="Check" size={13} className="text-white" />
-                )}
-              </span>
-            ) : (
-              <span className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${markerCls}`}>
-                {String.fromCharCode(65 + idx)}
-              </span>
-            )}
+            <span className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 border-2 transition-all ${
+              answered && isCorrectOpt ? "bg-emerald-500 border-emerald-500" :
+              answered && isSelected && !isCorrectOpt ? "bg-red-400 border-red-400" :
+              !answered && isSelected ? "bg-violet-600 border-violet-600" :
+              "border-muted-foreground/40 bg-background"
+            }`}>
+              {((!answered && isSelected) || (answered && (isCorrectOpt || (isSelected && !isCorrectOpt)))) && (
+                <Icon name="Check" size={13} className="text-white" />
+              )}
+            </span>
             <span className="text-sm flex-1">{opt}</span>
             {answered && isCorrectOpt && (
               <Icon name="CheckCircle" size={16} className="text-emerald-500 ml-auto flex-shrink-0" />
@@ -205,11 +194,7 @@ function FinalTest({ onFinish, isFinal, allQuestions }: { onFinish: (answers: Qu
 
   function handleToggle(idx: number) {
     if (submitted) return;
-    if (isMulti(q)) {
-      setSelected((prev) => prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]);
-    } else {
-      setSelected([idx]);
-    }
+    setSelected((prev) => prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]);
   }
 
   function handleSubmit() {
@@ -539,12 +524,7 @@ export default function CoursePage() {
 
   function handleAdaptToggle(idx: number) {
     if (adaptAnswered) return;
-    const q = questions[adaptIdx];
-    if (isMulti(q)) {
-      setAdaptSelected((prev) => prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]);
-    } else {
-      setAdaptSelected([idx]);
-    }
+    setAdaptSelected((prev) => prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]);
   }
 
   function handleAdaptSubmit() {
