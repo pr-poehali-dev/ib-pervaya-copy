@@ -18,6 +18,131 @@ interface QuestionAnswer {
   isCorrect: boolean;
 }
 
+// Адаптивный тренинг: история ответов на каждый вопрос (последние 3)
+type AdaptiveStatus = "untouched" | "seen" | "almost" | "learned" | "struggling";
+type SectionStatus  = "untouched" | "correct" | "wrong";
+
+interface AdaptiveRecord {
+  /** последние до 3 результатов: true=верно, false=неверно */
+  history: boolean[];
+}
+
+function getAdaptiveStatus(rec: AdaptiveRecord | undefined): AdaptiveStatus {
+  if (!rec || rec.history.length === 0) return "untouched";
+  const h = rec.history;
+  const last3 = h.slice(-3);
+  if (last3.length >= 3 && last3.every(Boolean))  return "learned";
+  if (last3.length >= 3 && last3.every((v) => !v)) return "struggling";
+  const correct = last3.filter(Boolean).length;
+  if (correct >= 2) return "almost";
+  return "seen";
+}
+
+const ADAPTIVE_STATUS_CLS: Record<AdaptiveStatus, string> = {
+  untouched:  "bg-muted text-muted-foreground",
+  seen:       "bg-blue-200 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200",
+  almost:     "bg-orange-300 dark:bg-orange-700 text-white",
+  learned:    "bg-emerald-500 text-white",
+  struggling: "bg-red-500 text-white",
+};
+
+const SECTION_STATUS_CLS: Record<SectionStatus, string> = {
+  untouched: "bg-muted text-muted-foreground",
+  correct:   "bg-emerald-500 text-white",
+  wrong:     "bg-red-500 text-white",
+};
+
+// ─── Навигация по вопросам ────────────────────────────────────────────────────
+
+function QuestionNav({
+  questions,
+  currentIdx,
+  onJump,
+  mode,
+  adaptiveRecords,
+  sectionStatuses,
+}: {
+  questions: Question[];
+  currentIdx: number;
+  onJump: (idx: number) => void;
+  mode: "adaptive" | "section";
+  adaptiveRecords?: Record<number, AdaptiveRecord>;
+  sectionStatuses?: Record<number, SectionStatus>;
+}) {
+  const [visible, setVisible] = useState(true);
+
+  const legend = mode === "adaptive" ? [
+    { cls: "bg-emerald-500",                                          label: "Изучен (3 верных подряд)" },
+    { cls: "bg-orange-300 dark:bg-orange-700",                        label: "Почти (2 из 3 верных)" },
+    { cls: "bg-blue-200 dark:bg-blue-900/50",                         label: "Отвечали хотя бы раз" },
+    { cls: "bg-muted",                                                 label: "Ещё не отвечали" },
+    { cls: "bg-red-500",                                               label: "Часто неверно (3 подряд)" },
+  ] : [
+    { cls: "bg-emerald-500", label: "Правильный ответ" },
+    { cls: "bg-red-500",     label: "Неправильный ответ" },
+    { cls: "bg-muted",       label: "Ещё не отвечали" },
+  ];
+
+  return (
+    <div className="flex-shrink-0 w-56">
+      {/* Заголовок с кнопкой скрыть */}
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          Вопросы
+        </span>
+        <button
+          onClick={() => setVisible((v) => !v)}
+          className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
+        >
+          <Icon name={visible ? "EyeOff" : "Eye"} size={13} />
+          {visible ? "Скрыть" : "Показать"}
+        </button>
+      </div>
+
+      {visible && (
+        <div className="bg-card border border-border rounded-2xl p-3 space-y-3">
+          {/* Сетка кнопок */}
+          <div className="grid grid-cols-5 gap-1.5">
+            {questions.map((q, idx) => {
+              const isCurrent = idx === currentIdx;
+              let cls = "";
+              if (mode === "adaptive") {
+                const status = getAdaptiveStatus(adaptiveRecords?.[q.id]);
+                cls = ADAPTIVE_STATUS_CLS[status];
+              } else {
+                const status = sectionStatuses?.[q.id] ?? "untouched";
+                cls = SECTION_STATUS_CLS[status];
+              }
+              return (
+                <button
+                  key={q.id}
+                  onClick={() => onJump(idx)}
+                  className={`w-8 h-8 rounded-lg text-xs font-bold transition-all flex items-center justify-center ${cls} ${
+                    isCurrent ? "ring-2 ring-violet-500 ring-offset-1 scale-110" : "hover:scale-105"
+                  }`}
+                  title={`Вопрос ${idx + 1}`}
+                >
+                  {idx + 1}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Легенда */}
+          <div className="space-y-1.5 pt-1 border-t border-border">
+            {legend.map((l) => (
+              <div key={l.label} className="flex items-center gap-2">
+                <span className={`w-3 h-3 rounded-sm flex-shrink-0 ${l.cls}`} />
+                <span className="text-[10px] text-muted-foreground leading-tight">{l.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Вспомогательные функции ─────────────────────────────────────────────────
 
 function isMulti(q: Question): boolean {
@@ -181,7 +306,21 @@ function AdaptiveQuestion({
 
 // ─── Итоговый тест ────────────────────────────────────────────────────────────
 
-function FinalTest({ onFinish, isFinal, allQuestions }: { onFinish: (answers: QuestionAnswer[]) => void; isFinal: boolean; allQuestions: Question[] }) {
+function FinalTest({
+  onFinish,
+  isFinal,
+  allQuestions,
+  onCurrentChange,
+  onAnswer,
+  navPanel,
+}: {
+  onFinish: (answers: QuestionAnswer[]) => void;
+  isFinal: boolean;
+  allQuestions: Question[];
+  onCurrentChange?: (idx: number) => void;
+  onAnswer?: (questionId: number, isCorrect: boolean) => void;
+  navPanel?: React.ReactNode;
+}) {
   const questions = isFinal ? allQuestions.slice(0, 10) : allQuestions.slice(0, 5);
   const [current,   setCurrent]   = useState(0);
   const [selected,  setSelected]  = useState<number[]>([]);
@@ -200,6 +339,7 @@ function FinalTest({ onFinish, isFinal, allQuestions }: { onFinish: (answers: Qu
 
   function handleSubmit() {
     if (selected.length === 0) return;
+    onAnswer?.(q.id, checkCorrect(q, selected));
     setSubmitted(true);
   }
 
@@ -212,12 +352,14 @@ function FinalTest({ onFinish, isFinal, allQuestions }: { onFinish: (answers: Qu
     if (current + 1 >= questions.length) {
       onFinish(newAnswers);
     } else {
-      setCurrent((p) => p + 1);
+      const next = current + 1;
+      setCurrent(next);
+      onCurrentChange?.(next);
     }
   }
 
-  return (
-    <div className="space-y-5">
+  const questionBlock = (
+    <div className="space-y-5 flex-1 min-w-0">
       <div className="bg-card rounded-2xl border border-border p-4 flex items-center gap-4">
         <div className="flex-1">
           <div className="flex items-center justify-between text-sm mb-1.5">
@@ -255,6 +397,17 @@ function FinalTest({ onFinish, isFinal, allQuestions }: { onFinish: (answers: Qu
       )}
     </div>
   );
+
+  if (navPanel) {
+    return (
+      <div className="flex gap-4 items-start">
+        {questionBlock}
+        {navPanel}
+      </div>
+    );
+  }
+
+  return questionBlock;
 }
 
 // ─── Протокол результатов ─────────────────────────────────────────────────────
@@ -517,11 +670,18 @@ export default function CoursePage() {
   // Выбираем банк вопросов по направлению курса
   const questions = getQuestionsForCourse(courseId);
 
-  const [mode, setMode]       = useState<LearningMode>("menu");
+  const [mode, setMode]         = useState<LearningMode>("menu");
   const [adaptIdx, setAdaptIdx] = useState(0);
   const [adaptAnswered, setAdaptAnswered] = useState(false);
   const [adaptSelected, setAdaptSelected] = useState<number[]>([]);
-  const [testAnswers, setTestAnswers] = useState<QuestionAnswer[]>([]);
+  const [testAnswers, setTestAnswers]     = useState<QuestionAnswer[]>([]);
+
+  // Трекинг адаптивного тренинга
+  const [adaptiveRecords, setAdaptiveRecords] = useState<Record<number, AdaptiveRecord>>({});
+  // Трекинг теста по разделу
+  const [sectionStatuses, setSectionStatuses] = useState<Record<number, SectionStatus>>({});
+  // Текущий вопрос теста по разделу (для навигации)
+  const [sectionIdx, setSectionIdx] = useState(0);
 
   function handleAdaptToggle(idx: number) {
     if (adaptAnswered) return;
@@ -530,6 +690,13 @@ export default function CoursePage() {
 
   function handleAdaptSubmit() {
     if (adaptSelected.length === 0) return;
+    const q = questions[adaptIdx];
+    const correct = checkCorrect(q, adaptSelected);
+    setAdaptiveRecords((prev) => {
+      const rec = prev[q.id] ?? { history: [] };
+      const newHistory = [...rec.history, correct].slice(-3);
+      return { ...prev, [q.id]: { history: newHistory } };
+    });
     setAdaptAnswered(true);
   }
 
@@ -537,6 +704,19 @@ export default function CoursePage() {
     setAdaptIdx((p) => (p + 1) % questions.length);
     setAdaptAnswered(false);
     setAdaptSelected([]);
+  }
+
+  function handleAdaptJump(idx: number) {
+    setAdaptIdx(idx);
+    setAdaptAnswered(false);
+    setAdaptSelected([]);
+  }
+
+  function handleSectionAnswer(questionId: number, isCorrect: boolean) {
+    setSectionStatuses((prev) => ({
+      ...prev,
+      [questionId]: isCorrect ? "correct" : "wrong",
+    }));
   }
 
   function handleTestFinish(answers: QuestionAnswer[]) {
@@ -548,8 +728,10 @@ export default function CoursePage() {
     setMode("menu");
     setAdaptIdx(0);
     setAdaptAnswered(false);
-    setAdaptSelected(null);
+    setAdaptSelected([]);
     setTestAnswers([]);
+    setSectionStatuses({});
+    setSectionIdx(0);
   }
 
   const title   = course?.title ?? "Курс";
@@ -669,14 +851,25 @@ export default function CoursePage() {
               </div>
               <span className="text-xs text-muted-foreground">Вопрос {adaptIdx + 1} / {questions.length}</span>
             </div>
-            <AdaptiveQuestion
-              question={questions[adaptIdx]}
-              onToggle={handleAdaptToggle}
-              onSubmit={handleAdaptSubmit}
-              onNext={handleAdaptNext}
-              answered={adaptAnswered}
-              selected={adaptSelected}
-            />
+            <div className="flex gap-4 items-start">
+              <div className="flex-1 min-w-0">
+                <AdaptiveQuestion
+                  question={questions[adaptIdx]}
+                  onToggle={handleAdaptToggle}
+                  onSubmit={handleAdaptSubmit}
+                  onNext={handleAdaptNext}
+                  answered={adaptAnswered}
+                  selected={adaptSelected}
+                />
+              </div>
+              <QuestionNav
+                questions={questions}
+                currentIdx={adaptIdx}
+                onJump={handleAdaptJump}
+                mode="adaptive"
+                adaptiveRecords={adaptiveRecords}
+              />
+            </div>
           </div>
         )}
 
@@ -688,7 +881,22 @@ export default function CoursePage() {
               </div>
               <p className="font-semibold text-sm">Тест по разделу</p>
             </div>
-            <FinalTest onFinish={handleTestFinish} isFinal={false} allQuestions={questions} />
+            <FinalTest
+              onFinish={handleTestFinish}
+              isFinal={false}
+              allQuestions={questions}
+              onCurrentChange={setSectionIdx}
+              onAnswer={handleSectionAnswer}
+              navPanel={
+                <QuestionNav
+                  questions={questions.slice(0, 5)}
+                  currentIdx={sectionIdx}
+                  onJump={() => {}}
+                  mode="section"
+                  sectionStatuses={sectionStatuses}
+                />
+              }
+            />
           </div>
         )}
 
