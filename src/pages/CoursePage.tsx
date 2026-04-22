@@ -26,10 +26,12 @@ function AdaptiveQuestion({
   onNext,
   answered,
   selected,
+  onSubmit,
 }: {
   question: Question;
   onAnswer: (idx: number) => void;
   onNext: () => void;
+  onSubmit: () => void;
   answered: boolean;
   selected: number | null;
 }) {
@@ -42,7 +44,9 @@ function AdaptiveQuestion({
         <div className="space-y-2.5">
           {question.options.map((opt, idx) => {
             let cls = "border-border bg-background hover:border-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/10 cursor-pointer";
-            if (answered) {
+            if (!answered && selected === idx) {
+              cls = "border-violet-500 bg-violet-50 dark:bg-violet-900/20";
+            } else if (answered) {
               if (idx === question.correct) cls = "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20";
               else if (idx === selected && !isCorrect) cls = "border-red-400 bg-red-50 dark:bg-red-900/20";
               else cls = "border-border bg-muted/40 opacity-60";
@@ -57,6 +61,7 @@ function AdaptiveQuestion({
                 <span className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
                   answered && idx === question.correct ? "bg-emerald-500 text-white" :
                   answered && idx === selected && !isCorrect ? "bg-red-400 text-white" :
+                  !answered && selected === idx ? "bg-violet-600 text-white" :
                   "bg-muted text-muted-foreground"
                 }`}>
                   {String.fromCharCode(65 + idx)}
@@ -74,7 +79,16 @@ function AdaptiveQuestion({
         </div>
       </div>
 
-      {answered && (
+      {!answered ? (
+        <Button
+          className="w-full gradient-primary text-white rounded-xl gap-2"
+          disabled={selected === null}
+          onClick={onSubmit}
+        >
+          Ответить
+          <Icon name="CheckCircle" size={15} />
+        </Button>
+      ) : (
         <div className={`rounded-2xl border p-5 space-y-3 ${isCorrect ? "bg-emerald-50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-800" : "bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800"}`}>
           <div className="flex items-center gap-2">
             <Icon name={isCorrect ? "CheckCircle" : "XCircle"} size={18} className={isCorrect ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"} />
@@ -103,30 +117,38 @@ function AdaptiveQuestion({
 
 function FinalTest({ onFinish, isFinal, allQuestions }: { onFinish: (answers: QuestionAnswer[]) => void; isFinal: boolean; allQuestions: Question[] }) {
   const questions = isFinal ? allQuestions.slice(0, 10) : allQuestions.slice(0, 5);
-  const [current, setCurrent] = useState(0);
-  const [selected, setSelected] = useState<number | null>(null);
-  const [answers, setAnswers] = useState<QuestionAnswer[]>([]);
+  const [current,   setCurrent]   = useState(0);
+  const [selected,  setSelected]  = useState<number | null>(null);
+  const [submitted, setSubmitted] = useState(false);
+  const [answers,   setAnswers]   = useState<QuestionAnswer[]>([]);
   const timeLimit = isFinal ? 30 : 15;
+
+  const q = questions[current];
+  const isCorrect = selected !== null && selected === q.correct;
+  const progress = Math.round((current / questions.length) * 100);
+
+  function handleSubmit() {
+    if (selected === null) return;
+    setSubmitted(true);
+  }
 
   function handleNext() {
     if (selected === null) return;
     const ans: QuestionAnswer = {
-      questionId: questions[current].id,
+      questionId: q.id,
       selected,
-      isCorrect: selected === questions[current].correct,
+      isCorrect: selected === q.correct,
     };
     const newAnswers = [...answers, ans];
     setAnswers(newAnswers);
     setSelected(null);
+    setSubmitted(false);
     if (current + 1 >= questions.length) {
       onFinish(newAnswers);
     } else {
       setCurrent((p) => p + 1);
     }
   }
-
-  const q = questions[current];
-  const progress = Math.round(((current) / questions.length) * 100);
 
   return (
     <div className="space-y-5">
@@ -146,35 +168,69 @@ function FinalTest({ onFinish, isFinal, allQuestions }: { onFinish: (answers: Qu
       <div className="bg-card rounded-2xl border border-border p-6">
         <p className="font-semibold text-base leading-relaxed mb-5">{q.text}</p>
         <div className="space-y-2.5">
-          {q.options.map((opt, idx) => (
-            <button
-              key={idx}
-              onClick={() => setSelected(idx)}
-              className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all flex items-center gap-3 ${
-                selected === idx
-                  ? "border-violet-500 bg-violet-50 dark:bg-violet-900/20"
-                  : "border-border bg-background hover:border-violet-400 hover:bg-violet-50/50 dark:hover:bg-violet-900/10"
-              }`}
-            >
-              <span className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
-                selected === idx ? "bg-violet-600 text-white" : "bg-muted text-muted-foreground"
-              }`}>
-                {String.fromCharCode(65 + idx)}
-              </span>
-              <span className="text-sm">{opt}</span>
-            </button>
-          ))}
+          {q.options.map((opt, idx) => {
+            let cls = "border-border bg-background hover:border-violet-400 hover:bg-violet-50/50 dark:hover:bg-violet-900/10 cursor-pointer";
+            if (!submitted && selected === idx) {
+              cls = "border-violet-500 bg-violet-50 dark:bg-violet-900/20";
+            } else if (submitted) {
+              if (idx === q.correct) cls = "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20";
+              else if (idx === selected && !isCorrect) cls = "border-red-400 bg-red-50 dark:bg-red-900/20";
+              else cls = "border-border bg-muted/40 opacity-60";
+            }
+            return (
+              <button
+                key={idx}
+                disabled={submitted}
+                onClick={() => setSelected(idx)}
+                className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all flex items-center gap-3 ${cls}`}
+              >
+                <span className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
+                  submitted && idx === q.correct ? "bg-emerald-500 text-white" :
+                  submitted && idx === selected && !isCorrect ? "bg-red-400 text-white" :
+                  !submitted && selected === idx ? "bg-violet-600 text-white" :
+                  "bg-muted text-muted-foreground"
+                }`}>
+                  {String.fromCharCode(65 + idx)}
+                </span>
+                <span className="text-sm">{opt}</span>
+                {submitted && idx === q.correct && <Icon name="CheckCircle" size={16} className="text-emerald-500 ml-auto flex-shrink-0" />}
+                {submitted && idx === selected && !isCorrect && <Icon name="XCircle" size={16} className="text-red-400 ml-auto flex-shrink-0" />}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      <Button
-        className="w-full gradient-primary text-white rounded-xl gap-2"
-        disabled={selected === null}
-        onClick={handleNext}
-      >
-        {current + 1 >= questions.length ? "Завершить тест" : "Следующий вопрос"}
-        <Icon name={current + 1 >= questions.length ? "CheckCircle" : "ChevronRight"} size={15} />
-      </Button>
+      {!submitted ? (
+        <Button
+          className="w-full gradient-primary text-white rounded-xl gap-2"
+          disabled={selected === null}
+          onClick={handleSubmit}
+        >
+          Ответить
+          <Icon name="CheckCircle" size={15} />
+        </Button>
+      ) : (
+        <div className={`rounded-2xl border p-5 space-y-3 ${isCorrect ? "bg-emerald-50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-800" : "bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800"}`}>
+          <div className="flex items-center gap-2">
+            <Icon name={isCorrect ? "CheckCircle" : "XCircle"} size={18} className={isCorrect ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"} />
+            <p className={`font-semibold ${isCorrect ? "text-emerald-800 dark:text-emerald-300" : "text-red-800 dark:text-red-300"}`}>
+              {isCorrect ? "Верно!" : `Неверно. Правильный ответ: ${q.options[q.correct]}`}
+            </p>
+          </div>
+          <div className="flex items-start gap-2">
+            <Icon name="BookOpen" size={15} className="text-muted-foreground flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-xs text-muted-foreground font-medium mb-0.5">{q.ntdRef}</p>
+              <p className="text-sm text-muted-foreground">{q.ntd}</p>
+            </div>
+          </div>
+          <Button className="w-full gradient-primary text-white rounded-xl gap-2" onClick={handleNext}>
+            {current + 1 >= questions.length ? "Завершить тест" : "Следующий вопрос"}
+            <Icon name={current + 1 >= questions.length ? "CheckCircle" : "ChevronRight"} size={15} />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
@@ -436,7 +492,12 @@ export default function CoursePage() {
   const [testAnswers, setTestAnswers] = useState<QuestionAnswer[]>([]);
 
   function handleAdaptAnswer(idx: number) {
+    if (adaptAnswered) return;
     setAdaptSelected(idx);
+  }
+
+  function handleAdaptSubmit() {
+    if (adaptSelected === null) return;
     setAdaptAnswered(true);
   }
 
@@ -579,6 +640,7 @@ export default function CoursePage() {
             <AdaptiveQuestion
               question={questions[adaptIdx]}
               onAnswer={handleAdaptAnswer}
+              onSubmit={handleAdaptSubmit}
               onNext={handleAdaptNext}
               answered={adaptAnswered}
               selected={adaptSelected}
