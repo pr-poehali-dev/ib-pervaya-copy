@@ -28,8 +28,12 @@ export default function Admin() {
   const { role } = useRole();
   const isManager = role === "manager";
   const location = useLocation();
-  const initialTab = (new URLSearchParams(location.search).get("tab") as AdminTabKey) || "stp";
-  const [activeTab, setActiveTab] = useState<AdminTabKey>(initialTab);
+  const tabFromUrl = (new URLSearchParams(location.search).get("tab") as AdminTabKey) || null;
+  const [activeTab, setActiveTab] = useState<AdminTabKey>(tabFromUrl ?? "stp");
+
+  useEffect(() => {
+    if (tabFromUrl) setActiveTab(tabFromUrl);
+  }, [tabFromUrl]);
   const certReadyCount = CERTIFICATES.filter((c) => c.status === "ready").length;
 
   // ─── Диалог добавления группы ─────────────────────────────────────────────
