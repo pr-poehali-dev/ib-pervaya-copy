@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
 import { Progress } from "@/components/ui/progress";
@@ -339,7 +339,24 @@ function FinalTest({
   const [selected,  setSelected]  = useState<number[]>([]);
   const [submitted, setSubmitted] = useState(false);
   const [answers,   setAnswers]   = useState<QuestionAnswer[]>([]);
-  const timeLimit = isFinal ? 30 : 15;
+  const TOTAL_SECONDS = 30 * 60;
+  const [timeLeft, setTimeLeft] = useState(TOTAL_SECONDS);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (!isFinal) return;
+    intervalRef.current = setInterval(() => {
+      setTimeLeft((t) => {
+        if (t <= 1) { clearInterval(intervalRef.current!); return 0; }
+        return t - 1;
+      });
+    }, 1000);
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+  }, [isFinal]);
+
+  const minutes = Math.floor(timeLeft / 60);
+  const seconds = timeLeft % 60;
+  const timerWarning = timeLeft < 5 * 60;
 
   const q = questions[current];
   const isCorrect = checkCorrect(q, selected);
@@ -373,17 +390,15 @@ function FinalTest({
 
   const questionBlock = (
     <div className="space-y-5 flex-1 min-w-0">
-      <div className="bg-card rounded-2xl border border-border p-4 flex items-center gap-4">
-        <div className="flex-1">
-          <div className="flex items-center justify-between text-sm mb-1.5">
-            <span className="text-muted-foreground">Вопрос {current + 1} из {questions.length}</span>
-            <div className="flex items-center gap-1.5 text-muted-foreground">
-              <Icon name="Clock" size={14} />
-              <span>{timeLimit} мин</span>
-            </div>
-          </div>
-          <Progress value={progress} className="h-2" />
-        </div>
+      <div className="bg-card rounded-2xl border border-border px-4 py-3 flex items-center gap-4">
+        <span className="text-sm text-muted-foreground flex-shrink-0">Вопрос {current + 1} / {questions.length}</span>
+        <Progress value={progress} className="h-2 flex-1" />
+        {isFinal && (
+          <span className={`text-sm font-mono font-semibold flex-shrink-0 flex items-center gap-1 ${timerWarning ? "text-red-500" : "text-muted-foreground"}`}>
+            <Icon name="Clock" size={14} />
+            {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
+          </span>
+        )}
       </div>
 
       <div className="bg-card rounded-2xl border border-border p-6">
@@ -915,17 +930,19 @@ export default function CoursePage() {
 
         {mode === "final_test" && (
           <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
-                <Icon name="GraduationCap" size={13} className="text-white" />
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
+                  <Icon name="GraduationCap" size={13} className="text-white" />
+                </div>
+                <p className="font-semibold text-sm">Итоговый тест</p>
               </div>
-              <p className="font-semibold text-sm">Итоговый тест</p>
-            </div>
-            <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-3 flex items-center gap-2">
-              <Icon name="AlertCircle" size={15} className="text-amber-600 dark:text-amber-400 flex-shrink-0" />
-              <p className="text-sm text-amber-800 dark:text-amber-300">
-                {Math.min(10, questions.length)} вопросов · 30 минут · Подсказки недоступны · Порог сдачи: 70%
-              </p>
+              <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-xl px-3 py-1.5">
+                <Icon name="AlertCircle" size={13} className="text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                <p className="text-xs text-amber-800 dark:text-amber-300">
+                  {Math.min(10, questions.length)} вопросов · 30 мин · Без подсказок · Порог: 70%
+                </p>
+              </div>
             </div>
             <FinalTest onFinish={handleTestFinish} isFinal={true} allQuestions={questions} />
           </div>
