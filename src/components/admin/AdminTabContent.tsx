@@ -11,6 +11,7 @@ import CertRegistryModal from "@/components/admin/reports/CertRegistryModal";
 import SubscriptionReportModal from "@/components/admin/reports/SubscriptionReportModal";
 import STPPanel from "@/components/admin/stp/STPPanel";
 import CertificatesPanel from "@/components/admin/certificates/CertificatesPanel";
+import TenantClosingReportModal from "@/components/admin/reports/TenantClosingReportModal";
 
 import { AdminTabKey } from "@/components/admin/AdminTabBar";
 
@@ -49,14 +50,24 @@ const reportItems = [
     bg: "bg-emerald-50 dark:bg-emerald-900/10",
     border: "border-emerald-200 dark:border-emerald-800",
   },
+  {
+    num: "4",
+    title: "Закрытие периода",
+    desc: "Итоги списания подписок по направлениям за выбранный период. Доступна выгрузка в Excel",
+    icon: "FileSpreadsheet",
+    color: "from-amber-500 to-orange-600",
+    bg: "bg-amber-50 dark:bg-amber-900/10",
+    border: "border-amber-200 dark:border-amber-800",
+  },
 ];
 
 export default function AdminTabContent({
   activeTab, users, filteredUsers, toggleCourse,
 }: AdminTabContentProps) {
-  const [showStatsModal, setShowStatsModal] = useState(false);
-  const [showCertModal, setShowCertModal] = useState(false);
-  const [showSubModal, setShowSubModal] = useState(false);
+  const [showStatsModal,   setShowStatsModal]   = useState(false);
+  const [showCertModal,    setShowCertModal]    = useState(false);
+  const [showSubModal,     setShowSubModal]     = useState(false);
+  const [showClosingModal, setShowClosingModal] = useState(false);
   const { tenantType } = useRole();
   const canIssueCert = tenantType === "training_center";
 
@@ -92,6 +103,7 @@ export default function AdminTabContent({
         <SubscriptionReportModal open={showSubModal} onClose={() => setShowSubModal(false)} users={users} />
         <StatsModal open={showStatsModal} onClose={() => setShowStatsModal(false)} users={users} />
         <CertRegistryModal open={showCertModal} onClose={() => setShowCertModal(false)} users={users} />
+        <TenantClosingReportModal open={showClosingModal} onClose={() => setShowClosingModal(false)} />
         <div className="space-y-5">
           <p className="text-muted-foreground text-sm">Выберите отчёт для формирования</p>
           {!canIssueCert && (
@@ -105,16 +117,19 @@ export default function AdminTabContent({
           )}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {reportItems.filter((r) => r.num !== "3" || canIssueCert).map((report) => {
-              const isSub = report.num === "1";
-              const isStats = report.num === "2";
-              const isCert = report.num === "3";
-              const isActive = isSub || isStats || isCert;
+              const isSub     = report.num === "1";
+              const isStats   = report.num === "2";
+              const isCert    = report.num === "3";
+              const isClosing = report.num === "4";
+              const isActive  = isSub || isStats || isCert || isClosing;
               const handleOpen = isSub
                 ? () => setShowSubModal(true)
                 : isStats
                 ? () => setShowStatsModal(true)
                 : isCert
                 ? () => setShowCertModal(true)
+                : isClosing
+                ? () => setShowClosingModal(true)
                 : undefined;
               return (
                 <div
@@ -153,6 +168,12 @@ export default function AdminTabContent({
                         Доступен
                       </div>
                     )}
+                    {isClosing && (
+                      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg text-xs text-amber-600 dark:text-amber-400 font-medium">
+                        <Icon name="FileSpreadsheet" size={12} />
+                        Доступен
+                      </div>
+                    )}
                     {!isActive && (
                       <div className="flex items-center gap-1.5 px-3 py-1.5 bg-muted rounded-lg text-xs text-muted-foreground">
                         <Icon name="Clock" size={12} className="text-amber-500" />
@@ -160,7 +181,7 @@ export default function AdminTabContent({
                       </div>
                     )}
                     <button
-                      className={`ml-auto flex items-center gap-1.5 text-xs font-medium transition-colors ${isSub ? "text-violet-500 group-hover:text-violet-600" : isStats ? "text-cyan-500 group-hover:text-cyan-600" : isCert ? "text-emerald-500 group-hover:text-emerald-600" : "text-muted-foreground"}`}
+                      className={`ml-auto flex items-center gap-1.5 text-xs font-medium transition-colors ${isSub ? "text-violet-500 group-hover:text-violet-600" : isStats ? "text-cyan-500 group-hover:text-cyan-600" : isCert ? "text-emerald-500 group-hover:text-emerald-600" : isClosing ? "text-amber-500 group-hover:text-amber-600" : "text-muted-foreground"}`}
                       onClick={handleOpen}
                     >
                       Открыть
