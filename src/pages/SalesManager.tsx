@@ -8,6 +8,7 @@ import Tip from "@/components/ui/tip";
 import { TENANTS } from "@/data/mockData";
 import type { Tenant } from "@/components/admin/types";
 import ReportsPanel from "@/components/superadmin/ReportsPanel";
+import TenantsPanel from "@/components/superadmin/TenantsPanel";
 
 type SalesTab = "tenants" | "stats" | "invoices" | "reports" | "profile";
 
@@ -354,7 +355,7 @@ export default function SalesManager() {
           ))}
         </div>
 
-        {activeTab === "tenants"  && <TenantsTab />}
+        {activeTab === "tenants"  && <TenantsPanel initialTenants={MY_TENANTS} canCreate={false} />}
         {activeTab === "stats"    && <StatsTab />}
         {activeTab === "invoices" && <InvoicesTab />}
         {activeTab === "reports"  && <ReportsPanel />}

@@ -7,8 +7,13 @@ import { StatusBadge, TypeBadge, SubscriptionsMini } from "./TenantsBadges";
 import { TenantCredentialsModal, TenantSubscriptionsModal } from "./TenantsModals";
 import { TenantModal } from "./TenantModal";
 
-export default function TenantsPanel() {
-  const [tenants,    setTenants]    = useState<Tenant[]>(TENANTS);
+interface TenantsPanelProps {
+  initialTenants?: Tenant[];
+  canCreate?: boolean;
+}
+
+export default function TenantsPanel({ initialTenants, canCreate = true }: TenantsPanelProps) {
+  const [tenants,    setTenants]    = useState<Tenant[]>(initialTenants ?? TENANTS);
   const [editTenant, setEditTenant] = useState<Tenant | null | undefined>(undefined);
   const [viewSubs,   setViewSubs]   = useState<Tenant | null>(null);
   const [viewCreds,  setViewCreds]  = useState<Tenant | null>(null);
@@ -64,10 +69,12 @@ export default function TenantsPanel() {
             </button>
           ))}
         </div>
-        <Button className="gradient-primary text-white rounded-xl gap-2 h-9 flex-shrink-0" onClick={() => setEditTenant(null)}>
-          <Icon name="Plus" size={15} />
-          Добавить тенанта
-        </Button>
+        {canCreate && (
+          <Button className="gradient-primary text-white rounded-xl gap-2 h-9 flex-shrink-0" onClick={() => setEditTenant(null)}>
+            <Icon name="Plus" size={15} />
+            Добавить тенанта
+          </Button>
+        )}
       </div>
 
       {/* Таблица */}
