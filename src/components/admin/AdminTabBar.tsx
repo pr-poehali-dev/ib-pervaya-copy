@@ -1,7 +1,7 @@
 import Icon from "@/components/ui/icon";
 import { useRole } from "@/contexts/RoleContext";
 
-export type AdminTabKey = "stp" | "groups" | "users" | "certificates" | "materials" | "reports" | "settings";
+export type AdminTabKey = "stp" | "groups" | "users" | "certificates" | "reports" | "settings";
 
 interface AdminTabBarProps {
   activeTab: AdminTabKey;
@@ -15,7 +15,6 @@ const tabs: { key: AdminTabKey; icon: string; label: string; narrow: boolean; uc
   { key: "groups",       icon: "UsersRound",  label: "Обучение групп",            narrow: false },
   { key: "users",        icon: "Users",       label: "Индивидуальное обучение",   narrow: false },
   { key: "certificates", icon: "Award",       label: "Удостоверения",             narrow: true, ucOnly: true },
-  { key: "materials",    icon: "FolderOpen",  label: "Материалы",                 narrow: true  },
   { key: "reports",      icon: "BarChart2",   label: "Отчёты",                    narrow: true  },
   { key: "settings",     icon: "Settings",    label: "Настройки",                 narrow: true  },
 ];

@@ -87,6 +87,25 @@ export default function SettingsCards({ org, systemUsers, setActivePanel }: Sett
         </div>
       </div>
 
+      {/* Карточка: Материалы курсов */}
+      <div
+        className="bg-card rounded-2xl border border-border p-6 cursor-pointer hover:border-fuchsia-400 hover:shadow-lg hover:shadow-fuchsia-100 dark:hover:shadow-fuchsia-900/20 transition-all duration-200 group"
+        onClick={() => setActivePanel("materials")}
+      >
+        <div className="flex items-start justify-between mb-4">
+          <div className="w-12 h-12 bg-gradient-to-br from-fuchsia-500 to-purple-700 rounded-xl flex items-center justify-center">
+            <Icon name="FolderOpen" size={22} className="text-white" />
+          </div>
+          <Icon name="ChevronRight" size={18} className="text-muted-foreground group-hover:text-fuchsia-500 transition-colors mt-1" />
+        </div>
+        <h3 className="font-bold text-base mb-1">Материалы курсов</h3>
+        <p className="text-muted-foreground text-sm mb-4">Лекции, видео, презентации и аудио для слушателей</p>
+        <div className="flex items-center gap-2">
+          <Icon name="Upload" size={14} className="text-muted-foreground" />
+          <span className="text-sm text-muted-foreground">Загрузка и управление материалами</span>
+        </div>
+      </div>
+
       {/* Карточка: Организации-клиенты (только для УЦ) */}
       {isUC && (
         <div

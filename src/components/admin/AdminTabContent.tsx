@@ -10,7 +10,6 @@ import CertRegistryModal from "@/components/admin/reports/CertRegistryModal";
 import SubscriptionReportModal from "@/components/admin/reports/SubscriptionReportModal";
 import STPPanel from "@/components/admin/stp/STPPanel";
 import CertificatesPanel from "@/components/admin/certificates/CertificatesPanel";
-import CourseMaterialsPanel from "@/components/admin/materials/CourseMaterialsPanel";
 
 import { AdminTabKey } from "@/components/admin/AdminTabBar";
 
@@ -80,10 +79,6 @@ export default function AdminTabContent({
 
   if (activeTab === "certificates") {
     return <CertificatesPanel />;
-  }
-
-  if (activeTab === "materials") {
-    return <CourseMaterialsPanel />;
   }
 
   if (activeTab === "groups") {
