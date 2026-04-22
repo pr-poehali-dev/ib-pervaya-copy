@@ -143,9 +143,11 @@ export default function AdminCatalogPanel() {
 
   const currentTenant = TENANTS[0];
 
-  const allowedDirs = COURSE_DIRECTIONS.filter(
+  const baseDirs = COURSE_DIRECTIONS.filter(
     (d) => currentTenant.allowedDirections.includes(d.id) && d.id !== 6
   );
+  const [extraDirs, setExtraDirs] = useState<{ id: number; title: string }[]>([]);
+  const allowedDirs = [...baseDirs, ...extraDirs];
 
   const filteredDirs = allowedDirs.map((d) => ({
     ...d,
@@ -162,8 +164,22 @@ export default function AdminCatalogPanel() {
     (c.code ?? "").toLowerCase().includes(search.toLowerCase())
   );
 
+  const editorDirs = allowedDirs.map((d) => ({ id: d.id, title: d.title }));
+
+  function handleAddDirection(title: string) {
+    const newId = Date.now();
+    setExtraDirs((prev) => [...prev, { id: newId, title }]);
+  }
+
   if (showEditor) {
-    return <CourseEditor onClose={() => setShowEditor(false)} onSave={handleSaveCourse} />;
+    return (
+      <CourseEditor
+        onClose={() => setShowEditor(false)}
+        onSave={handleSaveCourse}
+        directions={editorDirs}
+        onAddDirection={handleAddDirection}
+      />
+    );
   }
 
   return (

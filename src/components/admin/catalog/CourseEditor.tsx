@@ -83,11 +83,79 @@ function downloadTemplate() {
   URL.revokeObjectURL(url);
 }
 
+// ─── Модал добавления направления ────────────────────────────────────────────
+
+function AddDirectionModal({
+  onClose,
+  onAdd,
+}: {
+  onClose: () => void;
+  onAdd: (title: string) => void;
+}) {
+  const [value, setValue] = useState("");
+  const valid = value.trim().length > 0;
+
+  function handleAdd() {
+    if (!valid) return;
+    onAdd(value.trim());
+    onClose();
+  }
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4">
+      <div className="bg-background rounded-2xl border border-border w-full max-w-sm shadow-2xl">
+        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-border">
+          <h3 className="font-semibold text-base">Новое направление</h3>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+            <Icon name="X" size={16} />
+          </button>
+        </div>
+        <div className="p-5 space-y-4">
+          <div className="space-y-1.5">
+            <label className="text-xs text-muted-foreground">Название направления</label>
+            <input
+              autoFocus
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+              placeholder="Например: Пожарная безопасность"
+              className="w-full h-9 px-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30"
+            />
+          </div>
+        </div>
+        <div className="flex gap-2 px-5 pb-5">
+          <Button variant="outline" className="flex-1 rounded-xl" onClick={onClose}>Отмена</Button>
+          <Button
+            className="flex-1 rounded-xl gradient-primary text-white"
+            disabled={!valid}
+            onClick={handleAdd}
+          >
+            Добавить
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Шаг 1: Описание курса ────────────────────────────────────────────────────
 
-function Step1({ data, onChange, directions }: { data: CourseEditorData; onChange: (p: Partial<CourseEditorData>) => void; directions?: EditorDirection[] }) {
+function Step1({ data, onChange, directions, onAddDirection }: {
+  data: CourseEditorData;
+  onChange: (p: Partial<CourseEditorData>) => void;
+  directions?: EditorDirection[];
+  onAddDirection?: (title: string) => void;
+}) {
+  const [showAddDir, setShowAddDir] = useState(false);
+
   return (
     <div className="space-y-5 max-w-2xl mx-auto">
+      {showAddDir && (
+        <AddDirectionModal
+          onClose={() => setShowAddDir(false)}
+          onAdd={(title) => onAddDirection?.(title)}
+        />
+      )}
       {directions && directions.length > 0 && (
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
@@ -95,10 +163,7 @@ function Step1({ data, onChange, directions }: { data: CourseEditorData; onChang
             <button
               type="button"
               className="flex items-center gap-1.5 text-xs text-violet-600 dark:text-violet-400 hover:underline"
-              onClick={() => {
-                const name = window.prompt("Название нового направления:");
-                if (name?.trim()) onChange({ directionId: -1 });
-              }}
+              onClick={() => setShowAddDir(true)}
             >
               <Icon name="Plus" size={12} />
               Добавить направление
@@ -549,9 +614,10 @@ interface CourseEditorProps {
   initialData?: Partial<CourseEditorData>;
   directions?: EditorDirection[];
   saveLabel?: string;
+  onAddDirection?: (title: string) => void;
 }
 
-export default function CourseEditor({ onClose, onSave, initialData, directions, saveLabel }: CourseEditorProps) {
+export default function CourseEditor({ onClose, onSave, initialData, directions, saveLabel, onAddDirection }: CourseEditorProps) {
   const [step,      setStep]      = useState(1);
   const [stepError, setStepError] = useState("");
 
@@ -630,7 +696,7 @@ export default function CourseEditor({ onClose, onSave, initialData, directions,
       {/* Контент */}
       <div className="flex-1 overflow-y-auto">
         <div className="px-6 py-6">
-          {step === 1 && <Step1 data={data} onChange={patch} directions={directions} />}
+          {step === 1 && <Step1 data={data} onChange={patch} directions={directions} onAddDirection={onAddDirection} />}
           {step === 2 && <Step2 data={data} onChange={patch} />}
           {step === 3 && <Step3 data={data} onChange={patch} />}
           {step === 4 && <Step4 data={data} onChange={patch} />}
