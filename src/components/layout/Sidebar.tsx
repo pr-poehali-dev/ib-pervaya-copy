@@ -7,6 +7,7 @@ import { useRole } from "@/contexts/RoleContext";
 import { useAuth } from "@/contexts/AuthContext";
 import ThemePicker from "@/components/ui/ThemePicker";
 import { TENANTS } from "@/data/mockData";
+import { CHAT_THREADS, getUnreadCount } from "@/data/chatMockData";
 
 type NavItem = { to: string; icon: string; label: string };
 
@@ -14,29 +15,39 @@ const STUDENT_NAV: NavItem[] = [
   { to: "/",            icon: "LayoutDashboard", label: "Главная" },
   { to: "/my-learning", icon: "GraduationCap",   label: "Моё обучение" },
   { to: "/achievements",icon: "Trophy",           label: "Достижения" },
+  { to: "/chat",        icon: "MessageCircle",    label: "Поддержка" },
   { to: "/profile",     icon: "User",             label: "Профиль" },
 ];
 
 const ADMIN_NAV: NavItem[] = [
-  { to: "/admin",   icon: "ShieldCheck", label: "Панель управления" },
-  { to: "/catalog", icon: "BookOpen",    label: "Каталог курсов" },
-  { to: "/profile", icon: "User",        label: "Профиль" },
+  { to: "/admin",   icon: "ShieldCheck",   label: "Панель управления" },
+  { to: "/catalog", icon: "BookOpen",      label: "Каталог курсов" },
+  { to: "/chat",    icon: "MessageCircle", label: "Поддержка" },
+  { to: "/profile", icon: "User",          label: "Профиль" },
 ];
 
 const MANAGER_NAV: NavItem[] = [
-  { to: "/admin",   icon: "ShieldCheck", label: "Панель управления" },
-  { to: "/catalog", icon: "BookOpen",    label: "Каталог курсов" },
-  { to: "/profile", icon: "User",        label: "Профиль" },
+  { to: "/admin",   icon: "ShieldCheck",   label: "Панель управления" },
+  { to: "/catalog", icon: "BookOpen",      label: "Каталог курсов" },
+  { to: "/chat",    icon: "MessageCircle", label: "Поддержка" },
+  { to: "/profile", icon: "User",          label: "Профиль" },
 ];
 
 const SUPERADMIN_NAV: NavItem[] = [
-  { to: "/super-admin", icon: "Crown",    label: "Суперадмин" },
-  { to: "/profile",     icon: "User",     label: "Профиль" },
+  { to: "/super-admin", icon: "Crown",          label: "Суперадмин" },
+  { to: "/chat",        icon: "MessageCircle",  label: "Все обращения" },
+  { to: "/profile",     icon: "User",           label: "Профиль" },
 ];
 
 const SALES_NAV: NavItem[] = [
-  { to: "/sales",   icon: "Briefcase", label: "Менеджер продаж" },
-  { to: "/profile", icon: "User",      label: "Профиль" },
+  { to: "/sales",   icon: "Briefcase",     label: "Менеджер продаж" },
+  { to: "/chat",    icon: "MessageCircle", label: "Обращения" },
+  { to: "/profile", icon: "User",          label: "Профиль" },
+];
+
+const SUPPORT_NAV: NavItem[] = [
+  { to: "/chat",    icon: "HeadphonesIcon", label: "Техподдержка" },
+  { to: "/profile", icon: "User",           label: "Профиль" },
 ];
 
 const ROLE_LABELS: Record<string, string> = {
@@ -45,6 +56,7 @@ const ROLE_LABELS: Record<string, string> = {
   admin:         "Администратор",
   manager:       "Менеджер",
   student:       "Слушатель",
+  support:       "Специалист ТП",
 };
 
 interface SidebarProps {
@@ -78,7 +90,10 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
     role === "sales_manager" ? SALES_NAV :
     role === "admin"         ? ADMIN_NAV :
     role === "manager"       ? MANAGER_NAV :
+    role === "support"       ? SUPPORT_NAV :
     STUDENT_NAV;
+
+  const chatUnread = getUnreadCount(CHAT_THREADS, user?.email ?? "");
 
   const statItems = [
     { icon: "GraduationCap", value: stats.inProgress, label: "проходят подготовку",  color: "from-emerald-500 to-teal-600" },
@@ -128,6 +143,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
       <nav className="flex-1 p-2 space-y-1">
         {navItems.map((item) => {
           const isActive = location.pathname === item.to;
+          const isChat = item.to === "/chat";
           return (
             <NavLink
               key={item.to}
@@ -141,15 +157,27 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
                   : "text-white/60 hover:text-white hover:bg-white/10"
               }`}
             >
-              <Icon
-                name={item.icon}
-                size={20}
-                className={isActive ? "text-white flex-shrink-0" : "text-white/60 group-hover:text-white flex-shrink-0"}
-              />
+              <div className="relative flex-shrink-0">
+                <Icon
+                  name={item.icon}
+                  size={20}
+                  className={isActive ? "text-white" : "text-white/60 group-hover:text-white"}
+                />
+                {isChat && chatUnread > 0 && collapsed && (
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[9px] text-white font-bold flex items-center justify-center">
+                    {chatUnread > 9 ? "9+" : chatUnread}
+                  </span>
+                )}
+              </div>
               {!collapsed && (
-                <span className="font-medium text-sm">{item.label}</span>
+                <span className="font-medium text-sm flex-1">{item.label}</span>
               )}
-              {!collapsed && isActive && (
+              {!collapsed && isChat && chatUnread > 0 && (
+                <span className="ml-auto min-w-[20px] h-5 bg-red-500 rounded-full text-[10px] text-white font-bold flex items-center justify-center px-1">
+                  {chatUnread > 99 ? "99+" : chatUnread}
+                </span>
+              )}
+              {!collapsed && isActive && chatUnread === 0 && (
                 <div className="ml-auto w-1.5 h-1.5 bg-white rounded-full" />
               )}
             </NavLink>

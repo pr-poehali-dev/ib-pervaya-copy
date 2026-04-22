@@ -6,11 +6,12 @@ import LoginFeatures from "./LoginFeatures";
 import LoginForm from "./LoginForm";
 
 const ROLE_REDIRECT: Record<string, string> = {
-  superadmin: "/super-admin",
+  superadmin:    "/super-admin",
   sales_manager: "/sales",
-  admin: "/admin",
-  manager: "/admin",
-  student: "/",
+  admin:         "/admin",
+  manager:       "/admin",
+  student:       "/",
+  support:       "/chat",
 };
 
 export default function Login() {

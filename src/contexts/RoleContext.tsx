@@ -5,7 +5,8 @@ export type AppRole =
   | "sales_manager"
   | "admin"
   | "manager"
-  | "student";
+  | "student"
+  | "support";
 
 export type TenantType = "training_center" | "organization";
 
