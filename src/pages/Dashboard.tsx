@@ -86,14 +86,16 @@ export default function Dashboard() {
         </div>
 
         {/* Статистика */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-4 gap-3">
           {stats.map((stat) => (
-            <div key={stat.label} className="bg-card rounded-2xl p-5 border border-border shadow-sm">
-              <div className={`w-10 h-10 ${stat.bg} rounded-xl flex items-center justify-center mb-3`}>
-                <Icon name={stat.icon} size={20} className={stat.color} />
+            <div key={stat.label} className="bg-card rounded-xl px-4 py-3 border border-border shadow-sm flex items-center gap-3">
+              <div className={`w-8 h-8 ${stat.bg} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                <Icon name={stat.icon} size={16} className={stat.color} />
               </div>
-              <p className="text-2xl font-bold text-foreground">{stat.value}</p>
-              <p className="text-muted-foreground text-sm mt-0.5">{stat.label}</p>
+              <div className="min-w-0">
+                <p className="text-lg font-bold text-foreground leading-none">{stat.value}</p>
+                <p className="text-muted-foreground text-xs mt-0.5 truncate">{stat.label}</p>
+              </div>
             </div>
           ))}
         </div>
