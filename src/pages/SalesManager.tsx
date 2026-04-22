@@ -7,13 +7,15 @@ import { Progress } from "@/components/ui/progress";
 import Tip from "@/components/ui/tip";
 import { TENANTS } from "@/data/mockData";
 import type { Tenant } from "@/components/admin/types";
+import ReportsPanel from "@/components/superadmin/ReportsPanel";
 
-type SalesTab = "tenants" | "stats" | "invoices" | "profile";
+type SalesTab = "tenants" | "stats" | "invoices" | "reports" | "profile";
 
 const TABS: { key: SalesTab; icon: string; label: string }[] = [
   { key: "tenants",  icon: "Building2",  label: "Тенанты" },
   { key: "stats",    icon: "BarChart2",  label: "Статистика" },
   { key: "invoices", icon: "Receipt",    label: "Счета" },
+  { key: "reports",  icon: "BarChart3",  label: "Отчёты" },
   { key: "profile",  icon: "User",       label: "Профиль" },
 ];
 
@@ -355,6 +357,7 @@ export default function SalesManager() {
         {activeTab === "tenants"  && <TenantsTab />}
         {activeTab === "stats"    && <StatsTab />}
         {activeTab === "invoices" && <InvoicesTab />}
+        {activeTab === "reports"  && <ReportsPanel />}
         {activeTab === "profile"  && <ProfilePanel />}
       </div>
     </Layout>
