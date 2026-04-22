@@ -37,15 +37,14 @@ function EditProfileModal({
   user: { firstName: string; lastName: string; middleName: string; email: string };
   onClose: () => void;
 }) {
-  const [firstName,  setFirstName]  = useState(user.firstName);
-  const [lastName,   setLastName]   = useState(user.lastName);
-  const [middleName, setMiddleName] = useState(user.middleName);
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="bg-background rounded-2xl border border-border w-full max-w-md shadow-2xl">
         <div className="flex items-center justify-between p-6 border-b border-border">
-          <h2 className="font-bold text-base">Редактировать профиль</h2>
+          <div>
+            <h2 className="font-bold text-base">Данные профиля</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">Изменение данных — только через администратора</p>
+          </div>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground p-1 rounded-lg hover:bg-muted">
             <Icon name="X" size={18} />
           </button>
@@ -53,25 +52,27 @@ function EditProfileModal({
         <div className="p-6 space-y-3">
           <div className="space-y-1">
             <label className="text-xs text-muted-foreground">Фамилия</label>
-            <input value={lastName} onChange={(e) => setLastName(e.target.value)} className="w-full h-9 px-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30" />
+            <input value={user.lastName} disabled className="w-full h-9 px-3 rounded-xl border border-border bg-muted text-sm text-muted-foreground cursor-not-allowed" />
           </div>
           <div className="space-y-1">
             <label className="text-xs text-muted-foreground">Имя</label>
-            <input value={firstName} onChange={(e) => setFirstName(e.target.value)} className="w-full h-9 px-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30" />
+            <input value={user.firstName} disabled className="w-full h-9 px-3 rounded-xl border border-border bg-muted text-sm text-muted-foreground cursor-not-allowed" />
           </div>
           <div className="space-y-1">
             <label className="text-xs text-muted-foreground">Отчество</label>
-            <input value={middleName} onChange={(e) => setMiddleName(e.target.value)} className="w-full h-9 px-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30" />
+            <input value={user.middleName} disabled className="w-full h-9 px-3 rounded-xl border border-border bg-muted text-sm text-muted-foreground cursor-not-allowed" />
           </div>
           <div className="space-y-1">
             <label className="text-xs text-muted-foreground">Email</label>
             <input value={user.email} disabled className="w-full h-9 px-3 rounded-xl border border-border bg-muted text-sm text-muted-foreground cursor-not-allowed" />
-            <p className="text-xs text-muted-foreground">Email изменяется только администратором</p>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-2.5 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-xl">
+            <Icon name="Info" size={14} className="text-amber-600 dark:text-amber-400 flex-shrink-0" />
+            <p className="text-xs text-amber-700 dark:text-amber-300">Для изменения данных обратитесь к администратору</p>
           </div>
         </div>
-        <div className="flex gap-2 p-6 border-t border-border">
-          <Button variant="outline" className="flex-1 rounded-xl" onClick={onClose}>Отмена</Button>
-          <Button className="flex-1 rounded-xl gradient-primary text-white" onClick={onClose}>Сохранить</Button>
+        <div className="p-6 border-t border-border">
+          <Button className="w-full rounded-xl" variant="outline" onClick={onClose}>Закрыть</Button>
         </div>
       </div>
     </div>
@@ -169,8 +170,8 @@ export default function Profile() {
               className="rounded-xl gap-2 flex-shrink-0"
               onClick={() => setEditOpen(true)}
             >
-              <Icon name="Edit2" size={15} />
-              Редактировать
+              <Icon name="User" size={15} />
+              Мои данные
             </Button>
           </div>
         </div>
