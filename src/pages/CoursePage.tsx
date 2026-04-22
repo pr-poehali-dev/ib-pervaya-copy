@@ -81,6 +81,7 @@ function QuestionNav({
   adaptiveRecords?: Record<number, AdaptiveRecord>;
   sectionStatuses?: Record<number, SectionStatus>;
   finishButton?: React.ReactNode;
+  answeredCls?: string;
 }) {
   const [visible, setVisible] = useState(true);
 
@@ -91,8 +92,8 @@ function QuestionNav({
     { cls: "bg-muted",                         label: "Ещё не отвечали" },
     { cls: "bg-red-500",                       label: "Часто неверно (3 подряд)" },
   ] : finishButton ? [
-    { cls: "bg-emerald-500", label: "Ответ дан" },
-    { cls: "bg-muted",       label: "Не отвечен" },
+    { cls: "bg-blue-500", label: "Ответ дан" },
+    { cls: "bg-muted",    label: "Не отвечен" },
   ] : [
     { cls: "bg-emerald-500", label: "Правильный ответ" },
     { cls: "bg-red-500",     label: "Неправильный ответ" },
@@ -141,7 +142,9 @@ function QuestionNav({
                 cls = ADAPTIVE_STATUS_CLS[status];
               } else {
                 const status = sectionStatuses?.[q.id] ?? "untouched";
-                cls = SECTION_STATUS_CLS[status];
+                const base = SECTION_STATUS_CLS[status];
+                // Заменяем зелёный на кастомный если передан answeredCls
+                cls = (answeredCls && status === "correct") ? answeredCls : base;
               }
               return (
                 <button
@@ -451,13 +454,47 @@ function FinalTest({
 
   // ── Рендер итогового теста ────────────────────────────────────────────────
 
+  const [showConfirm, setShowConfirm] = useState(false);
+  const isLastQuestion = current === questions.length - 1;
+  const currentAnswered = (finalAnswers[q?.id]?.length ?? 0) > 0;
+
   if (isFinal) {
+    // используем "seen" (синий) для отвеченных вопросов
     const navStatuses: Record<number, SectionStatus> = {};
     questions.forEach((qq) => {
       navStatuses[qq.id] = (finalAnswers[qq.id]?.length ?? 0) > 0 ? "correct" : "untouched";
     });
 
     return (
+      <>
+      {/* Модалка подтверждения завершения */}
+      {showConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-background rounded-2xl border border-border w-full max-w-sm p-6 shadow-2xl space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
+                <Icon name="AlertCircle" size={20} className="text-amber-600 dark:text-amber-400" />
+              </div>
+              <div>
+                <p className="font-bold">Завершить тест?</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Отвечено {answeredCount} из {questions.length} вопросов.
+                  {answeredCount < questions.length && ` ${questions.length - answeredCount} вопрос(ов) остались без ответа.`}
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setShowConfirm(false)}>
+                Вернуться
+              </Button>
+              <Button className="flex-1 gradient-primary text-white rounded-xl" onClick={() => { setShowConfirm(false); onFinishFinal(); }}>
+                Завершить
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex gap-4 items-start">
         {/* Левая часть — вопрос */}
         <div className="flex-1 min-w-0 space-y-4">
@@ -489,15 +526,25 @@ function FinalTest({
             />
           </div>
 
-          <div className="flex gap-2">
+          <div className="space-y-2">
             <Button
-              className="flex-1 gradient-primary text-white rounded-xl gap-2"
+              className="w-full gradient-primary text-white rounded-xl gap-2"
               disabled={finalCurrentSelected.length === 0}
               onClick={handleFinalSubmit}
             >
-              {current + 1 < questions.length ? "Ответить и далее" : "Ответить"}
+              {isLastQuestion ? "Ответить" : "Ответить и далее"}
               <Icon name="ChevronRight" size={15} />
             </Button>
+            {isLastQuestion && currentAnswered && (
+              <Button
+                variant="outline"
+                className="w-full rounded-xl gap-2 border-emerald-500 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+                onClick={() => setShowConfirm(true)}
+              >
+                <Icon name="CheckCircle" size={15} />
+                Завершить тест
+              </Button>
+            )}
           </div>
         </div>
 
@@ -510,15 +557,17 @@ function FinalTest({
           sectionStatuses={navStatuses}
           finishButton={
             <Button
-              className="w-full gradient-primary text-white rounded-xl gap-1.5 mt-2"
-              onClick={onFinishFinal}
+              className="w-full gradient-primary text-white rounded-xl gap-1.5"
+              onClick={() => setShowConfirm(true)}
             >
               <Icon name="CheckCircle" size={14} />
               Завершить тест
             </Button>
           }
+          answeredCls="bg-blue-500 text-white"
         />
       </div>
+      </>
     );
   }
 
