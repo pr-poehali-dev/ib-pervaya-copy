@@ -1161,6 +1161,40 @@ export default function CoursePage() {
               })}
             </div>
 
+            {/* Материалы курса */}
+            <div className="bg-card rounded-2xl border border-border p-5">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-9 h-9 bg-gradient-to-br from-violet-500 to-purple-700 rounded-xl flex items-center justify-center">
+                  <Icon name="FolderOpen" size={16} className="text-white" />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm">Материалы курса</p>
+                  <p className="text-xs text-muted-foreground">Лекции, презентации, видео и аудио</p>
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                {[
+                  { icon: "FileText",   type: "Лекция",       label: "Лекция 1. Основные понятия и определения",            ext: "PDF"  },
+                  { icon: "FileText",   type: "Лекция",       label: "Лекция 2. Требования нормативных документов",          ext: "PDF"  },
+                  { icon: "Presentation", type: "Презентация", label: "Презентация. Обзор законодательной базы",             ext: "PPTX" },
+                  { icon: "Presentation", type: "Презентация", label: "Презентация. Практические примеры и разбор случаев",  ext: "PPTX" },
+                  { icon: "Video",      type: "Видео",        label: "Видеолекция. Введение в курс",                         ext: "MP4"  },
+                  { icon: "Mic",        type: "Аудио",        label: "Аудиолекция. Ключевые требования и нормы",             ext: "MP3"  },
+                ].map((m) => (
+                  <div key={m.label} className="flex items-center gap-3 px-3 py-2.5 bg-muted/40 rounded-xl group">
+                    <Icon name={m.icon} size={14} className="text-muted-foreground flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm truncate block">{m.label}</span>
+                    </div>
+                    <span className="text-[10px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded flex-shrink-0">{m.ext}</span>
+                    <button className="text-primary hover:opacity-80 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Icon name="Download" size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             {/* Библиотека НТД */}
             <div className="bg-card rounded-2xl border border-border p-5">
               <div className="flex items-center gap-3 mb-3">
