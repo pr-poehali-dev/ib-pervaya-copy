@@ -475,19 +475,21 @@ export default function CoursePage() {
         </button>
 
         {/* Шапка курса */}
-        <div className="bg-card rounded-2xl border border-border p-5">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-violet-500 to-purple-700 rounded-2xl flex items-center justify-center flex-shrink-0 text-2xl">
+        <div className="bg-card rounded-2xl border border-border px-4 py-3">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-gradient-to-br from-violet-500 to-purple-700 rounded-xl flex items-center justify-center flex-shrink-0 text-lg">
               🏭
             </div>
             <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <p className="text-xs text-muted-foreground mb-0.5">{dir?.title}</p>
-                  <h1 className="font-bold text-base leading-snug">{title}</h1>
-                  {course?.code && <p className="text-xs text-muted-foreground font-mono mt-0.5">{course.code}</p>}
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground leading-none mb-0.5">{dir?.title}{course?.code && <span className="font-mono ml-1.5">{course.code}</span>}</p>
+                  <h1 className="font-bold text-sm leading-snug truncate">{title}</h1>
                 </div>
-                <div className="flex gap-1.5 flex-shrink-0">
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                  {course?.hours && (
+                    <span className="text-xs text-muted-foreground flex items-center gap-1"><Icon name="Clock" size={12} />{course.hours} ч</span>
+                  )}
                   {course?.hasTest && (
                     <Badge className="bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 text-xs">Тест</Badge>
                   )}
@@ -496,34 +498,12 @@ export default function CoursePage() {
                   )}
                 </div>
               </div>
-              <div className="mt-3 space-y-1.5">
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>Прогресс</span>
-                  <span>{progress}%</span>
-                </div>
-                <Progress value={progress} className="h-1.5" />
+              <div className="flex items-center gap-2 mt-1.5">
+                <Progress value={progress} className="h-1 flex-1" />
+                <span className="text-xs text-muted-foreground flex-shrink-0">{progress}%</span>
               </div>
             </div>
           </div>
-          {course?.hours && (
-            <div className="flex items-center gap-4 mt-4 pt-4 border-t border-border">
-              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                <Icon name="Clock" size={14} />
-                <span>{course.hours} академических часов</span>
-              </div>
-              {assign?.status && (
-                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                  <Icon name="Activity" size={14} />
-                  <span>{
-                    assign.status === "active"    ? "В процессе" :
-                    assign.status === "completed" ? "Завершён" :
-                    assign.status === "certified" ? "Удостоверение выдано" :
-                    "Ожидает активации"
-                  }</span>
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
         {/* Контент по режиму */}
