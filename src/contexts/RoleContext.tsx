@@ -20,8 +20,21 @@ export interface RoleContextValue {
 
 const RoleContext = createContext<RoleContextValue | null>(null);
 
+function getRoleFromSession(): AppRole {
+  try {
+    const saved = sessionStorage.getItem("auth_user");
+    if (saved) {
+      const u = JSON.parse(saved);
+      if (u?.appRole) return u.appRole as AppRole;
+    }
+  } catch (_e) {
+    // ignore
+  }
+  return "student";
+}
+
 export function RoleProvider({ children }: { children: ReactNode }) {
-  const [role, setRole] = useState<AppRole>("admin");
+  const [role, setRole] = useState<AppRole>(getRoleFromSession);
   const [tenantType, setTenantType] = useState<TenantType>("training_center");
   const [canOwnCourses, setCanOwnCourses] = useState(false);
 
