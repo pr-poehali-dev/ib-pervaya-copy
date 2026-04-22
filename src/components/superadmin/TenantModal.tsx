@@ -231,6 +231,17 @@ export function TenantModal({
                       </div>
                       {isAllowed && (
                         <div className="flex items-center gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                          <label className="text-xs text-muted-foreground whitespace-nowrap">Цена:</label>
+                          <div className="relative">
+                            <input
+                              type="number" min="0"
+                              value={subPrices[subType]}
+                              onChange={(e) => setSubPrice(subType, e.target.value)}
+                              placeholder="0"
+                              className="w-20 h-7 px-2 pr-5 rounded-lg border border-border bg-background text-sm text-center focus:outline-none focus:ring-2 focus:ring-violet-500/30"
+                            />
+                            <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground">₽</span>
+                          </div>
                           <label className="text-xs text-muted-foreground whitespace-nowrap">Лимит:</label>
                           <input
                             type="number" min="0"
@@ -301,37 +312,6 @@ export function TenantModal({
               </div>
             </div>
 
-            {/* Стоимость подписок по направлениям */}
-            <div className="space-y-2">
-              <p className="text-xs text-muted-foreground">Стоимость единицы подписки (₽) по направлениям</p>
-              <div className="space-y-2">
-                {SUB_TYPES.map((subType) => {
-                  const dirId = DIR_FOR_SUB[subType];
-                  const dir   = COURSE_DIRECTIONS.find((d) => d.id === dirId);
-                  const isOwn = subType === "own_courses";
-                  return (
-                    <div key={subType} className="flex items-center gap-3 px-3 py-2 bg-muted/20 rounded-xl">
-                      <p className="text-xs text-muted-foreground flex-1 truncate">
-                        {SUB_LABELS[subType]}
-                        {dir && <span className="ml-1 opacity-60">· {dir.courses.length} курсов</span>}
-                        {isOwn && <span className="ml-1 opacity-60">· собственные</span>}
-                      </p>
-                      <div className="flex items-center gap-1.5 flex-shrink-0">
-                        <input
-                          type="number"
-                          min="0"
-                          value={subPrices[subType]}
-                          onChange={(e) => setSubPrice(subType, e.target.value)}
-                          placeholder="0"
-                          className="w-24 h-7 px-2 rounded-lg border border-border bg-background text-sm text-right focus:outline-none focus:ring-2 focus:ring-violet-500/30"
-                        />
-                        <span className="text-xs text-muted-foreground">₽</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
           </div>
         </div>
 
