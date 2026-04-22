@@ -13,7 +13,6 @@ type NavItem = { to: string; icon: string; label: string };
 const STUDENT_NAV: NavItem[] = [
   { to: "/",            icon: "LayoutDashboard", label: "Главная" },
   { to: "/my-learning", icon: "GraduationCap",   label: "Моё обучение" },
-  { to: "/schedule",    icon: "Calendar",         label: "Расписание" },
   { to: "/achievements",icon: "Trophy",           label: "Достижения" },
   { to: "/profile",     icon: "User",             label: "Профиль" },
 ];

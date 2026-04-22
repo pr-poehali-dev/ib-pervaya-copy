@@ -8,7 +8,6 @@ import Courses from "./pages/Courses";
 import CoursePage from "./pages/CoursePage";
 import Profile from "./pages/Profile";
 import MyLearning from "./pages/MyLearning";
-import Schedule from "./pages/Schedule";
 import Achievements from "./pages/Achievements";
 import NotFound from "./pages/NotFound";
 import Admin from "./pages/Admin";
@@ -45,7 +44,6 @@ function AppRoutes() {
       <Route path="/courses" element={<RequireAuth><Courses /></RequireAuth>} />
       <Route path="/course/:id" element={<RequireAuth><CoursePage /></RequireAuth>} />
       <Route path="/my-learning"   element={<RequireAuth><MyLearning /></RequireAuth>} />
-      <Route path="/schedule"      element={<RequireAuth><Schedule /></RequireAuth>} />
       <Route path="/achievements"  element={<RequireAuth><Achievements /></RequireAuth>} />
       <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
       <Route path="/admin" element={<RequireAuth><Admin /></RequireAuth>} />
