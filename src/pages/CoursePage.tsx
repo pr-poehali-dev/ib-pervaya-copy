@@ -73,6 +73,7 @@ function QuestionNav({
   adaptiveRecords,
   sectionStatuses,
   finishButton,
+  answeredCls,
 }: {
   questions: Question[];
   currentIdx: number;
