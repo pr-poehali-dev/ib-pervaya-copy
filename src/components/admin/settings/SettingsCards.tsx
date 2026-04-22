@@ -1,6 +1,7 @@
 import Icon from "@/components/ui/icon";
 import { ActivePanel, OrgData, SystemUser } from "./types";
 import { useRole } from "@/contexts/RoleContext";
+import { MOCK_MATERIALS } from "@/components/admin/materials/CourseMaterialsPanel";
 
 interface SettingsCardsProps {
   org: OrgData;
@@ -11,6 +12,7 @@ interface SettingsCardsProps {
 export default function SettingsCards({ org, systemUsers, setActivePanel }: SettingsCardsProps) {
   const { tenantType } = useRole();
   const isUC = tenantType === "training_center";
+  const pendingMaterials = MOCK_MATERIALS.filter((m) => m.status === "pending_approval").length;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -96,13 +98,29 @@ export default function SettingsCards({ org, systemUsers, setActivePanel }: Sett
           <div className="w-12 h-12 bg-gradient-to-br from-fuchsia-500 to-purple-700 rounded-xl flex items-center justify-center">
             <Icon name="FolderOpen" size={22} className="text-white" />
           </div>
-          <Icon name="ChevronRight" size={18} className="text-muted-foreground group-hover:text-fuchsia-500 transition-colors mt-1" />
+          <div className="flex items-center gap-2">
+            {pendingMaterials > 0 && (
+              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 text-xs font-semibold">
+                <Icon name="Clock" size={11} />
+                {pendingMaterials} на проверке
+              </span>
+            )}
+            <Icon name="ChevronRight" size={18} className="text-muted-foreground group-hover:text-fuchsia-500 transition-colors mt-0.5" />
+          </div>
         </div>
         <h3 className="font-bold text-base mb-1">Материалы курсов</h3>
         <p className="text-muted-foreground text-sm mb-4">Лекции, видео, презентации и аудио для слушателей</p>
-        <div className="flex items-center gap-2">
-          <Icon name="Upload" size={14} className="text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">Загрузка и управление материалами</span>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5">
+            <Icon name="FileText" size={13} className="text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">{MOCK_MATERIALS.length} материалов</span>
+          </div>
+          {pendingMaterials === 0 && (
+            <div className="flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
+              <span className="text-sm text-muted-foreground">Все проверены</span>
+            </div>
+          )}
         </div>
       </div>
 

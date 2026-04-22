@@ -7,7 +7,7 @@ import type { CourseMaterial, MaterialStatus, MaterialType } from "@/components/
 
 // ─── Моковые материалы тенанта ────────────────────────────────────────────────
 
-const MOCK_MATERIALS: CourseMaterial[] = [
+export const MOCK_MATERIALS: CourseMaterial[] = [
   {
     id: 1, tenantId: 1, courseId: 101,
     courseTitle: "Основы промышленной безопасности",
