@@ -221,6 +221,7 @@ export type Certificate = {
   courseTitle: string;
   courseCode?: string;
   courseHours?: number;
+  activatedAt?: string;
   testScore: number;
   testPassedAt: string;
   status: CertificateStatus;

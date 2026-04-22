@@ -240,7 +240,7 @@ function CertificateTemplate({ cert }: { cert: Certificate }) {
         </p>
 
         <p style={{ fontSize: "11pt", marginBottom: "4mm", lineHeight: "1.6" }}>
-          в том, что он(а) в период с {cert.testPassedAt} по {cert.issuedAt ?? today} прошёл(а) обучение
+          в том, что он(а) в период с {cert.activatedAt ?? cert.testPassedAt} по {cert.issuedAt ?? today} прошёл(а) обучение
           по дополнительной профессиональной программе повышения квалификации:
         </p>
 
