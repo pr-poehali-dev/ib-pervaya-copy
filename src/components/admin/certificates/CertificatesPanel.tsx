@@ -244,9 +244,11 @@ export default function CertificatesPanel() {
   const [tab, setTab] = useState<"ready" | "issued">("ready");
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [viewCert, setViewCert] = useState<Certificate | null>(null);
+  const [filterOrg, setFilterOrg] = useState<string>("");
 
   const ready  = certs.filter((c) => c.status === "ready");
   const issued = certs.filter((c) => c.status === "issued");
+  const orgOptions = [...new Set(issued.map((c) => c.userOrganization).filter(Boolean))] as string[];
 
   function handleIssue(certNum: string, issuedBy: string) {
     if (!issueTarget) return;
@@ -266,7 +268,9 @@ export default function CertificatesPanel() {
     setIssueTarget(null);
   }
 
-  const list = tab === "ready" ? ready : issued;
+  const list = tab === "ready"
+    ? ready
+    : issued.filter((c) => !filterOrg || c.userOrganization === filterOrg);
 
   function toggleSelect(id: number) {
     setSelectedIds((prev) => {
@@ -296,27 +300,72 @@ export default function CertificatesPanel() {
 
       {/* Модал просмотра выданного удостоверения */}
       {viewCert && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-card rounded-2xl border border-border shadow-xl w-full max-w-md p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-base">Удостоверение ДПО</h3>
-              <button onClick={() => setViewCert(null)} className="text-muted-foreground hover:text-foreground">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-card rounded-2xl border border-border shadow-xl w-full max-w-md space-y-0 overflow-hidden">
+            <div className="flex items-center justify-between p-6 border-b border-border">
+              <div>
+                <h3 className="font-semibold text-base">Удостоверение ДПО</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">{viewCert.certificateNumber ?? "—"}</p>
+              </div>
+              <button onClick={() => setViewCert(null)} className="text-muted-foreground hover:text-foreground p-1 rounded-lg hover:bg-muted">
                 <Icon name="X" size={18} />
               </button>
             </div>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between"><span className="text-muted-foreground">Слушатель</span><span className="font-medium">{viewCert.userName}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Организация</span><span>{viewCert.userOrganization ?? "—"}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Курс</span><span className="text-right max-w-[60%]">{viewCert.courseTitle}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Код</span><span className="font-mono">{viewCert.courseCode ?? "—"}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Часов</span><span>{viewCert.courseHours ? `${viewCert.courseHours} ч` : "—"}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Результат</span><span className="font-semibold text-emerald-600">{viewCert.testScore}%</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Дата теста</span><span>{viewCert.testPassedAt}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Номер</span><span className="font-mono">{viewCert.certificateNumber ?? "—"}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Дата выдачи</span><span>{viewCert.issuedAt ?? "—"}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Выдал</span><span>{viewCert.issuedBy ?? "—"}</span></div>
+            <div className="p-6 space-y-2 text-sm">
+              <div className="flex justify-between py-1 border-b border-border/50"><span className="text-muted-foreground">Слушатель</span><span className="font-medium">{viewCert.userName}</span></div>
+              <div className="flex justify-between py-1 border-b border-border/50"><span className="text-muted-foreground">Организация</span><span>{viewCert.userOrganization ?? "—"}</span></div>
+              <div className="flex justify-between py-1 border-b border-border/50 gap-4"><span className="text-muted-foreground shrink-0">Курс</span><span className="text-right">{viewCert.courseTitle}</span></div>
+              <div className="flex justify-between py-1 border-b border-border/50"><span className="text-muted-foreground">Код</span><span className="font-mono">{viewCert.courseCode ?? "—"}</span></div>
+              <div className="flex justify-between py-1 border-b border-border/50"><span className="text-muted-foreground">Часов</span><span>{viewCert.courseHours ? `${viewCert.courseHours} ч` : "—"}</span></div>
+              <div className="flex justify-between py-1 border-b border-border/50"><span className="text-muted-foreground">Результат</span><span className="font-semibold text-emerald-600 dark:text-emerald-400">{viewCert.testScore}%</span></div>
+              <div className="flex justify-between py-1 border-b border-border/50"><span className="text-muted-foreground">Дата теста</span><span>{viewCert.testPassedAt}</span></div>
+              <div className="flex justify-between py-1 border-b border-border/50"><span className="text-muted-foreground">Дата выдачи</span><span>{viewCert.issuedAt ?? "—"}</span></div>
+              <div className="flex justify-between py-1"><span className="text-muted-foreground">Выдал</span><span>{viewCert.issuedBy ?? "—"}</span></div>
             </div>
-            <Button variant="outline" className="w-full rounded-xl" onClick={() => setViewCert(null)}>Закрыть</Button>
+            <div className="p-6 pt-0 space-y-2">
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1 rounded-xl gap-2 text-sm"
+                  onClick={() => {
+                    const content = document.getElementById("cert-view-template");
+                    if (!content) return;
+                    const win = window.open("", "_blank");
+                    if (!win) return;
+                    win.document.write(`<html><head><title>Удостоверение ДПО</title><style>@page{size:A4 landscape;margin:0}body{margin:0}</style></head><body>${content.outerHTML}</body></html>`);
+                    win.document.close();
+                    win.focus();
+                    win.print();
+                  }}
+                >
+                  <Icon name="Eye" size={15} />
+                  Показать удостоверение
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex-1 rounded-xl gap-2 text-sm"
+                  onClick={() => {
+                    const content = document.getElementById("cert-view-template");
+                    if (!content) return;
+                    const blob = new Blob([`<html><head><style>@page{size:A4 landscape;margin:0}body{margin:0}</style></head><body>${content.outerHTML}</body></html>`], { type: "text/html" });
+                    const a = document.createElement("a");
+                    a.href = URL.createObjectURL(blob);
+                    a.download = `${viewCert.certificateNumber ?? "certificate"}.html`;
+                    a.click();
+                  }}
+                >
+                  <Icon name="Download" size={15} />
+                  Скачать
+                </Button>
+              </div>
+              <Button variant="outline" className="w-full rounded-xl text-sm" onClick={() => setViewCert(null)}>Закрыть</Button>
+            </div>
+            {/* Скрытый шаблон для печати/скачивания */}
+            <div style={{ position: "fixed", left: "-9999px", top: 0 }}>
+              <div id="cert-view-template">
+                <CertificateTemplate cert={viewCert} />
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -354,9 +403,29 @@ export default function CertificatesPanel() {
         </div>
       )}
 
-      {/* Панель действий над таблицей — только для вкладки «Выданные» */}
+      {/* Панель действий и фильтров — только для вкладки «Выданные» */}
       {tab === "issued" && (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Фильтр по организации */}
+          <select
+            value={filterOrg}
+            onChange={(e) => setFilterOrg(e.target.value)}
+            className="h-9 px-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30 text-foreground"
+          >
+            <option value="">Все организации</option>
+            {orgOptions.map((org) => (
+              <option key={org} value={org}>{org}</option>
+            ))}
+          </select>
+          {filterOrg && (
+            <button
+              onClick={() => setFilterOrg("")}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+            >
+              <Icon name="X" size={12} />
+              Сбросить
+            </button>
+          )}
           {selectedIds.size > 0 && (
             <span className="text-sm text-muted-foreground">Выбрано: {selectedIds.size}</span>
           )}
@@ -434,9 +503,18 @@ export default function CertificatesPanel() {
                   <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{cert.courseCode ?? "—"}</td>
                   <td className="px-4 py-3 text-muted-foreground">{cert.courseHours ? `${cert.courseHours} ч` : "—"}</td>
                   <td className="px-4 py-3">
-                    <span className={`font-semibold ${cert.testScore >= 80 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
-                      {cert.testScore}%
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className={`font-semibold ${cert.testScore >= 80 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
+                        {cert.testScore}%
+                      </span>
+                      <button
+                        title="Посмотреть протокол"
+                        className="text-muted-foreground hover:text-foreground transition-colors"
+                        onClick={() => alert(`Протокол тестирования\n\nСлушатель: ${cert.userName}\nКурс: ${cert.courseTitle}\nРезультат: ${cert.testScore}%\nДата: ${cert.testPassedAt}`)}
+                      >
+                        <Icon name="FileText" size={14} />
+                      </button>
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">{cert.testPassedAt}</td>
                   <td className="px-4 py-3">
