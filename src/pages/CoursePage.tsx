@@ -83,24 +83,38 @@ function QuestionNav({
     { cls: "bg-muted",       label: "Ещё не отвечали" },
   ];
 
+  if (!visible) {
+    return (
+      <div className="flex-shrink-0">
+        <button
+          onClick={() => setVisible(true)}
+          className="flex flex-col items-center gap-1.5 px-2 py-3 rounded-2xl border border-border bg-card hover:bg-muted/40 transition-colors text-muted-foreground hover:text-foreground"
+          title="Показать навигацию по вопросам"
+        >
+          <Icon name="LayoutGrid" size={16} />
+          <span className="text-[10px] font-medium [writing-mode:vertical-lr] rotate-180">Вопросы</span>
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex-shrink-0 w-56">
+    <div className="flex-shrink-0 w-52">
       {/* Заголовок с кнопкой скрыть */}
       <div className="flex items-center justify-between mb-2">
         <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
           Вопросы
         </span>
         <button
-          onClick={() => setVisible((v) => !v)}
+          onClick={() => setVisible(false)}
           className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
         >
-          <Icon name={visible ? "EyeOff" : "Eye"} size={13} />
-          {visible ? "Скрыть" : "Показать"}
+          <Icon name="PanelRightClose" size={13} />
+          Скрыть
         </button>
       </div>
 
-      {visible && (
-        <div className="bg-card border border-border rounded-2xl p-3 space-y-3">
+      <div className="bg-card border border-border rounded-2xl p-3 space-y-3">
           {/* Сетка кнопок */}
           <div className="grid grid-cols-5 gap-1.5">
             {questions.map((q, idx) => {
@@ -138,7 +152,6 @@ function QuestionNav({
             ))}
           </div>
         </div>
-      )}
     </div>
   );
 }
@@ -739,7 +752,7 @@ export default function CoursePage() {
 
   return (
     <Layout>
-      <div className="max-w-3xl mx-auto space-y-5">
+      <div className="w-full max-w-7xl mx-auto space-y-5">
         {/* Хлебные крошки */}
         <button
           onClick={() => mode === "menu" ? navigate("/my-learning") : resetToMenu()}
