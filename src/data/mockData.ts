@@ -661,6 +661,18 @@ export const DEFAULT_SYSTEM_USERS: SystemUser[] = [
     status: "active",
     registeredAt: "09.02.2026",
   },
+  {
+    id: 5,
+    lastName: "ВОРОНОВ",
+    firstName: "КОНСТАНТИН",
+    middleName: "АЛЕКСЕЕВИЧ",
+    email: "sales@isp.ru",
+    role: "Менеджер продаж",
+    department: "Отдел продаж",
+    password: "sales123",
+    status: "active",
+    registeredAt: "10.01.2025",
+  },
 ];
 
 // ─── Настройки email ──────────────────────────────────────────────────────────

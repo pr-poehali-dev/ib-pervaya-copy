@@ -17,11 +17,12 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 const ROLE_MAP: Record<string, AppRole> = {
-  "Администратор": "admin",
-  "Менеджер": "manager",
-  "Слушатель": "student",
-  "Наблюдатель": "student",
-  "Суперадмин": "superadmin",
+  "Администратор":   "admin",
+  "Менеджер":        "manager",
+  "Слушатель":       "student",
+  "Наблюдатель":     "student",
+  "Суперадмин":      "superadmin",
+  "Менеджер продаж": "sales_manager",
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
