@@ -72,6 +72,7 @@ function QuestionNav({
   mode,
   adaptiveRecords,
   sectionStatuses,
+  finishButton,
 }: {
   questions: Question[];
   currentIdx: number;
@@ -79,15 +80,19 @@ function QuestionNav({
   mode: "adaptive" | "section";
   adaptiveRecords?: Record<number, AdaptiveRecord>;
   sectionStatuses?: Record<number, SectionStatus>;
+  finishButton?: React.ReactNode;
 }) {
   const [visible, setVisible] = useState(true);
 
   const legend = mode === "adaptive" ? [
-    { cls: "bg-emerald-500",                                          label: "Изучен (3 верных подряд)" },
-    { cls: "bg-orange-300 dark:bg-orange-700",                        label: "Почти (2 из 3 верных)" },
-    { cls: "bg-blue-200 dark:bg-blue-900/50",                         label: "Отвечали хотя бы раз" },
-    { cls: "bg-muted",                                                 label: "Ещё не отвечали" },
-    { cls: "bg-red-500",                                               label: "Часто неверно (3 подряд)" },
+    { cls: "bg-emerald-500",                   label: "Изучен (3 верных подряд)" },
+    { cls: "bg-orange-300 dark:bg-orange-700", label: "Почти (2 из 3 верных)" },
+    { cls: "bg-blue-200 dark:bg-blue-900/50",  label: "Отвечали хотя бы раз" },
+    { cls: "bg-muted",                         label: "Ещё не отвечали" },
+    { cls: "bg-red-500",                       label: "Часто неверно (3 подряд)" },
+  ] : finishButton ? [
+    { cls: "bg-emerald-500", label: "Ответ дан" },
+    { cls: "bg-muted",       label: "Не отвечен" },
   ] : [
     { cls: "bg-emerald-500", label: "Правильный ответ" },
     { cls: "bg-red-500",     label: "Неправильный ответ" },
@@ -162,6 +167,9 @@ function QuestionNav({
               </div>
             ))}
           </div>
+          {finishButton && (
+            <div className="pt-1 border-t border-border">{finishButton}</div>
+          )}
         </div>
     </div>
   );
@@ -346,10 +354,15 @@ function FinalTest({
   navPanel?: React.ReactNode;
 }) {
   const questions = isFinal ? allQuestions.slice(0, 10) : allQuestions.slice(0, 5);
-  const [current,   setCurrent]   = useState(0);
-  const [selected,  setSelected]  = useState<number[]>([]);
-  const [submitted, setSubmitted] = useState(false);
-  const [answers,   setAnswers]   = useState<QuestionAnswer[]>([]);
+  const [current,  setCurrent]  = useState(0);
+  // Для итогового: answers — Map questionId → selected[], можно перезаписывать
+  // Для секционного: старая логика с submitted
+  const [draftSelected, setDraftSelected] = useState<number[]>([]);
+  const [submitted,     setSubmitted]     = useState(false);
+  const [sectionAnswers, setSectionAnswers] = useState<QuestionAnswer[]>([]);
+  // Итоговый тест: все ответы сразу, можно менять
+  const [finalAnswers, setFinalAnswers] = useState<Record<number, number[]>>({});
+
   const TOTAL_SECONDS = 30 * 60;
   const [timeLeft, setTimeLeft] = useState(TOTAL_SECONDS);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -358,11 +371,12 @@ function FinalTest({
     if (!isFinal) return;
     intervalRef.current = setInterval(() => {
       setTimeLeft((t) => {
-        if (t <= 1) { clearInterval(intervalRef.current!); return 0; }
+        if (t <= 1) { clearInterval(intervalRef.current!); onFinishFinal(); return 0; }
         return t - 1;
       });
     }, 1000);
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isFinal]);
 
   const minutes = Math.floor(timeLeft / 60);
@@ -370,25 +384,61 @@ function FinalTest({
   const timerWarning = timeLeft < 5 * 60;
 
   const q = questions[current];
-  const isCorrect = checkCorrect(q, selected);
   const progress = Math.round((current / questions.length) * 100);
+
+  // ── Итоговый тест: выбор ──────────────────────────────────────────────────
+
+  // текущий черновик для итогового — берём из сохранённых или пустой
+  const finalCurrentSelected = finalAnswers[q.id] ?? [];
+
+  function handleFinalToggle(idx: number) {
+    const prev = finalAnswers[q.id] ?? [];
+    const next = prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx];
+    setFinalAnswers((fa) => ({ ...fa, [q.id]: next }));
+  }
+
+  function handleFinalSubmit() {
+    const sel = finalAnswers[q.id] ?? [];
+    if (sel.length === 0) return;
+    // переходим к следующему неотвеченному или следующему по порядку
+    const nextUnanswered = questions.findIndex((qq, i) => i > current && !(finalAnswers[qq.id]?.length));
+    const nextIdx = nextUnanswered !== -1 ? nextUnanswered : (current + 1 < questions.length ? current + 1 : current);
+    if (nextIdx !== current) {
+      setCurrent(nextIdx);
+      onCurrentChange?.(nextIdx);
+    }
+  }
+
+  function onFinishFinal() {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    const result: QuestionAnswer[] = questions.map((qq) => ({
+      questionId: qq.id,
+      selected:   finalAnswers[qq.id] ?? [],
+      isCorrect:  checkCorrect(qq, finalAnswers[qq.id] ?? []),
+    }));
+    onFinish(result);
+  }
+
+  const answeredCount = questions.filter((qq) => (finalAnswers[qq.id]?.length ?? 0) > 0).length;
+
+  // ── Секционный тест: старая логика ───────────────────────────────────────
 
   function handleToggle(idx: number) {
     if (submitted) return;
-    setSelected((prev) => prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]);
+    setDraftSelected((prev) => prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]);
   }
 
-  function handleSubmit() {
-    if (selected.length === 0) return;
-    onAnswer?.(q.id, checkCorrect(q, selected));
+  function handleSectionSubmit() {
+    if (draftSelected.length === 0) return;
+    onAnswer?.(q.id, checkCorrect(q, draftSelected));
     setSubmitted(true);
   }
 
-  function handleNext() {
-    const ans: QuestionAnswer = { questionId: q.id, selected, isCorrect };
-    const newAnswers = [...answers, ans];
-    setAnswers(newAnswers);
-    setSelected([]);
+  function handleSectionNext() {
+    const ans: QuestionAnswer = { questionId: q.id, selected: draftSelected, isCorrect: checkCorrect(q, draftSelected) };
+    const newAnswers = [...sectionAnswers, ans];
+    setSectionAnswers(newAnswers);
+    setDraftSelected([]);
     setSubmitted(false);
     if (current + 1 >= questions.length) {
       onFinish(newAnswers);
@@ -399,29 +449,98 @@ function FinalTest({
     }
   }
 
-  const questionBlock = (
+  // ── Рендер итогового теста ────────────────────────────────────────────────
+
+  if (isFinal) {
+    const navStatuses: Record<number, SectionStatus> = {};
+    questions.forEach((qq) => {
+      navStatuses[qq.id] = (finalAnswers[qq.id]?.length ?? 0) > 0 ? "correct" : "untouched";
+    });
+
+    return (
+      <div className="flex gap-4 items-start">
+        {/* Левая часть — вопрос */}
+        <div className="flex-1 min-w-0 space-y-4">
+          {/* Прогресс + таймер */}
+          <div className="bg-card rounded-2xl border border-border px-4 py-3 flex items-center gap-4">
+            <span className="text-sm text-muted-foreground flex-shrink-0">
+              {answeredCount} / {questions.length} отвечено
+            </span>
+            <Progress value={Math.round((answeredCount / questions.length) * 100)} className="h-2 flex-1" />
+            <span className={`text-sm font-mono font-semibold flex-shrink-0 flex items-center gap-1 ${timerWarning ? "text-red-500" : "text-muted-foreground"}`}>
+              <Icon name="Clock" size={14} />
+              {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
+            </span>
+          </div>
+
+          {/* Вопрос */}
+          <div className="bg-card rounded-2xl border border-border p-6">
+            <div className="flex items-start justify-between gap-2 mb-4">
+              <p className="font-semibold text-base leading-relaxed">{q.text}</p>
+              {(finalAnswers[q.id]?.length ?? 0) > 0 && (
+                <span className="text-xs bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 px-2 py-0.5 rounded-lg flex-shrink-0">Отвечен</span>
+              )}
+            </div>
+            <AnswerOptions
+              question={q}
+              selected={finalCurrentSelected}
+              answered={false}
+              onToggle={handleFinalToggle}
+            />
+          </div>
+
+          <div className="flex gap-2">
+            <Button
+              className="flex-1 gradient-primary text-white rounded-xl gap-2"
+              disabled={finalCurrentSelected.length === 0}
+              onClick={handleFinalSubmit}
+            >
+              {current + 1 < questions.length ? "Ответить и далее" : "Ответить"}
+              <Icon name="ChevronRight" size={15} />
+            </Button>
+          </div>
+        </div>
+
+        {/* Правая часть — навигация */}
+        <QuestionNav
+          questions={questions}
+          currentIdx={current}
+          onJump={(idx) => { setCurrent(idx); onCurrentChange?.(idx); }}
+          mode="section"
+          sectionStatuses={navStatuses}
+          finishButton={
+            <Button
+              className="w-full gradient-primary text-white rounded-xl gap-1.5 mt-2"
+              onClick={onFinishFinal}
+            >
+              <Icon name="CheckCircle" size={14} />
+              Завершить тест
+            </Button>
+          }
+        />
+      </div>
+    );
+  }
+
+  // ── Рендер секционного теста ──────────────────────────────────────────────
+
+  const sectionBlock = (
     <div className="space-y-5 flex-1 min-w-0">
       <div className="bg-card rounded-2xl border border-border px-4 py-3 flex items-center gap-4">
         <span className="text-sm text-muted-foreground flex-shrink-0">Вопрос {current + 1} / {questions.length}</span>
         <Progress value={progress} className="h-2 flex-1" />
-        {isFinal && (
-          <span className={`text-sm font-mono font-semibold flex-shrink-0 flex items-center gap-1 ${timerWarning ? "text-red-500" : "text-muted-foreground"}`}>
-            <Icon name="Clock" size={14} />
-            {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
-          </span>
-        )}
       </div>
 
       <div className="bg-card rounded-2xl border border-border p-6">
         <p className="font-semibold text-base leading-relaxed mb-5">{q.text}</p>
-        <AnswerOptions question={q} selected={selected} answered={submitted} onToggle={handleToggle} />
+        <AnswerOptions question={q} selected={draftSelected} answered={submitted} onToggle={handleToggle} />
       </div>
 
       {!submitted ? (
         <Button
           className="w-full gradient-primary text-white rounded-xl gap-2"
-          disabled={selected.length === 0}
-          onClick={handleSubmit}
+          disabled={draftSelected.length === 0}
+          onClick={handleSectionSubmit}
         >
           Ответить
           <Icon name="CheckCircle" size={15} />
@@ -429,8 +548,8 @@ function FinalTest({
       ) : (
         <AnswerResult
           question={q}
-          isCorrect={isCorrect}
-          onNext={handleNext}
+          isCorrect={checkCorrect(q, draftSelected)}
+          onNext={handleSectionNext}
           nextLabel={current + 1 >= questions.length ? "Завершить тест" : "Следующий вопрос"}
         />
       )}
@@ -440,13 +559,13 @@ function FinalTest({
   if (navPanel) {
     return (
       <div className="flex gap-4 items-start">
-        {questionBlock}
+        {sectionBlock}
         {navPanel}
       </div>
     );
   }
 
-  return questionBlock;
+  return sectionBlock;
 }
 
 // ─── Протокол результатов ─────────────────────────────────────────────────────
