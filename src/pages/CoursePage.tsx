@@ -1258,7 +1258,7 @@ export default function CoursePage() {
                   {openMaterial.ext === "PDF" && (
                     <iframe
                       key={openMaterial.url}
-                      src={`https://docs.google.com/viewer?url=${encodeURIComponent(openMaterial.url)}&embedded=true`}
+                      src={openMaterial.url}
                       className="w-full h-full border-0"
                       title={openMaterial.label}
                     />
@@ -1325,7 +1325,7 @@ export default function CoursePage() {
                 <div className="flex-1 overflow-hidden">
                   <iframe
                     key={openNtd.url}
-                    src={`https://docs.google.com/viewer?url=${encodeURIComponent(openNtd.url)}&embedded=true`}
+                    src={openNtd.url}
                     className="w-full h-full border-0"
                     title={openNtd.label}
                   />
