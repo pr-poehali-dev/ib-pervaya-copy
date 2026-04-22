@@ -216,6 +216,7 @@ export type Certificate = {
   userId: number;
   userName: string;
   userEmail: string;
+  userOrganization?: string;
   courseId: number;
   courseTitle: string;
   courseCode?: string;

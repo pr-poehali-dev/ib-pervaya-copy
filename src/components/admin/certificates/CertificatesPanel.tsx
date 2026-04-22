@@ -242,6 +242,8 @@ export default function CertificatesPanel() {
   const [certs, setCerts] = useState<Certificate[]>(CERTIFICATES);
   const [issueTarget, setIssueTarget] = useState<Certificate | null>(null);
   const [tab, setTab] = useState<"ready" | "issued">("ready");
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [viewCert, setViewCert] = useState<Certificate | null>(null);
 
   const ready  = certs.filter((c) => c.status === "ready");
   const issued = certs.filter((c) => c.status === "issued");
@@ -266,6 +268,22 @@ export default function CertificatesPanel() {
 
   const list = tab === "ready" ? ready : issued;
 
+  function toggleSelect(id: number) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) { next.delete(id); } else { next.add(id); }
+      return next;
+    });
+  }
+
+  function toggleSelectAll() {
+    if (selectedIds.size === list.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(list.map((c) => c.id)));
+    }
+  }
+
   return (
     <div className="space-y-4">
       {issueTarget && (
@@ -274,6 +292,33 @@ export default function CertificatesPanel() {
           onClose={() => setIssueTarget(null)}
           onIssue={handleIssue}
         />
+      )}
+
+      {/* Модал просмотра выданного удостоверения */}
+      {viewCert && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-card rounded-2xl border border-border shadow-xl w-full max-w-md p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-base">Удостоверение ДПО</h3>
+              <button onClick={() => setViewCert(null)} className="text-muted-foreground hover:text-foreground">
+                <Icon name="X" size={18} />
+              </button>
+            </div>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between"><span className="text-muted-foreground">Слушатель</span><span className="font-medium">{viewCert.userName}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Организация</span><span>{viewCert.userOrganization ?? "—"}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Курс</span><span className="text-right max-w-[60%]">{viewCert.courseTitle}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Код</span><span className="font-mono">{viewCert.courseCode ?? "—"}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Часов</span><span>{viewCert.courseHours ? `${viewCert.courseHours} ч` : "—"}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Результат</span><span className="font-semibold text-emerald-600">{viewCert.testScore}%</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Дата теста</span><span>{viewCert.testPassedAt}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Номер</span><span className="font-mono">{viewCert.certificateNumber ?? "—"}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Дата выдачи</span><span>{viewCert.issuedAt ?? "—"}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Выдал</span><span>{viewCert.issuedBy ?? "—"}</span></div>
+            </div>
+            <Button variant="outline" className="w-full rounded-xl" onClick={() => setViewCert(null)}>Закрыть</Button>
+          </div>
+        </div>
       )}
 
       {/* Переключатель */}
@@ -309,12 +354,50 @@ export default function CertificatesPanel() {
         </div>
       )}
 
+      {/* Панель действий над таблицей — только для вкладки «Выданные» */}
+      {tab === "issued" && (
+        <div className="flex items-center gap-2">
+          {selectedIds.size > 0 && (
+            <span className="text-sm text-muted-foreground">Выбрано: {selectedIds.size}</span>
+          )}
+          <div className="ml-auto flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-xl gap-2 text-sm"
+              disabled={selectedIds.size === 0}
+            >
+              <Icon name="Printer" size={14} />
+              Печать
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-xl gap-2 text-sm"
+              disabled={selectedIds.size === 0}
+            >
+              <Icon name="Download" size={14} />
+              Скачать
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Таблица */}
       <div className="bg-card rounded-2xl border border-border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/40">
+                <th className="px-3 py-3 w-8">
+                  <input
+                    type="checkbox"
+                    className="rounded border-border"
+                    checked={list.length > 0 && selectedIds.size === list.length}
+                    onChange={toggleSelectAll}
+                  />
+                </th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Организация</th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">Слушатель</th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">Курс</th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">Код</th>
@@ -327,7 +410,18 @@ export default function CertificatesPanel() {
             </thead>
             <tbody>
               {list.map((cert, idx) => (
-                <tr key={cert.id} className={`border-b border-border last:border-0 hover:bg-muted/20 transition-colors ${idx % 2 !== 0 ? "bg-muted/5" : ""}`}>
+                <tr key={cert.id} className={`border-b border-border last:border-0 hover:bg-muted/20 transition-colors ${selectedIds.has(cert.id) ? "bg-primary/5" : idx % 2 !== 0 ? "bg-muted/5" : ""}`}>
+                  <td className="px-3 py-3 w-8">
+                    <input
+                      type="checkbox"
+                      className="rounded border-border"
+                      checked={selectedIds.has(cert.id)}
+                      onChange={() => toggleSelect(cert.id)}
+                    />
+                  </td>
+                  <td className="px-4 py-3">
+                    <p className="text-sm max-w-[160px] truncate" title={cert.userOrganization}>{cert.userOrganization ?? "—"}</p>
+                  </td>
                   <td className="px-4 py-3">
                     <div>
                       <p className="font-medium">{cert.userName}</p>
@@ -364,8 +458,16 @@ export default function CertificatesPanel() {
                         Выдать
                       </Button>
                     ) : (
-                      <div className="flex items-center gap-1">
-                        <span className="text-xs text-muted-foreground">{cert.issuedAt}</span>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="rounded-lg text-xs h-7 px-3 gap-1"
+                          onClick={() => setViewCert(cert)}
+                        >
+                          <Icon name="Eye" size={12} />
+                          Просмотреть
+                        </Button>
                       </div>
                     )}
                   </td>
@@ -373,7 +475,7 @@ export default function CertificatesPanel() {
               ))}
               {list.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-4 py-12 text-center">
+                  <td colSpan={10} className="px-4 py-12 text-center">
                     <div className="flex flex-col items-center gap-3">
                       <div className="w-12 h-12 bg-muted/40 rounded-2xl flex items-center justify-center">
                         <Icon name="Award" size={22} className="text-muted-foreground" />
