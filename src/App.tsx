@@ -17,28 +17,45 @@ import Catalog from "./pages/Catalog";
 import Login from "./pages/Login";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { StatsProvider } from "./contexts/StatsContext";
-import { RoleProvider } from "./contexts/RoleContext";
+import { RoleProvider, useRole } from "./contexts/RoleContext";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 
 const queryClient = new QueryClient();
 
+const ROLE_HOME: Record<string, string> = {
+  superadmin:    "/super-admin",
+  sales_manager: "/sales",
+  admin:         "/admin",
+  manager:       "/admin",
+  student:       "/",
+};
+
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
+  const { role } = useRole();
   const location = useLocation();
+
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
+
+  // Если роль не студент и пользователь попал на "/" — редиректим на правильный дом
+  if (location.pathname === "/" && role !== "student") {
+    return <Navigate to={ROLE_HOME[role] ?? "/admin"} replace />;
+  }
+
   return <>{children}</>;
 }
 
 function AppRoutes() {
   const { isAuthenticated } = useAuth();
+  const { role } = useRole();
 
   return (
     <Routes>
       <Route
         path="/login"
-        element={isAuthenticated ? <Navigate to="/admin" replace /> : <Login />}
+        element={isAuthenticated ? <Navigate to={ROLE_HOME[role] ?? "/admin"} replace /> : <Login />}
       />
       <Route path="/" element={<RequireAuth><Dashboard /></RequireAuth>} />
       <Route path="/courses" element={<RequireAuth><Courses /></RequireAuth>} />
