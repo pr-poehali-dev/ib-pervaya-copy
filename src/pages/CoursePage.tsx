@@ -28,7 +28,8 @@ function correctArr(q: Question): number[] {
   return Array.isArray(q.correct) ? q.correct : [q.correct];
 }
 
-function checkCorrect(q: Question, selected: number[]): boolean {
+function checkCorrect(q: Question, selected: number[] | null): boolean {
+  if (!selected || selected.length === 0) return false;
   const correct = correctArr(q).slice().sort();
   const sel = selected.slice().sort();
   return correct.length === sel.length && correct.every((v, i) => v === sel[i]);
