@@ -209,8 +209,8 @@ export default function TenantsPanel({ initialTenants, canCreate = true }: Tenan
         <div className="bg-card rounded-2xl border border-border overflow-x-auto">
           <div>
             <table className="w-full text-sm">
-              <thead className="sticky top-[56px] z-10">
-                <tr className="border-b border-border bg-muted/95 backdrop-blur-sm">
+              <thead>
+                <tr className="border-b border-border bg-muted/40">
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Менеджер продаж</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Организация</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">ИНН</th>
