@@ -153,7 +153,7 @@ export default function BrandingPanel({ branding, onSave, onBack }: BrandingPane
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Инструкция по подключению</p>
           <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
             <li>Добавьте CNAME-запись в DNS вашего домена</li>
-            <li>Укажите значение: <code className="bg-card px-1.5 py-0.5 rounded text-foreground font-mono text-xs">platform.poehali.dev</code></li>
+            <li>Укажите значение: <code className="bg-card px-1.5 py-0.5 rounded text-foreground font-mono text-xs">i-sdo.ru</code></li>
             <li>Сохраните домен здесь и дождитесь активации SSL (до 24 часов)</li>
           </ol>
         </div>
