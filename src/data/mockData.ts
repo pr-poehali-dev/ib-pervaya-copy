@@ -1014,6 +1014,18 @@ export const DEFAULT_SYSTEM_USERS: SystemUser[] = [
     status: "active",
     registeredAt: "15.03.2025",
   },
+  {
+    id: 7,
+    lastName: "ЭКСПЕРТ",
+    firstName: "СЕРГЕЙ",
+    middleName: "ПЕТРОВИЧ",
+    email: "s.expert@expertpb.ru",
+    role: "Слушатель",
+    department: "Слушатели",
+    password: "expert123",
+    status: "active",
+    registeredAt: "24.04.2026",
+  },
 ];
 
 // ─── Настройки email ──────────────────────────────────────────────────────────
