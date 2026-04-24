@@ -20,6 +20,7 @@ import {
   SearchAnswerMode,
 } from "./course/CoursePageModes";
 import { NtdTestMode } from "./course/NtdTestMode";
+import { FavoritesMode } from "./course/FavoritesMode";
 import { CourseHeader } from "./course/CourseHeader";
 import { CourseHistoryModal } from "./course/CourseHistoryModal";
 import { CourseMenu } from "./course/CourseMenu";
@@ -49,6 +50,15 @@ export default function CoursePage() {
   const [adaptiveRecords, setAdaptiveRecords] = useState<Record<number, AdaptiveRecord>>({});
   const [sectionStatuses, setSectionStatuses] = useState<Record<number, SectionStatus>>({});
   const [sectionIdx,      setSectionIdx]      = useState(0);
+  const [favoriteIds,     setFavoriteIds]     = useState<Set<number>>(new Set());
+
+  function handleToggleFavorite(id: number) {
+    setFavoriteIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) { next.delete(id); } else { next.add(id); }
+      return next;
+    });
+  }
 
   function handleAdaptToggle(idx: number) {
     if (adaptAnswered) return;
@@ -154,6 +164,7 @@ export default function CoursePage() {
             onSetMode={setMode}
             onShowHistory={() => setShowHistory(true)}
             onSetHistoryProtocol={(attempt) => { setHistoryProtocol(attempt); }}
+            favoritesCount={favoriteIds.size}
           />
         )}
 
@@ -164,21 +175,12 @@ export default function CoursePage() {
 
         {/* Избранные вопросы */}
         {mode === "favorites" && (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 bg-gradient-to-br from-pink-500 to-rose-600 rounded-lg flex items-center justify-center">
-                <Icon name="Star" size={13} className="text-white" />
-              </div>
-              <p className="font-semibold text-sm">Избранные вопросы</p>
-            </div>
-            <div className="bg-card border border-border rounded-2xl p-8 flex flex-col items-center justify-center gap-3 text-center min-h-[240px]">
-              <div className="w-14 h-14 bg-pink-100 dark:bg-pink-900/30 rounded-2xl flex items-center justify-center">
-                <Icon name="Star" size={24} className="text-pink-500" />
-              </div>
-              <p className="font-semibold text-base">Избранные вопросы</p>
-              <p className="text-sm text-muted-foreground max-w-sm">Отмечайте вопросы звёздочкой в адаптивном тренинге — они появятся здесь для быстрого повторения. Этот режим находится в разработке.</p>
-            </div>
-          </div>
+          <FavoritesMode
+            questions={questions}
+            favoriteIds={favoriteIds}
+            onUnfavorite={handleToggleFavorite}
+            onBack={resetToMenu}
+          />
         )}
 
         {/* Адаптивный тренинг */}
@@ -202,6 +204,8 @@ export default function CoursePage() {
                   onNext={handleAdaptNext}
                   answered={adaptAnswered}
                   selected={adaptSelected}
+                  isFavorite={favoriteIds.has(questions[adaptIdx]?.id)}
+                  onToggleFavorite={handleToggleFavorite}
                 />
               </div>
               <QuestionNav

@@ -24,6 +24,7 @@ export function CourseMenu({
   onSetMode,
   onShowHistory,
   onSetHistoryProtocol,
+  favoritesCount,
 }: {
   course: CourseMenuCourse | undefined;
   dir: CourseMenuDir | undefined;
@@ -31,6 +32,7 @@ export function CourseMenu({
   onSetMode: (mode: LearningMode) => void;
   onShowHistory: () => void;
   onSetHistoryProtocol: (attempt: TestAttempt) => void;
+  favoritesCount?: number;
 }) {
   const [openMaterial, setOpenMaterial] = useState<CourseMaterial | null>(null);
   const [openNtd,      setOpenNtd]      = useState<NtdDoc | null>(null);
@@ -131,8 +133,15 @@ export function CourseMenu({
                 <div className={`w-10 h-10 bg-gradient-to-br ${m.color} rounded-xl flex items-center justify-center flex-shrink-0`}>
                   <Icon name={m.icon} size={18} className="text-white" />
                 </div>
-                <div>
-                  <p className="font-semibold text-sm mb-1">{m.title}</p>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="font-semibold text-sm">{m.title}</p>
+                    {m.key === "favorites" && favoritesCount !== undefined && favoritesCount > 0 && (
+                      <span className="text-[10px] font-bold bg-pink-500 text-white rounded-full px-1.5 py-0.5 leading-none">
+                        {favoritesCount}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-xs text-muted-foreground leading-relaxed">{m.desc}</p>
                 </div>
               </div>

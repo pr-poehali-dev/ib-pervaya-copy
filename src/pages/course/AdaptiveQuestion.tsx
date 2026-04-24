@@ -11,6 +11,8 @@ export function AdaptiveQuestion({
   onSubmit,
   answered,
   selected,
+  isFavorite,
+  onToggleFavorite,
 }: {
   question: Question;
   onToggle: (idx: number) => void;
@@ -18,13 +20,30 @@ export function AdaptiveQuestion({
   onSubmit: () => void;
   answered: boolean;
   selected: number[];
+  isFavorite?: boolean;
+  onToggleFavorite?: (id: number) => void;
 }) {
   const isCorrect = checkCorrect(question, selected);
 
   return (
     <div className="space-y-5">
       <div className="bg-card rounded-2xl border border-border p-6">
-        <p className="font-semibold text-base leading-relaxed mb-5">{question.text}</p>
+        <div className="flex items-start justify-between gap-3 mb-5">
+          <p className="font-semibold text-base leading-relaxed flex-1">{question.text}</p>
+          {onToggleFavorite && (
+            <button
+              onClick={() => onToggleFavorite(question.id)}
+              title={isFavorite ? "Убрать из избранного" : "Добавить в избранное"}
+              className={`flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${
+                isFavorite
+                  ? "text-pink-500 bg-pink-50 dark:bg-pink-900/20"
+                  : "text-muted-foreground hover:text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-900/20"
+              }`}
+            >
+              <Icon name="Star" size={17} />
+            </button>
+          )}
+        </div>
         <AnswerOptions question={question} selected={selected} answered={answered} onToggle={onToggle} />
       </div>
 
