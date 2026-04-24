@@ -75,10 +75,10 @@ export function SectionPicker({ sections, mode, adaptiveRecords = {}, onSelect, 
               onClick={() => onSelect(sec)}
             >
               <div className="flex items-start justify-between">
-                <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Раздел {i + 1}</div>
+                <div className="text-xs text-muted-foreground">Раздел</div>
                 <Icon name="ChevronRight" size={15} className="text-muted-foreground group-hover:text-violet-500 transition-colors" />
               </div>
-              <p className="font-bold text-sm leading-snug">{sec.name}</p>
+              <p className="font-bold text-base leading-snug">{sec.name}</p>
               <div className="space-y-1 text-sm text-muted-foreground">
                 <div className="flex items-center gap-1.5">
                   <Icon name="BookOpen" size={13} />
