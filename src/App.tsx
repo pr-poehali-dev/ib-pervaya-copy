@@ -24,6 +24,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import { StatsProvider } from "./contexts/StatsContext";
 import { RoleProvider, useRole } from "./contexts/RoleContext";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { BrandingProvider } from "./contexts/BrandingContext";
 
 const queryClient = new QueryClient();
 
@@ -98,6 +99,7 @@ function AppRoutes() {
 const App = () => (
   <RoleProvider>
   <StatsProvider>
+  <BrandingProvider>
   <ThemeProvider>
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -111,6 +113,7 @@ const App = () => (
     </TooltipProvider>
   </QueryClientProvider>
   </ThemeProvider>
+  </BrandingProvider>
   </StatsProvider>
   </RoleProvider>
 );

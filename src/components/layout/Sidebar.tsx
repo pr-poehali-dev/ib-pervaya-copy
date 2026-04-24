@@ -5,6 +5,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useStats } from "@/contexts/StatsContext";
 import { useRole } from "@/contexts/RoleContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useBranding } from "@/contexts/BrandingContext";
 import ThemePicker from "@/components/ui/ThemePicker";
 import { TENANTS } from "@/data/mockData";
 import { CHAT_THREADS, getUnreadCount } from "@/data/chatMockData";
@@ -71,6 +72,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const { stats } = useStats();
   const { role } = useRole();
   const { user, logout } = useAuth();
+  const { branding } = useBranding();
   const [themePickerOpen, setThemePickerOpen] = useState(false);
 
   function handleLogout() {
@@ -116,18 +118,28 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
       <div className={`border-b border-white/10 flex items-center ${collapsed ? "justify-center p-3" : "justify-between p-4 pl-6"}`}>
         {!collapsed && (
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 gradient-primary rounded-xl flex items-center justify-center flex-shrink-0">
-              <Icon name="BookOpen" size={18} className="text-white" />
-            </div>
-            <div>
-              <p className="text-white font-bold text-sm leading-tight font-['Manrope']">ИСП</p>
-              <p className="text-white/40 text-[10px]">Система подготовки</p>
-            </div>
+            {branding.logoUrl ? (
+              <img src={branding.logoUrl} alt="Логотип" className="h-9 max-w-[140px] object-contain" />
+            ) : (
+              <>
+                <div className="w-9 h-9 gradient-primary rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Icon name="BookOpen" size={18} className="text-white" />
+                </div>
+                <div>
+                  <p className="text-white font-bold text-sm leading-tight font-['Manrope']">ИСП</p>
+                  <p className="text-white/40 text-[10px]">Система подготовки</p>
+                </div>
+              </>
+            )}
           </div>
         )}
         {collapsed && (
-          <div className="w-9 h-9 gradient-primary rounded-xl flex items-center justify-center">
-            <Icon name="BookOpen" size={18} className="text-white" />
+          <div className="w-9 h-9 gradient-primary rounded-xl flex items-center justify-center overflow-hidden">
+            {branding.logoUrl ? (
+              <img src={branding.logoUrl} alt="Логотип" className="w-full h-full object-contain p-0.5" />
+            ) : (
+              <Icon name="BookOpen" size={18} className="text-white" />
+            )}
           </div>
         )}
         <button
