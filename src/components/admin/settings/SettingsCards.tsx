@@ -44,6 +44,25 @@ export default function SettingsCards({ org, systemUsers, setActivePanel }: Sett
         </div>
       </div>
 
+      {/* Карточка: Брендирование */}
+      <div
+        className="bg-card rounded-2xl border border-border p-6 cursor-pointer hover:border-pink-400 hover:shadow-lg hover:shadow-pink-100 dark:hover:shadow-pink-900/20 transition-all duration-200 group"
+        onClick={() => setActivePanel("branding")}
+      >
+        <div className="flex items-start justify-between mb-4">
+          <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-rose-600 rounded-xl flex items-center justify-center">
+            <Icon name="Palette" size={22} className="text-white" />
+          </div>
+          <Icon name="ChevronRight" size={18} className="text-muted-foreground group-hover:text-pink-500 transition-colors mt-1" />
+        </div>
+        <h3 className="font-bold text-base mb-1">Брендирование</h3>
+        <p className="text-muted-foreground text-sm mb-4">Логотип организации и свой домен платформы</p>
+        <div className="flex items-center gap-2">
+          <Icon name="Image" size={14} className="text-muted-foreground" />
+          <span className="text-sm text-muted-foreground">Логотип и домен</span>
+        </div>
+      </div>
+
       {/* Карточка: Пользователи системы */}
       <div
         className="bg-card rounded-2xl border border-border p-6 cursor-pointer hover:border-cyan-400 hover:shadow-lg hover:shadow-cyan-100 dark:hover:shadow-cyan-900/20 transition-all duration-200 group"
