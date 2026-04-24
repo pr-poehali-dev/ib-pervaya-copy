@@ -9,7 +9,7 @@ interface BrandingContextValue {
 const BrandingContext = createContext<BrandingContextValue | null>(null);
 
 export function BrandingProvider({ children }: { children: ReactNode }) {
-  const [branding, setBranding] = useState<BrandingSettings>({ logoUrl: null, customDomain: "" });
+  const [branding, setBranding] = useState<BrandingSettings>({ logoUrl: null, customDomain: "i-sdo.ru" });
   return (
     <BrandingContext.Provider value={{ branding, setBranding }}>
       {children}
