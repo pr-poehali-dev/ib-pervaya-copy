@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect, useCallback } from "react";
+import { useMemo, useState } from "react";
 import Icon from "@/components/ui/icon";
 import UserStatsModal from "@/components/admin/users/UserStatsModal";
 import GroupStatsModal from "./GroupStatsModal";
@@ -7,8 +7,11 @@ import GroupsBreadcrumbs from "./GroupsBreadcrumbs";
 import GroupsFiltersPanel from "./GroupsFiltersPanel";
 import GroupsTableView from "./GroupsTableView";
 import GroupsCardsView from "./GroupsCardsView";
-import { User, CourseAssignment, CourseStatus, allCourses, groups } from "@/components/admin/types";
+import { User, allCourses, groups } from "@/components/admin/types";
 import { useRole } from "@/contexts/RoleContext";
+import { getGroupStatus, getAvgProgress } from "./groupsUtils";
+import { useGroupsData } from "./useGroupsData";
+import { useGroupsSelection } from "./useGroupsSelection";
 
 interface AdminGroupsProps {
   users: User[];
@@ -16,25 +19,6 @@ interface AdminGroupsProps {
 
 type ViewMode = "table" | "cards";
 type NavLevel = "groups" | "members" | "member";
-
-function today(): string {
-  const d = new Date();
-  return `${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}.${d.getFullYear()}`;
-}
-
-function getGroupStatus(members: User[]): string {
-  if (members.length === 0) return "Не начато";
-  const completed = members.filter((u) => u.assignments.some((a) => a.progress === 100));
-  if (completed.length === members.length && members.length > 0) return "Завершено";
-  if (members.some((u) => u.assignments.some((a) => a.active))) return "Обучается";
-  return "Не начато";
-}
-
-function getAvgProgress(members: User[]): number {
-  const active = members.flatMap((u) => u.assignments.filter((a) => a.active));
-  if (active.length === 0) return 0;
-  return Math.round(active.reduce((s, a) => s + a.progress, 0) / active.length);
-}
 
 export default function AdminGroups({ users }: AdminGroupsProps) {
   const { tenantType } = useRole();
@@ -53,50 +37,23 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
   const [filterFio, setFilterFio] = useState<string[]>([]);
   const [filterCourse, setFilterCourse] = useState("");
 
-  // ─── Таблица: раскрытие/выбор ────────────────────────────────────────────────
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
-  const [expandedMembers, setExpandedMembers] = useState<Set<number>>(new Set());
-  const [selectedGroups, setSelectedGroups] = useState<Set<string>>(new Set());
-  const [actionsOpen, setActionsOpen] = useState(false);
-
-  // ─── Данные ──────────────────────────────────────────────────────────────────
-  const [localUsers, setLocalUsers] = useState<User[]>(users);
+  // ─── Модалки ─────────────────────────────────────────────────────────────────
   const [addCourseForGroup, setAddCourseForGroup] = useState<string | null>(null);
   const [addCourseForMember, setAddCourseForMember] = useState<number | null>(null);
   const [statsUser, setStatsUser] = useState<User | null>(null);
   const [groupStatsFor, setGroupStatsFor] = useState<string | null>(null);
 
-  const actionsButtonRef = useRef<HTMLButtonElement>(null);
-  const actionsMenuRef = useRef<HTMLDivElement>(null);
-  const [actionsPos, setActionsPos] = useState({ top: 0, right: 0 });
-
-  const recalcActionsPos = useCallback(() => {
-    if (!actionsButtonRef.current) return;
-    const r = actionsButtonRef.current.getBoundingClientRect();
-    setActionsPos({ top: r.bottom + window.scrollY + 4, right: window.innerWidth - r.right });
-  }, []);
-
-  useEffect(() => {
-    if (actionsOpen) recalcActionsPos();
-  }, [actionsOpen, recalcActionsPos]);
-
-  useEffect(() => {
-    if (!actionsOpen) return;
-    const handler = (e: MouseEvent) => {
-      const t = e.target as Node;
-      if (
-        actionsMenuRef.current && !actionsMenuRef.current.contains(t) &&
-        actionsButtonRef.current && !actionsButtonRef.current.contains(t)
-      ) setActionsOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [actionsOpen]);
-
-  const orgOptions = useMemo(() => [...new Set(localUsers.map((u) => u.organization).filter(Boolean))], [localUsers]);
-  const groupOptions = useMemo(() => [...new Set(localUsers.map((u) => u.group))], [localUsers]);
-  const fioOptions = useMemo(() => localUsers.map((u) => u.name), [localUsers]);
-  const courseOptions = useMemo(() => allCourses.map((c) => c.title), []);
+  // ─── Хуки ────────────────────────────────────────────────────────────────────
+  const {
+    localUsers,
+    addCoursesToMember,
+    addCoursesToGroup,
+    activateCourse,
+    extendCourse,
+    issueCertificate,
+    toggleAssignment,
+    handleActivateAll,
+  } = useGroupsData(users);
 
   const filteredGroups = useMemo(() => {
     return groups.filter((group) => {
@@ -114,6 +71,29 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
     });
   }, [localUsers, filterStatus, filterOrgs, filterGroups, filterFio, filterCourse]);
 
+  const {
+    expandedGroups,
+    expandedMembers,
+    selectedGroups,
+    actionsOpen,
+    setActionsOpen,
+    actionsPos,
+    actionsButtonRef,
+    actionsMenuRef,
+    allChecked,
+    someChecked,
+    toggleSelectAll,
+    toggleSelectOne,
+    toggleGroup,
+    toggleMember,
+  } = useGroupsSelection(filteredGroups);
+
+  // ─── Вспомогательные данные ───────────────────────────────────────────────────
+  const orgOptions = useMemo(() => [...new Set(localUsers.map((u) => u.organization).filter(Boolean))], [localUsers]);
+  const groupOptions = useMemo(() => [...new Set(localUsers.map((u) => u.group))], [localUsers]);
+  const fioOptions = useMemo(() => localUsers.map((u) => u.name), [localUsers]);
+  const courseOptions = useMemo(() => allCourses.map((c) => c.title), []);
+
   const resetFilters = () => {
     setFilterStatus("Все");
     setFilterOrgs([]);
@@ -122,30 +102,6 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
     setFilterCourse("");
   };
 
-  const allChecked = filteredGroups.length > 0 && filteredGroups.every((g) => selectedGroups.has(g));
-  const someChecked = filteredGroups.some((g) => selectedGroups.has(g));
-
-  const toggleSelectAll = () => {
-    if (allChecked) {
-      setSelectedGroups((prev) => { const next = new Set(prev); filteredGroups.forEach((g) => next.delete(g)); return next; });
-    } else {
-      setSelectedGroups((prev) => { const next = new Set(prev); filteredGroups.forEach((g) => next.add(g)); return next; });
-    }
-  };
-
-  const toggleSelectOne = (group: string) => {
-    setSelectedGroups((prev) => { const next = new Set(prev); if (next.has(group)) next.delete(group); else next.add(group); return next; });
-  };
-
-  const toggleGroup = (group: string) => {
-    setExpandedGroups((prev) => { const next = new Set(prev); if (next.has(group)) next.delete(group); else next.add(group); return next; });
-  };
-
-  const toggleMember = (userId: number) => {
-    setExpandedMembers((prev) => { const next = new Set(prev); if (next.has(userId)) next.delete(userId); else next.add(userId); return next; });
-  };
-
-  // ─── Навигация карточного режима ─────────────────────────────────────────────
   function openGroup(group: string) {
     setActiveGroup(group);
     setNavLevel("members");
@@ -155,72 +111,6 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
     setActiveMember(member);
     setNavLevel("member");
   }
-
-  // ─── Мутации данных ───────────────────────────────────────────────────────────
-  const addCoursesToMember = (userId: number, courseIds: number[]) => {
-    setLocalUsers((prev) => prev.map((u) => {
-      if (u.id !== userId) return u;
-      const newAssignments: CourseAssignment[] = courseIds
-        .filter((id) => !u.assignments.some((a) => a.courseId === id))
-        .map((id) => ({ courseId: id, active: true, progress: 0, assignedAt: today(), status: "pending" as CourseStatus }));
-      return { ...u, assignments: [...u.assignments, ...newAssignments] };
-    }));
-  };
-
-  const addCoursesToGroup = (group: string, courseIds: number[]) => {
-    setLocalUsers((prev) => prev.map((u) => {
-      if (u.group !== group) return u;
-      const newAssignments: CourseAssignment[] = courseIds
-        .filter((id) => !u.assignments.some((a) => a.courseId === id))
-        .map((id) => ({ courseId: id, active: true, progress: 0, assignedAt: today(), status: "pending" as CourseStatus }));
-      return { ...u, assignments: [...u.assignments, ...newAssignments] };
-    }));
-  };
-
-  const activateCourse = (userId: number, courseId: number, date?: string) => {
-    setLocalUsers((prev) => prev.map((u) => {
-      if (u.id !== userId) return u;
-      return { ...u, assignments: u.assignments.map((a) =>
-        a.courseId !== courseId ? a : { ...a, activatedAt: date ?? today(), active: true, status: "active" as CourseStatus }
-      )};
-    }));
-  };
-
-  const extendCourse = (userId: number, courseId: number) => {
-    setLocalUsers((prev) => prev.map((u) => {
-      if (u.id !== userId) return u;
-      return { ...u, assignments: u.assignments.map((a) =>
-        a.courseId !== courseId ? a : { ...a, status: "active" as CourseStatus }
-      )};
-    }));
-  };
-
-  const issueCertificate = (userId: number, courseId: number) => {
-    setLocalUsers((prev) => prev.map((u) => {
-      if (u.id !== userId) return u;
-      return { ...u, assignments: u.assignments.map((a) =>
-        a.courseId !== courseId ? a : { ...a, status: "certified" as CourseStatus, completedAt: a.completedAt ?? today() }
-      )};
-    }));
-  };
-
-  const toggleAssignment = (userId: number, courseId: number) => {
-    setLocalUsers((prev) => prev.map((u) => {
-      if (u.id !== userId) return u;
-      return { ...u, assignments: u.assignments.map((a) =>
-        a.courseId !== courseId ? a : { ...a, active: !a.active }
-      )};
-    }));
-  };
-
-  const handleActivateAll = (_group: string, members: User[]) => {
-    const today_ = today();
-    members.forEach((u) => {
-      u.assignments.filter((a) => !a.activatedAt).forEach((a) => {
-        activateCourse(u.id, a.courseId, today_);
-      });
-    });
-  };
 
   const addCourseMemberUser = addCourseForMember !== null
     ? localUsers.find((u) => u.id === addCourseForMember)
