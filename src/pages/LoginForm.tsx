@@ -6,7 +6,8 @@ const TEST_ACCOUNTS = [
   { email: "sales@isp.ru",   password: "sales123",   label: "Менеджер продаж" },
   { email: "manager@isp.ru", password: "manager123", label: "Менеджер" },
   { email: "student@isp.ru", password: "student123", label: "Слушатель" },
-  { email: "support@isp.ru", password: "support123", label: "Специалист ТП" },
+  { email: "support@isp.ru",   password: "support123", label: "Специалист ТП" },
+  { email: "s.expert@expertpb.ru", password: "expert123", label: "Слушатель (Эксперт)" },
 ];
 
 interface LoginFormProps {
