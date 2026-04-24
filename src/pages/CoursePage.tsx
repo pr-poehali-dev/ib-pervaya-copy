@@ -156,6 +156,44 @@ export default function CoursePage() {
           />
         )}
 
+        {/* Тесты по НТД */}
+        {mode === "ntd_test" && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 bg-gradient-to-br from-indigo-500 to-blue-700 rounded-lg flex items-center justify-center">
+                <Icon name="BookMarked" size={13} className="text-white" />
+              </div>
+              <p className="font-semibold text-sm">Тесты по НТД</p>
+            </div>
+            <div className="bg-card border border-border rounded-2xl p-8 flex flex-col items-center justify-center gap-3 text-center min-h-[240px]">
+              <div className="w-14 h-14 bg-indigo-100 dark:bg-indigo-900/30 rounded-2xl flex items-center justify-center">
+                <Icon name="BookMarked" size={24} className="text-indigo-600" />
+              </div>
+              <p className="font-semibold text-base">Тесты по НТД</p>
+              <p className="text-sm text-muted-foreground max-w-sm">Вопросы, сгруппированные по нормативным документам. Этот режим находится в разработке.</p>
+            </div>
+          </div>
+        )}
+
+        {/* Избранные вопросы */}
+        {mode === "favorites" && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 bg-gradient-to-br from-pink-500 to-rose-600 rounded-lg flex items-center justify-center">
+                <Icon name="Star" size={13} className="text-white" />
+              </div>
+              <p className="font-semibold text-sm">Избранные вопросы</p>
+            </div>
+            <div className="bg-card border border-border rounded-2xl p-8 flex flex-col items-center justify-center gap-3 text-center min-h-[240px]">
+              <div className="w-14 h-14 bg-pink-100 dark:bg-pink-900/30 rounded-2xl flex items-center justify-center">
+                <Icon name="Star" size={24} className="text-pink-500" />
+              </div>
+              <p className="font-semibold text-base">Избранные вопросы</p>
+              <p className="text-sm text-muted-foreground max-w-sm">Отмечайте вопросы звёздочкой в адаптивном тренинге — они появятся здесь для быстрого повторения. Этот режим находится в разработке.</p>
+            </div>
+          </div>
+        )}
+
         {/* Адаптивный тренинг */}
         {mode === "adaptive" && (
           <div className="space-y-4">

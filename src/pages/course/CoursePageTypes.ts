@@ -6,6 +6,8 @@ export type LearningMode =
   | "menu"
   | "adaptive"
   | "section_test"
+  | "ntd_test"
+  | "favorites"
   | "final_test"
   | "search_answer"
   | "test_result";
@@ -95,6 +97,22 @@ export const MODES = [
     desc: "5 вопросов подряд, затем разбор ошибок. Закрепление пройденного",
     color: "from-cyan-500 to-blue-600",
     bg: "bg-cyan-50 dark:bg-cyan-900/10 border-cyan-200 dark:border-cyan-800",
+  },
+  {
+    key: "ntd_test" as LearningMode,
+    icon: "BookMarked",
+    title: "Тесты по НТД",
+    desc: "Вопросы, сгруппированные по нормативным документам. Тренируйте знание конкретного НТД",
+    color: "from-indigo-500 to-blue-700",
+    bg: "bg-indigo-50 dark:bg-indigo-900/10 border-indigo-200 dark:border-indigo-800",
+  },
+  {
+    key: "favorites" as LearningMode,
+    icon: "Star",
+    title: "Избранные вопросы",
+    desc: "Вопросы, которые вы отметили как сложные или важные. Быстрое повторение перед экзаменом",
+    color: "from-pink-500 to-rose-600",
+    bg: "bg-pink-50 dark:bg-pink-900/10 border-pink-200 dark:border-pink-800",
   },
   {
     key: "final_test" as LearningMode,
