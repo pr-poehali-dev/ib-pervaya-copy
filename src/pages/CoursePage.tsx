@@ -25,6 +25,7 @@ import { FavoritesMode } from "./course/FavoritesMode";
 import { CourseHeader } from "./course/CourseHeader";
 import { CourseHistoryModal } from "./course/CourseHistoryModal";
 import { CourseMenu } from "./course/CourseMenu";
+import TaskSolvingMode from "./course/TaskSolvingMode";
 
 export default function CoursePage() {
   const { id } = useParams();
@@ -209,29 +210,9 @@ export default function CoursePage() {
           />
         )}
 
-        {/* Заглушка: Решение задач */}
+        {/* Решение задач */}
         {mode === "task_solving" && (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 bg-gradient-to-br from-teal-500 to-cyan-700 rounded-lg flex items-center justify-center">
-                <Icon name="PenLine" size={13} className="text-white" />
-              </div>
-              <p className="font-semibold text-sm">Решение задач</p>
-            </div>
-            <div className="bg-card border border-border rounded-2xl p-10 flex flex-col items-center gap-4 text-center">
-              <div className="w-16 h-16 bg-teal-100 dark:bg-teal-900/30 rounded-2xl flex items-center justify-center">
-                <Icon name="PenLine" size={28} className="text-teal-500" />
-              </div>
-              <div>
-                <p className="font-semibold text-base mb-1">Решение задач</p>
-                <p className="text-sm text-muted-foreground max-w-xs">Этот режим находится в разработке. Скоро здесь появятся практические задачи по экспертизе промышленной безопасности.</p>
-              </div>
-              <button onClick={resetToMenu} className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5 mt-2">
-                <Icon name="ArrowLeft" size={14} />
-                Назад к курсу
-              </button>
-            </div>
-          </div>
+          <TaskSolvingMode onBack={resetToMenu} />
         )}
 
         {/* Тесты по НТД */}
