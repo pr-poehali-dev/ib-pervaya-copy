@@ -6,8 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { INITIAL_USERS, ALL_COURSES, COURSE_DIRECTIONS } from "@/data/mockData";
 import type { CourseStatus } from "@/components/admin/types";
-
-const ME = INITIAL_USERS[0];
+import { useAuth } from "@/contexts/AuthContext";
 
 const STATUS_MAP: Record<CourseStatus, { label: string; cls: string; icon: string }> = {
   pending:   { label: "Ожидает активации",   cls: "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300",     icon: "Clock" },
@@ -37,7 +36,10 @@ const FILTER_OPTIONS: { key: FilterKey; label: string }[] = [
 
 export default function MyLearning() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [filter, setFilter] = useState<FilterKey>("all");
+
+  const ME = INITIAL_USERS.find((u) => u.email === user?.email) ?? INITIAL_USERS[0];
 
   const assignments = ME.assignments.map((a) => {
     const course =
