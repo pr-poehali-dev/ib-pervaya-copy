@@ -4,6 +4,7 @@ import Layout from "@/components/layout/Layout";
 import Icon from "@/components/ui/icon";
 import { COURSE_DIRECTIONS, INITIAL_USERS } from "@/data/mockData";
 import { getQuestionsForCourse } from "@/data/questionsBank";
+import { SectionPicker, buildSections, type CourseSection } from "./course/SectionPicker";
 import {
   type LearningMode,
   type QuestionAnswer,
@@ -33,10 +34,12 @@ export default function CoursePage() {
   const dir      = COURSE_DIRECTIONS.find((d) => d.courses.some((c) => c.id === courseId));
   const course   = dir?.courses.find((c) => c.id === courseId);
 
-  const user   = INITIAL_USERS[0];
+  const user   = INITIAL_USERS.find((u) => u.assignments.some((a) => a.courseId === courseId)) ?? INITIAL_USERS[0];
   const assign = user.assignments.find((a) => a.courseId === courseId);
 
-  const questions = getQuestionsForCourse(courseId);
+  const questions   = getQuestionsForCourse(courseId);
+  const isExpertPb  = dir?.subscriptionType === "expert_pb" || dir?.subscriptionType === "expert_gts";
+  const allSections = buildSections(questions);
 
   const [mode,         setMode]         = useState<LearningMode>("menu");
   const [adaptIdx,     setAdaptIdx]     = useState(0);
@@ -51,6 +54,10 @@ export default function CoursePage() {
   const [sectionStatuses, setSectionStatuses] = useState<Record<number, SectionStatus>>({});
   const [sectionIdx,      setSectionIdx]      = useState(0);
   const [favoriteIds,     setFavoriteIds]     = useState<Set<number>>(new Set());
+
+  // Для курсов expert_pb: выбранный раздел и режим в котором был выбор
+  const [selectedSection,     setSelectedSection]     = useState<CourseSection | null>(null);
+  const [sectionPickerMode,   setSectionPickerMode]   = useState<LearningMode | null>(null);
 
   function handleToggleFavorite(id: number) {
     setFavoriteIds((prev) => {
@@ -67,7 +74,7 @@ export default function CoursePage() {
 
   function handleAdaptSubmit() {
     if (adaptSelected.length === 0) return;
-    const q = questions[adaptIdx];
+    const q = activeQuestions[adaptIdx];
     const correct = checkCorrect(q, adaptSelected);
     setAdaptiveRecords((prev) => {
       const rec = prev[q.id] ?? { history: [] };
@@ -78,7 +85,7 @@ export default function CoursePage() {
   }
 
   function handleAdaptNext() {
-    setAdaptIdx((p) => (p + 1) % questions.length);
+    setAdaptIdx((p) => (p + 1) % activeQuestions.length);
     setAdaptAnswered(false);
     setAdaptSelected([]);
   }
@@ -124,7 +131,29 @@ export default function CoursePage() {
     setTestAnswers([]);
     setSectionStatuses({});
     setSectionIdx(0);
+    setSelectedSection(null);
+    setSectionPickerMode(null);
   }
+
+  // Для expert_pb: клик по карточке режима → показываем SectionPicker
+  function handleSetMode(m: LearningMode) {
+    if (isExpertPb && (m === "adaptive" || m === "section_test" || m === "ntd_test")) {
+      setSectionPickerMode(m);
+      setSelectedSection(null);
+    } else {
+      setMode(m);
+    }
+  }
+
+  // Когда пользователь выбрал раздел в SectionPicker
+  function handleSectionSelected(sec: CourseSection) {
+    setSelectedSection(sec);
+    setSectionPickerMode(null);
+    if (sectionPickerMode) setMode(sectionPickerMode);
+  }
+
+  // Активные вопросы: если выбран раздел — только его вопросы
+  const activeQuestions = selectedSection ? selectedSection.questions : questions;
 
   const progress = assign?.progress ?? 0;
 
@@ -156,21 +185,58 @@ export default function CoursePage() {
         )}
 
         {/* Меню режимов + материалы + НТД */}
-        {mode === "menu" && (
+        {mode === "menu" && !sectionPickerMode && (
           <CourseMenu
             course={course}
             dir={dir}
             finalTestHistory={finalTestHistory}
-            onSetMode={setMode}
+            onSetMode={handleSetMode}
             onShowHistory={() => setShowHistory(true)}
             onSetHistoryProtocol={(attempt) => { setHistoryProtocol(attempt); }}
             favoritesCount={favoriteIds.size}
+            isExpertPb={isExpertPb}
           />
+        )}
+
+        {/* Выбор раздела (только для expert_pb) */}
+        {sectionPickerMode && (
+          <SectionPicker
+            sections={allSections}
+            mode={sectionPickerMode}
+            adaptiveRecords={adaptiveRecords}
+            onSelect={handleSectionSelected}
+            onBack={resetToMenu}
+          />
+        )}
+
+        {/* Заглушка: Решение задач */}
+        {mode === "task_solving" && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 bg-gradient-to-br from-teal-500 to-cyan-700 rounded-lg flex items-center justify-center">
+                <Icon name="PenLine" size={13} className="text-white" />
+              </div>
+              <p className="font-semibold text-sm">Решение задач</p>
+            </div>
+            <div className="bg-card border border-border rounded-2xl p-10 flex flex-col items-center gap-4 text-center">
+              <div className="w-16 h-16 bg-teal-100 dark:bg-teal-900/30 rounded-2xl flex items-center justify-center">
+                <Icon name="PenLine" size={28} className="text-teal-500" />
+              </div>
+              <div>
+                <p className="font-semibold text-base mb-1">Решение задач</p>
+                <p className="text-sm text-muted-foreground max-w-xs">Этот режим находится в разработке. Скоро здесь появятся практические задачи по экспертизе промышленной безопасности.</p>
+              </div>
+              <button onClick={resetToMenu} className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5 mt-2">
+                <Icon name="ArrowLeft" size={14} />
+                Назад к курсу
+              </button>
+            </div>
+          </div>
         )}
 
         {/* Тесты по НТД */}
         {mode === "ntd_test" && (
-          <NtdTestMode questions={questions} />
+          <NtdTestMode questions={activeQuestions} onBack={selectedSection ? () => { setSectionPickerMode("ntd_test"); setMode("menu"); setSelectedSection(null); } : undefined} sectionName={selectedSection?.name} />
         )}
 
         {/* Избранные вопросы */}
@@ -186,30 +252,41 @@ export default function CoursePage() {
         {/* Адаптивный тренинг */}
         {mode === "adaptive" && (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-2">
                 <div className="w-7 h-7 bg-gradient-to-br from-violet-500 to-purple-700 rounded-lg flex items-center justify-center">
                   <Icon name="Zap" size={13} className="text-white" />
                 </div>
-                <p className="font-semibold text-sm">Адаптивный тренинг</p>
+                <div>
+                  <p className="font-semibold text-sm">Адаптивный тренинг</p>
+                  {selectedSection && <p className="text-xs text-muted-foreground">{selectedSection.name}</p>}
+                </div>
               </div>
-              <span className="text-xs text-muted-foreground">Вопрос {adaptIdx + 1} / {questions.length}</span>
+              <div className="flex items-center gap-3">
+                {selectedSection && (
+                  <button onClick={() => { setSectionPickerMode("adaptive"); setMode("menu"); setSelectedSection(null); setAdaptIdx(0); setAdaptAnswered(false); setAdaptSelected([]); }} className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+                    <Icon name="Layers" size={13} />
+                    Сменить раздел
+                  </button>
+                )}
+                <span className="text-xs text-muted-foreground">Вопрос {adaptIdx + 1} / {activeQuestions.length}</span>
+              </div>
             </div>
             <div className="flex gap-4 items-start">
               <div className="flex-1 min-w-0">
                 <AdaptiveQuestion
-                  question={questions[adaptIdx]}
+                  question={activeQuestions[adaptIdx]}
                   onToggle={handleAdaptToggle}
                   onSubmit={handleAdaptSubmit}
                   onNext={handleAdaptNext}
                   answered={adaptAnswered}
                   selected={adaptSelected}
-                  isFavorite={favoriteIds.has(questions[adaptIdx]?.id)}
+                  isFavorite={favoriteIds.has(activeQuestions[adaptIdx]?.id)}
                   onToggleFavorite={handleToggleFavorite}
                 />
               </div>
               <QuestionNav
-                questions={questions}
+                questions={activeQuestions}
                 currentIdx={adaptIdx}
                 onJump={handleAdaptJump}
                 mode="adaptive"
@@ -222,21 +299,32 @@ export default function CoursePage() {
         {/* Тест по разделу */}
         {mode === "section_test" && (
           <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center">
-                <Icon name="ClipboardList" size={13} className="text-white" />
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center">
+                  <Icon name="ClipboardList" size={13} className="text-white" />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm">Тест по разделу</p>
+                  {selectedSection && <p className="text-xs text-muted-foreground">{selectedSection.name}</p>}
+                </div>
               </div>
-              <p className="font-semibold text-sm">Тест по разделу</p>
+              {selectedSection && (
+                <button onClick={() => { setSectionPickerMode("section_test"); setMode("menu"); setSelectedSection(null); }} className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+                  <Icon name="Layers" size={13} />
+                  Сменить раздел
+                </button>
+              )}
             </div>
             <FinalTest
               onFinish={handleTestFinish}
               isFinal={false}
-              allQuestions={questions}
+              allQuestions={activeQuestions}
               onCurrentChange={setSectionIdx}
               onAnswer={handleSectionAnswer}
               navPanel={
                 <QuestionNav
-                  questions={questions.slice(0, 5)}
+                  questions={activeQuestions.slice(0, 5)}
                   currentIdx={sectionIdx}
                   onJump={() => {}}
                   mode="section"
@@ -264,7 +352,7 @@ export default function CoursePage() {
                 </p>
               </div>
             </div>
-            <FinalTest onFinish={(ans) => handleTestFinish(ans, true)} isFinal={true} allQuestions={questions} />
+            <FinalTest onFinish={(ans) => handleTestFinish(ans, true)} isFinal={true} allQuestions={activeQuestions} />
           </div>
         )}
 
@@ -282,7 +370,7 @@ export default function CoursePage() {
               isFinal={true}
               onRetry={() => { setTestAnswers([]); setMode("final_test"); }}
               onMenu={resetToMenu}
-              allQuestions={questions}
+              allQuestions={activeQuestions}
             />
           </div>
         )}
@@ -296,7 +384,7 @@ export default function CoursePage() {
               </div>
               <p className="font-semibold text-sm">Ответ на вопрос</p>
             </div>
-            <SearchAnswerMode onBack={resetToMenu} allQuestions={questions} />
+            <SearchAnswerMode onBack={resetToMenu} allQuestions={activeQuestions} />
           </div>
         )}
 

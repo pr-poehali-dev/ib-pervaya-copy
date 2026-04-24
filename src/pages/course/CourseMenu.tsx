@@ -25,6 +25,7 @@ export function CourseMenu({
   onShowHistory,
   onSetHistoryProtocol,
   favoritesCount,
+  isExpertPb,
 }: {
   course: CourseMenuCourse | undefined;
   dir: CourseMenuDir | undefined;
@@ -33,6 +34,7 @@ export function CourseMenu({
   onShowHistory: () => void;
   onSetHistoryProtocol: (attempt: TestAttempt) => void;
   favoritesCount?: number;
+  isExpertPb?: boolean;
 }) {
   const [openMaterial, setOpenMaterial] = useState<CourseMaterial | null>(null);
   const [openNtd,      setOpenNtd]      = useState<NtdDoc | null>(null);
@@ -123,6 +125,7 @@ export function CourseMenu({
               </div>
             );
           }
+          const hasSectionPick = isExpertPb && (m.key === "adaptive" || m.key === "section_test" || m.key === "ntd_test");
           return (
             <button
               key={m.key}
@@ -141,6 +144,12 @@ export function CourseMenu({
                         {favoritesCount}
                       </span>
                     )}
+                    {hasSectionPick && (
+                      <span className="text-[10px] font-medium bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-300 rounded-full px-1.5 py-0.5 leading-none flex items-center gap-0.5">
+                        <Icon name="Layers" size={9} />
+                        По разделам
+                      </span>
+                    )}
                   </div>
                   <p className="text-xs text-muted-foreground leading-relaxed">{m.desc}</p>
                 </div>
@@ -148,6 +157,24 @@ export function CourseMenu({
             </button>
           );
         })}
+
+        {/* Карточка: Решение задач — только для expert_pb */}
+        {isExpertPb && (
+          <button
+            onClick={() => onSetMode("task_solving")}
+            className="text-left p-5 rounded-2xl border-2 transition-all hover:shadow-md group bg-teal-50 dark:bg-teal-900/10 border-teal-200 dark:border-teal-800 hover:border-teal-400"
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-teal-500 to-cyan-700 rounded-xl flex items-center justify-center flex-shrink-0">
+                <Icon name="PenLine" size={18} className="text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-sm mb-1">Решение задач</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">Практические задачи по экспертизе промышленной безопасности</p>
+              </div>
+            </div>
+          </button>
+        )}
       </div>
 
       {/* Модалка просмотра материала */}

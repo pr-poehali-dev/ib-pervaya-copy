@@ -10,7 +10,8 @@ export type LearningMode =
   | "favorites"
   | "final_test"
   | "search_answer"
-  | "test_result";
+  | "test_result"
+  | "task_solving";
 
 // ─── Ответы и попытки ─────────────────────────────────────────────────────────
 

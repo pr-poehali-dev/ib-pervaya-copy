@@ -187,8 +187,12 @@ function NtdQuiz({
 
 export function NtdTestMode({
   questions,
+  onBack,
+  sectionName,
 }: {
   questions: Question[];
+  onBack?: () => void;
+  sectionName?: string;
 }) {
   const [selectedNtd, setSelectedNtd] = useState<string | null>(null);
 
@@ -212,10 +216,18 @@ export function NtdTestMode({
     <div className="space-y-4">
       {/* Шапка */}
       <div className="flex items-center gap-2">
+        {onBack && (
+          <button onClick={onBack} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mr-1">
+            <Icon name="ArrowLeft" size={15} />
+          </button>
+        )}
         <div className="w-7 h-7 bg-gradient-to-br from-indigo-500 to-blue-700 rounded-lg flex items-center justify-center">
           <Icon name="BookMarked" size={13} className="text-white" />
         </div>
-        <p className="font-semibold text-sm">Тесты по НТД</p>
+        <div>
+          <p className="font-semibold text-sm">Тесты по НТД</p>
+          {sectionName && <p className="text-xs text-muted-foreground">{sectionName}</p>}
+        </div>
         <span className="ml-auto text-xs text-muted-foreground">{ntdKeys.length} документов</span>
       </div>
 

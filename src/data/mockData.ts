@@ -272,7 +272,7 @@ export const GROUPS_DATA: Group[] = [
     inn: "7705678901",
     status: "active",
     createdAt: monthsAgo(3),
-    userIds: [9, 10, 11, 12],
+    userIds: [9, 10, 11, 12, 22],
     courseIds: [401, 402],
   },
   {
@@ -633,6 +633,21 @@ export const INITIAL_USERS: User[] = [
     assignments: [
       { courseId: 201, active: true,  progress: 65,  assignedAt: daysAgo(20), activatedAt: daysAgo(19), status: "active",    dpoRequired: true  },
       { courseId: 202, active: true,  progress: 20,  assignedAt: daysAgo(5),  activatedAt: daysAgo(4),  status: "active",    dpoRequired: true  },
+    ],
+  },
+  {
+    id: 22,
+    name: "Сергей Эксперт",
+    email: "s.expert@expertpb.ru",
+    initials: "СЭ",
+    group: "ЭПБ-2026/01",
+    groupId: 5,
+    organization: "ООО «ЭкспертПБ»",
+    clientOrganizationId: 2,
+    role: "Студент",
+    assignments: [
+      { courseId: 401, active: true,  progress: 20,  assignedAt: daysAgo(10), activatedAt: daysAgo(8), status: "active", dpoRequired: false },
+      { courseId: 402, active: false, progress: 0,   assignedAt: daysAgo(3),                           status: "pending", dpoRequired: false },
     ],
   },
 ];
