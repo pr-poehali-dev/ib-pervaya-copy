@@ -253,7 +253,7 @@ export default function CoursePage() {
                 <span className="text-xs text-muted-foreground">Вопрос {adaptIdx + 1} / {activeQuestions.length}</span>
               </div>
             </div>
-            <div className="flex flex-col lg:flex-row gap-4 items-start">
+            <div className="flex flex-col-reverse lg:flex-row gap-4 items-start">
               <div className="flex-1 min-w-0 w-full">
                 <AdaptiveQuestion
                   question={activeQuestions[adaptIdx]}

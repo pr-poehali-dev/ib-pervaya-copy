@@ -150,7 +150,7 @@ export function FinalTest({
           </div>
         )}
 
-        <div className="flex flex-col lg:flex-row gap-4 items-start">
+        <div className="flex flex-col-reverse lg:flex-row gap-4 items-start lg:items-start">
           <div className="flex-1 min-w-0 w-full space-y-4">
             <div className="bg-card rounded-2xl border border-border px-4 py-3 flex items-center gap-3">
               <span className="text-xs sm:text-sm text-muted-foreground flex-shrink-0">

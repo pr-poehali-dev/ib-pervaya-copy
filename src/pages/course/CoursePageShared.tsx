@@ -34,7 +34,7 @@ export function QuestionNav({
   finishButton?: React.ReactNode;
   answeredCls?: string;
 }) {
-  const [visible, setVisible] = useState(true);
+  const [visible, setVisible] = useState(typeof window !== "undefined" ? window.innerWidth >= 1024 : true);
 
   const legend = mode === "adaptive" ? [
     { cls: "bg-emerald-500",                   label: "Изучен (3 верных подряд)" },
@@ -82,7 +82,7 @@ export function QuestionNav({
       </div>
 
       <div className="bg-card border border-border rounded-2xl p-3 space-y-3">
-        <div className="grid grid-cols-8 sm:grid-cols-10 lg:grid-cols-5 gap-1.5">
+        <div className="grid grid-cols-6 sm:grid-cols-8 lg:grid-cols-5 gap-1.5">
           {questions.map((q, idx) => {
             const isCurrent = idx === currentIdx;
             let cls = "";
@@ -98,7 +98,7 @@ export function QuestionNav({
               <button
                 key={q.id}
                 onClick={() => onJump(idx)}
-                className={`w-8 h-8 rounded-lg text-xs font-bold transition-all flex items-center justify-center ${cls} ${
+                className={`w-9 h-9 rounded-lg text-xs font-bold transition-all flex items-center justify-center ${cls} ${
                   isCurrent ? "ring-2 ring-violet-500 ring-offset-1 scale-110" : "hover:scale-105"
                 }`}
                 title={`Вопрос ${idx + 1}`}

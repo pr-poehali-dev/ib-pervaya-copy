@@ -63,11 +63,11 @@ export function TestResult({
         </Button>
         <Button
           variant="outline"
-          className="rounded-xl gap-2 sm:px-4"
+          className="flex-1 rounded-xl gap-2"
           onClick={() => setShowProtocol((v) => !v)}
         >
           <Icon name={showProtocol ? "ChevronUp" : "FileText"} size={15} />
-          {showProtocol ? "Скрыть протокол" : "Разбор ответов"}
+          {showProtocol ? "Скрыть" : "Разбор ответов"}
         </Button>
       </div>
 
