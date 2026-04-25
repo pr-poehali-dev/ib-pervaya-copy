@@ -51,25 +51,7 @@ export default function ChatStudent() {
     }
   }, [activeTab, selectedThread]);
 
-  function handleSelectThread(id: number) {
-    setSelectedId(id);
-    setInputText("");
-    setAttachedFile(null);
-    // Mark as read
-    setThreads((prev) =>
-      prev.map((t) =>
-        t.id === id
-          ? {
-              ...t,
-              messages: t.messages.map((m) =>
-                m.authorId !== userEmail ? { ...m, isRead: true } : m
-              ),
-              unreadCount: 0,
-            }
-          : t
-      )
-    );
-  }
+
 
   function handleSend() {
     if (!selectedThread || (!inputText.trim() && !attachedFile)) return;
@@ -161,12 +143,35 @@ export default function ChatStudent() {
     setShowNewModal(false);
   }
 
+  const [showList, setShowList] = useState(true);
+
+  function handleSelectThread(id: number) {
+    setSelectedId(id);
+    setInputText("");
+    setAttachedFile(null);
+    setShowList(false);
+    // Mark as read
+    setThreads((prev) =>
+      prev.map((t) =>
+        t.id === id
+          ? {
+              ...t,
+              messages: t.messages.map((m) =>
+                m.authorId !== userEmail ? { ...m, isRead: true } : m
+              ),
+              unreadCount: 0,
+            }
+          : t
+      )
+    );
+  }
+
   return (
     <Layout>
-      <div className="flex h-[calc(100vh-7rem)] -mx-6 -mt-6 md:-mx-8 md:-mt-8 overflow-hidden rounded-none md:rounded-xl border border-border bg-background shadow-sm">
+      <div className="flex h-[calc(100svh-7rem)] -mx-4 -mt-4 sm:-mx-6 sm:-mt-6 md:-mx-8 md:-mt-8 overflow-hidden rounded-none md:rounded-xl border border-border bg-background shadow-sm">
 
         {/* ── Левая колонка: список тредов ─────────────────────────────── */}
-        <div className="w-80 flex-shrink-0 flex flex-col border-r border-border bg-card">
+        <div className={`${showList ? "flex" : "hidden"} md:flex w-full md:w-80 flex-shrink-0 flex-col border-r border-border bg-card`}>
           {/* Заголовок */}
           <div className="px-4 pt-4 pb-3 border-b border-border">
             <h2 className="text-base font-bold text-foreground">Мои обращения</h2>
@@ -239,7 +244,7 @@ export default function ChatStudent() {
         </div>
 
         {/* ── Правая колонка: диалог ───────────────────────────────────── */}
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className={`${showList ? "hidden" : "flex"} md:flex flex-1 flex-col min-w-0`}>
           {!selectedThread ? (
             /* Плейсхолдер */
             <div className="flex-1 flex flex-col items-center justify-center gap-3 text-center px-8">
@@ -262,8 +267,16 @@ export default function ChatStudent() {
           ) : (
             <>
               {/* Шапка треда */}
-              <div className="flex items-start justify-between gap-4 px-5 py-3.5 border-b border-border bg-card flex-shrink-0">
-                <div className="min-w-0">
+              <div className="flex items-start justify-between gap-4 px-3 sm:px-5 py-3.5 border-b border-border bg-card flex-shrink-0">
+                <div className="flex items-center gap-2 min-w-0">
+                  <button
+                    type="button"
+                    onClick={() => setShowList(true)}
+                    className="md:hidden p-1 rounded-lg hover:bg-muted text-muted-foreground flex-shrink-0"
+                  >
+                    <Icon name="ChevronLeft" size={20} />
+                  </button>
+                  <div className="min-w-0">
                   <h3 className="font-semibold text-sm text-foreground leading-snug line-clamp-1">
                     {selectedThread.subject}
                   </h3>
@@ -274,6 +287,7 @@ export default function ChatStudent() {
                       ? "Техническая поддержка"
                       : selectedThread.tenantName ?? ""}
                   </p>
+                  </div>
                 </div>
                 <StatusBadge status={selectedThread.status} />
               </div>

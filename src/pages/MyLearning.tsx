@@ -153,11 +153,11 @@ export default function MyLearning() {
               return (
                 <div
                   key={a.courseId}
-                  className="bg-card rounded-2xl border border-border p-5 flex items-center gap-5 hover:shadow-md transition-all cursor-pointer group"
+                  className="bg-card rounded-2xl border border-border p-4 sm:p-5 flex items-center gap-3 sm:gap-5 hover:shadow-md transition-all cursor-pointer group"
                   onClick={() => (a.status === "active" || a.status === "completed" || a.status === "certified") && navigate(`/course/${a.courseId}`)}
                 >
                   {/* Иконка */}
-                  <div className={`w-14 h-14 bg-gradient-to-br ${GRADIENTS[idx % GRADIENTS.length]} rounded-2xl flex items-center justify-center text-2xl flex-shrink-0`}>
+                  <div className={`w-11 h-11 sm:w-14 sm:h-14 bg-gradient-to-br ${GRADIENTS[idx % GRADIENTS.length]} rounded-2xl flex items-center justify-center text-xl sm:text-2xl flex-shrink-0`}>
                     {emoji}
                   </div>
 
@@ -166,7 +166,7 @@ export default function MyLearning() {
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <p className="font-semibold text-base truncate group-hover:text-primary transition-colors">{title}</p>
-                        <div className="flex items-center gap-3 mt-1">
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
                           {lessons && (
                             <span className="text-xs text-muted-foreground flex items-center gap-1">
                               <Icon name="BookOpen" size={12} />
@@ -181,7 +181,7 @@ export default function MyLearning() {
                           )}
                           <span className="text-xs text-muted-foreground flex items-center gap-1">
                             <Icon name="Calendar" size={12} />
-                            Назначен: {a.assignedAt}
+                            {a.assignedAt}
                           </span>
                         </div>
                       </div>

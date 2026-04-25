@@ -30,26 +30,28 @@ export default function AdminTabBar({ activeTab, setActiveTab, hideSettings = fa
   });
 
   return (
-    <div className="flex gap-2">
-      {visibleTabs.map((tab) => (
-        <button
-          key={tab.key}
-          onClick={() => setActiveTab(tab.key)}
-          className={`flex flex-col items-center gap-1 py-3 rounded-xl text-xs font-medium transition-all relative ${tab.narrow ? "flex-[0.7]" : "flex-1"} ${
-            activeTab === tab.key
-              ? "gradient-primary text-white shadow-md shadow-purple-200"
-              : "bg-card border border-border text-muted-foreground hover:border-primary hover:text-primary"
-          }`}
-        >
-          <Icon name={tab.icon} size={20} />
-          {tab.label}
-          {tab.key === "certificates" && certReadyCount > 0 && (
-            <span className="absolute top-1.5 right-1.5 bg-amber-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
-              {certReadyCount}
-            </span>
-          )}
-        </button>
-      ))}
+    <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 pb-1 sm:pb-0">
+      <div className="flex gap-2 min-w-max sm:min-w-0">
+        {visibleTabs.map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={`flex flex-col items-center gap-1 py-2.5 sm:py-3 px-3 sm:px-0 rounded-xl text-[10px] sm:text-xs font-medium transition-all relative ${tab.narrow ? "w-16 sm:flex-[0.7]" : "w-20 sm:flex-1"} ${
+              activeTab === tab.key
+                ? "gradient-primary text-white shadow-md shadow-purple-200"
+                : "bg-card border border-border text-muted-foreground hover:border-primary hover:text-primary"
+            }`}
+          >
+            <Icon name={tab.icon} size={18} />
+            <span className="leading-tight text-center">{tab.label}</span>
+            {tab.key === "certificates" && certReadyCount > 0 && (
+              <span className="absolute top-1.5 right-1.5 bg-amber-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                {certReadyCount}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

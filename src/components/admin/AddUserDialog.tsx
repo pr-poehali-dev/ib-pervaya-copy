@@ -55,7 +55,7 @@ export default function AddUserDialog({
 
       {/* Основное окно — сдвигается влево при открытии панели курсов */}
       <div
-        className={`relative bg-background rounded-2xl shadow-2xl z-10 w-full max-w-lg mx-4 flex flex-col max-h-[90vh] overflow-y-auto transition-all duration-300 ${showCoursesPicker ? "-translate-x-[220px]" : ""}`}
+        className={`relative bg-background rounded-2xl shadow-2xl z-10 w-full max-w-lg mx-3 sm:mx-4 flex flex-col max-h-[90svh] overflow-y-auto transition-all duration-300 ${showCoursesPicker ? "sm:-translate-x-[220px]" : ""}`}
       >
         {/* Заголовок */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border flex-shrink-0">
@@ -67,7 +67,7 @@ export default function AddUserDialog({
 
         <div className="p-6 space-y-4">
           {/* ФИО */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="space-y-1.5">
               <Label>Фамилия <span className="text-destructive">*</span></Label>
               <Input className="rounded-xl" placeholder="Иванов" value={newLastName} onChange={(e) => { setNewLastName(e.target.value); setNameError(""); }} />
@@ -127,7 +127,7 @@ export default function AddUserDialog({
               </Button>
 
               {showGroupDropdown && (
-                <div className="absolute left-0 top-full mt-1 z-30 bg-background border border-border rounded-xl shadow-xl w-72 overflow-hidden">
+                <div className="absolute left-0 top-full mt-1 z-30 bg-background border border-border rounded-xl shadow-xl w-full sm:w-72 min-w-[240px] overflow-hidden">
                   <div className="px-3 py-2 border-b border-border">
                     <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Существующие группы</p>
                   </div>

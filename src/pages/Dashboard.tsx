@@ -72,21 +72,21 @@ export default function Dashboard() {
       <div className="max-w-6xl mx-auto space-y-8">
 
         {/* Заголовок */}
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-bold text-foreground mb-1">
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1">
               {getGreeting()}, {firstName}! 👋
             </h1>
-            <p className="text-muted-foreground">Продолжайте обучение — вы на правильном пути</p>
+            <p className="text-sm sm:text-base text-muted-foreground">Продолжайте обучение — вы на правильном пути</p>
           </div>
-          <div className="text-right text-sm text-muted-foreground">
+          <div className="text-right text-sm text-muted-foreground flex-shrink-0">
             <p className="font-medium text-foreground">{day}</p>
             <p>{date}</p>
           </div>
         </div>
 
         {/* Статистика */}
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
           {stats.map((stat) => (
             <div key={stat.label} className="bg-card rounded-xl px-4 py-3 border border-border shadow-sm flex items-center gap-3">
               <div className={`w-8 h-8 ${stat.bg} rounded-lg flex items-center justify-center flex-shrink-0`}>
