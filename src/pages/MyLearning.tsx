@@ -64,7 +64,7 @@ export default function MyLearning() {
 
         {/* Заголовок */}
         <div>
-          <h1 className="text-3xl font-bold mb-1">Моё обучение</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold mb-1">Моё обучение</h1>
           <p className="text-muted-foreground">Курсы, назначенные вам для прохождения</p>
         </div>
 
@@ -135,7 +135,7 @@ export default function MyLearning() {
 
         {/* Список курсов */}
         {filtered.length === 0 ? (
-          <div className="bg-card rounded-2xl border border-border p-12 text-center">
+          <div className="bg-card rounded-2xl border border-border p-8 sm:p-12 text-center">
             <Icon name="BookOpen" size={40} className="text-muted-foreground mx-auto mb-3" />
             <p className="font-semibold text-lg">Нет курсов в этой категории</p>
             <p className="text-muted-foreground text-sm mt-1">Обратитесь к администратору для назначения курсов</p>
@@ -163,9 +163,15 @@ export default function MyLearning() {
 
                   {/* Инфо */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="font-semibold text-base truncate group-hover:text-primary transition-colors">{title}</p>
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 sm:gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start gap-2 flex-wrap">
+                          <p className="font-semibold text-sm sm:text-base truncate group-hover:text-primary transition-colors">{title}</p>
+                          <span className={`sm:hidden px-2 py-0.5 rounded-lg text-xs font-medium flex items-center gap-1 flex-shrink-0 ${statusInfo.cls}`}>
+                            <Icon name={statusInfo.icon} size={11} />
+                            {statusInfo.label}
+                          </span>
+                        </div>
                         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
                           {lessons && (
                             <span className="text-xs text-muted-foreground flex items-center gap-1">
@@ -185,7 +191,7 @@ export default function MyLearning() {
                           </span>
                         </div>
                       </div>
-                      <span className={`px-2.5 py-1 rounded-lg text-xs font-medium flex items-center gap-1.5 flex-shrink-0 ${statusInfo.cls}`}>
+                      <span className={`hidden sm:flex px-2.5 py-1 rounded-lg text-xs font-medium items-center gap-1.5 flex-shrink-0 ${statusInfo.cls}`}>
                         <Icon name={statusInfo.icon} size={12} />
                         {statusInfo.label}
                       </span>
