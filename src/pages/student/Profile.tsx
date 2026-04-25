@@ -172,7 +172,7 @@ export default function Profile() {
               onClick={() => setEditOpen(true)}
             >
               <Icon name="User" size={15} />
-              <span className="hidden sm:inline">Мои данные</span>
+              <span className="hidden sm:inline">Мои дан��ые</span>
             </Button>
           </div>
         </div>
@@ -272,7 +272,7 @@ export default function Profile() {
             })}
           </div>
           <div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
-            <span>Меньше</span>
+            <span>Ме��ьше</span>
             <div className="flex gap-1">
               {["bg-muted", "bg-violet-200 dark:bg-violet-900", "bg-violet-400 dark:bg-violet-700", "bg-violet-600"].map((c) => (
                 <div key={c} className={`w-4 h-4 rounded-sm ${c}`} />
