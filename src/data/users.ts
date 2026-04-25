@@ -1,5 +1,5 @@
-import type { User, Group } from "@/components/admin/types";
-import type { SystemUser } from "@/components/admin/settings/types";
+import type { User, Group } from "@/types/admin";
+import type { SystemUser } from "@/types/settings";
 
 // ─── Вспомогательные функции дат ─────────────────────────────────────────────
 

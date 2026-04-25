@@ -1,4 +1,4 @@
-import type { OrgData, EmailSettings } from "@/components/admin/settings/types";
+import type { OrgData, EmailSettings } from "@/types/settings";
 
 // ─── Настройки организации ────────────────────────────────────────────────────
 // API: GET /api/org → OrgData

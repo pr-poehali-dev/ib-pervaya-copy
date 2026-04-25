@@ -1,4 +1,4 @@
-import type { Course, CourseDirection } from "@/components/admin/types";
+import type { Course, CourseDirection } from "@/types/admin";
 
 // ─── Направления курсов ───────────────────────────────────────────────────────
 // API: GET /api/course-directions → CourseDirection[]

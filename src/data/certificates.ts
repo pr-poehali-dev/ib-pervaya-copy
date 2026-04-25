@@ -1,4 +1,4 @@
-import type { Certificate, STPRequest } from "@/components/admin/types";
+import type { Certificate, STPRequest } from "@/types/admin";
 
 // ─── Вспомогательные функции дат ─────────────────────────────────────────────
 

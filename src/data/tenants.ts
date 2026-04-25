@@ -1,4 +1,4 @@
-import type { Tenant, ClientOrganization, TenantCourse, SubscriptionBalance } from "@/components/admin/types";
+import type { Tenant, ClientOrganization, TenantCourse, SubscriptionBalance } from "@/types/admin";
 
 // ─── Вспомогательные функции дат ─────────────────────────────────────────────
 
