@@ -67,7 +67,7 @@ export function QuestionNav({
   }
 
   return (
-    <div className="flex-shrink-0 w-52">
+    <div className="flex-shrink-0 w-full lg:w-52">
       <div className="flex items-center justify-between mb-2">
         <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
           Вопросы
@@ -82,7 +82,7 @@ export function QuestionNav({
       </div>
 
       <div className="bg-card border border-border rounded-2xl p-3 space-y-3">
-        <div className="grid grid-cols-5 gap-1.5">
+        <div className="grid grid-cols-8 sm:grid-cols-10 lg:grid-cols-5 gap-1.5">
           {questions.map((q, idx) => {
             const isCurrent = idx === currentIdx;
             let cls = "";

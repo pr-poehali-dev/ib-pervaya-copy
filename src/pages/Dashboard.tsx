@@ -166,7 +166,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <div className="mt-3 flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">{course?.hours} ч · Активирован {assignment.activatedAt}</span>
+                    <span className="text-xs text-muted-foreground truncate">{course?.hours} ч · {assignment.activatedAt}</span>
                     <span className="text-xs text-violet-600 font-medium flex items-center gap-1 group-hover:gap-2 transition-all">
                       Продолжить <Icon name="ChevronRight" size={13} />
                     </span>
@@ -179,21 +179,21 @@ export default function Dashboard() {
 
         {/* Баннер следующего курса */}
         {nextCourse && (
-          <div className="bg-gradient-to-r from-violet-600 to-purple-700 rounded-2xl p-6 text-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-xl font-bold mb-1">Продолжите там, где остановились</h3>
-                <p className="text-white/80 text-sm mb-4 max-w-md">
+          <div className="bg-gradient-to-r from-violet-600 to-purple-700 rounded-2xl p-5 sm:p-6 text-white">
+            <div className="flex items-center justify-between gap-4">
+              <div className="min-w-0">
+                <h3 className="text-lg sm:text-xl font-bold mb-1">Продолжите там, где остановились</h3>
+                <p className="text-white/80 text-sm mb-4 line-clamp-2">
                   {nextCourse.course?.title} — {nextCourse.assignment.progress}% завершено
                 </p>
                 <button
                   onClick={() => navigate(`/course/${nextCourse.assignment.courseId}`)}
-                  className="bg-white text-violet-700 font-semibold px-5 py-2.5 rounded-xl text-sm hover:bg-white/90 transition-colors"
+                  className="bg-white text-violet-700 font-semibold px-4 sm:px-5 py-2.5 rounded-xl text-sm hover:bg-white/90 transition-colors"
                 >
                   Продолжить обучение →
                 </button>
               </div>
-              <span className="text-6xl opacity-80">🚀</span>
+              <span className="text-4xl sm:text-6xl opacity-80 flex-shrink-0">🚀</span>
             </div>
           </div>
         )}
