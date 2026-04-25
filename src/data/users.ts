@@ -1,0 +1,389 @@
+import type { User, Group } from "@/components/admin/types";
+import type { SystemUser } from "@/components/admin/settings/types";
+
+// ─── Вспомогательные функции дат ─────────────────────────────────────────────
+
+function fmt(d: Date): string {
+  return `${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}.${d.getFullYear()}`;
+}
+
+function daysAgo(n: number): string {
+  const d = new Date(); d.setDate(d.getDate() - n); return fmt(d);
+}
+
+function monthsAgo(n: number): string {
+  const d = new Date(); d.setMonth(d.getMonth() - n); return fmt(d);
+}
+
+// ─── Роли слушателей ──────────────────────────────────────────────────────────
+
+export const ROLES: string[] = ["Студент", "Преподаватель", "Наблюдатель"];
+
+// ─── Группы (legacy, строковые) ───────────────────────────────────────────────
+
+export const GROUPS: string[] = [
+  "ПБ-2024/01", "ОТ-2024/02", "ЭНБ-2024/01", "ПБ-2024/02",
+  "ЭПБ-2026/01", "ОТ-2025/03", "ПБ-2025/03", "ЭНБ-2025/02",
+];
+
+// ─── Группы обучения ──────────────────────────────────────────────────────────
+// API: GET /api/groups → Group[]
+
+export const GROUPS_DATA: Group[] = [
+  { id: 1, name: "ПБ-2024/01",   tenantId: 1, clientOrganizationId: 1, clientOrganizationName: "ООО «ТехноПром»",       inn: "7701234567", status: "active",   createdAt: monthsAgo(2),  userIds: [1, 2],              courseIds: [101, 102] },
+  { id: 2, name: "ОТ-2024/02",   tenantId: 1, clientOrganizationId: 2, clientOrganizationName: "АО «СтройГрупп»",       inn: "7702345678", status: "active",   createdAt: monthsAgo(1),  userIds: [3, 4],              courseIds: [301] },
+  { id: 3, name: "ЭНБ-2024/01",  tenantId: 1, clientOrganizationId: 3, clientOrganizationName: "ГУП «Энергосеть»",      inn: "7703456789", status: "active",   createdAt: daysAgo(10),   userIds: [5, 6],              courseIds: [201] },
+  { id: 4, name: "ПБ-2024/02",   tenantId: 1, clientOrganizationId: 4, clientOrganizationName: "ПАО «МеталлСервис»",    inn: "7704567890", status: "forming",  createdAt: daysAgo(3),    userIds: [7, 8],              courseIds: [101],  fromStpRequestId: 2 },
+  { id: 5, name: "ЭПБ-2026/01",  tenantId: 1, clientOrganizationId: 5, clientOrganizationName: "АО «ХимРесурс»",        inn: "7705678901", status: "active",   createdAt: monthsAgo(3),  userIds: [9, 10, 11, 12, 22], courseIds: [401, 402] },
+  { id: 6, name: "ОТ-2025/03",   tenantId: 1, clientOrganizationId: 2, clientOrganizationName: "АО «СтройГрупп»",       inn: "7702345678", status: "active",   createdAt: monthsAgo(1),  userIds: [13, 14, 15],        courseIds: [301, 302] },
+  { id: 7, name: "ПБ-2025/03",   tenantId: 1, clientOrganizationId: 6, clientOrganizationName: "ООО «ГазПромСервис»",   inn: "7706789012", status: "active",   createdAt: monthsAgo(2),  userIds: [16, 17, 18, 19],    courseIds: [101, 103] },
+  { id: 8, name: "ЭНБ-2025/02",  tenantId: 1, clientOrganizationId: 3, clientOrganizationName: "ГУП «Энергосеть»",      inn: "7703456789", status: "active",   createdAt: daysAgo(20),   userIds: [20, 21],            courseIds: [201, 202] },
+];
+
+// ─── Слушатели ────────────────────────────────────────────────────────────────
+// API: GET /api/users → User[]
+
+export const INITIAL_USERS: User[] = [
+  {
+    id: 1,
+    name: "Алина Иванова",
+    email: "alina.ivanova@company.ru",
+    initials: "АИ",
+    group: "ПБ-2024/01",
+    groupId: 1,
+    organization: "ООО «ТехноПром»",
+    clientOrganizationId: 1,
+    role: "Студент",
+    assignments: [
+      { courseId: 101, active: true,  progress: 65,  assignedAt: daysAgo(5),   activatedAt: daysAgo(3),  status: "active",    dpoRequired: true  },
+      { courseId: 102, active: false, progress: 0,   assignedAt: daysAgo(10),                            status: "pending",   dpoRequired: true  },
+    ],
+  },
+  {
+    id: 2,
+    name: "Дмитрий Смирнов",
+    email: "d.smirnov@company.ru",
+    initials: "ДС",
+    group: "ПБ-2024/01",
+    groupId: 1,
+    organization: "ООО «ТехноПром»",
+    clientOrganizationId: 1,
+    role: "Студент",
+    assignments: [
+      { courseId: 101, active: true,  progress: 100, assignedAt: monthsAgo(2), activatedAt: monthsAgo(2), completedAt: monthsAgo(1), status: "certified", testScore: 92, testPassedAt: monthsAgo(1), dpoRequired: true },
+      { courseId: 102, active: false, progress: 0,   assignedAt: daysAgo(8),                              status: "pending",   dpoRequired: true  },
+    ],
+  },
+  {
+    id: 3,
+    name: "Мария Козлова",
+    email: "m.kozlova@company.ru",
+    initials: "МК",
+    group: "ОТ-2024/02",
+    groupId: 2,
+    organization: "АО «СтройГрупп»",
+    clientOrganizationId: 2,
+    role: "Студент",
+    assignments: [
+      { courseId: 301, active: true,  progress: 45,  assignedAt: daysAgo(15),  activatedAt: daysAgo(14), status: "active",    dpoRequired: false },
+      { courseId: 101, active: false, progress: 0,   assignedAt: daysAgo(3),                             status: "pending",   dpoRequired: true  },
+    ],
+  },
+  {
+    id: 4,
+    name: "Иван Петров",
+    email: "i.petrov@company.ru",
+    initials: "ИП",
+    group: "ОТ-2024/02",
+    groupId: 2,
+    organization: "АО «СтройГрупп»",
+    clientOrganizationId: 2,
+    role: "Студент",
+    assignments: [
+      { courseId: 201, active: true,  progress: 80,  assignedAt: daysAgo(20),  activatedAt: daysAgo(18), status: "active",    dpoRequired: true  },
+      { courseId: 301, active: true,  progress: 100, assignedAt: monthsAgo(1), activatedAt: monthsAgo(1), completedAt: daysAgo(5), status: "completed", testScore: 88, testPassedAt: daysAgo(5), dpoRequired: false },
+    ],
+  },
+  {
+    id: 5,
+    name: "Сергей Николаев",
+    email: "s.nikolaev@company.ru",
+    initials: "СН",
+    group: "ЭНБ-2024/01",
+    groupId: 3,
+    organization: "ГУП «Энергосеть»",
+    clientOrganizationId: 3,
+    role: "Студент",
+    assignments: [
+      { courseId: 201, active: true,  progress: 55,  assignedAt: daysAgo(7),   activatedAt: daysAgo(6),  status: "active",    dpoRequired: true  },
+      { courseId: 202, active: false, progress: 0,   assignedAt: daysAgo(2),                             status: "pending",   dpoRequired: true  },
+    ],
+  },
+  {
+    id: 6,
+    name: "Елена Соколова",
+    email: "e.sokolova@company.ru",
+    initials: "ЕС",
+    group: "ЭНБ-2024/01",
+    groupId: 3,
+    organization: "ГУП «Энергосеть»",
+    clientOrganizationId: 3,
+    role: "Преподаватель",
+    assignments: [
+      { courseId: 201, active: true,  progress: 90,  assignedAt: monthsAgo(1), activatedAt: monthsAgo(1), status: "active",    dpoRequired: true  },
+      { courseId: 202, active: true,  progress: 100, assignedAt: monthsAgo(2), activatedAt: monthsAgo(2), completedAt: daysAgo(12), status: "certified", testScore: 96, testPassedAt: daysAgo(12), dpoRequired: true },
+    ],
+  },
+  {
+    id: 7,
+    name: "Андрей Лебедев",
+    email: "a.lebedev@company.ru",
+    initials: "АЛ",
+    group: "ПБ-2024/02",
+    groupId: 4,
+    organization: "ПАО «МеталлСервис»",
+    clientOrganizationId: 4,
+    role: "Студент",
+    assignments: [
+      { courseId: 101, active: false, progress: 0, assignedAt: daysAgo(1), status: "pending", dpoRequired: true },
+    ],
+  },
+  {
+    id: 8,
+    name: "Ольга Михайлова",
+    email: "o.mikhailova@company.ru",
+    initials: "ОМ",
+    group: "ПБ-2024/02",
+    groupId: 4,
+    organization: "ПАО «МеталлСервис»",
+    clientOrganizationId: 4,
+    role: "Студент",
+    assignments: [
+      { courseId: 101, active: false, progress: 0, assignedAt: daysAgo(1), status: "pending", dpoRequired: true },
+      { courseId: 102, active: false, progress: 0, assignedAt: daysAgo(1), status: "pending", dpoRequired: true },
+    ],
+  },
+  {
+    id: 9,
+    name: "Роман Зайцев",
+    email: "r.zaitsev@himresurs.ru",
+    initials: "РЗ",
+    group: "ЭПБ-2026/01",
+    groupId: 5,
+    organization: "АО «ХимРесурс»",
+    clientOrganizationId: 5,
+    role: "Студент",
+    assignments: [
+      { courseId: 401, active: true,  progress: 78,  assignedAt: monthsAgo(3), activatedAt: monthsAgo(3), status: "active", dpoRequired: true },
+      { courseId: 402, active: true,  progress: 55,  assignedAt: monthsAgo(2), activatedAt: monthsAgo(2), status: "active", dpoRequired: true },
+    ],
+  },
+  {
+    id: 10,
+    name: "Наталья Орлова",
+    email: "n.orlova@himresurs.ru",
+    initials: "НО",
+    group: "ЭПБ-2026/01",
+    groupId: 5,
+    organization: "АО «ХимРесурс»",
+    clientOrganizationId: 5,
+    role: "Студент",
+    assignments: [
+      { courseId: 401, active: true,  progress: 100, assignedAt: monthsAgo(3), activatedAt: monthsAgo(3), completedAt: monthsAgo(1), status: "certified", testScore: 89, testPassedAt: monthsAgo(1), dpoRequired: true },
+      { courseId: 402, active: true,  progress: 40,  assignedAt: monthsAgo(2), activatedAt: monthsAgo(2), status: "active", dpoRequired: true },
+    ],
+  },
+  {
+    id: 11,
+    name: "Виктор Кузнецов",
+    email: "v.kuznetsov@himresurs.ru",
+    initials: "ВК",
+    group: "ЭПБ-2026/01",
+    groupId: 5,
+    organization: "АО «ХимРесурс»",
+    clientOrganizationId: 5,
+    role: "Студент",
+    assignments: [
+      { courseId: 401, active: true,  progress: 100, assignedAt: monthsAgo(3), activatedAt: monthsAgo(3), completedAt: monthsAgo(1), status: "certified", testScore: 94, testPassedAt: monthsAgo(1), dpoRequired: true },
+      { courseId: 402, active: true,  progress: 100, assignedAt: monthsAgo(2), activatedAt: monthsAgo(2), completedAt: daysAgo(7),   status: "certified", testScore: 91, testPassedAt: daysAgo(7),   dpoRequired: true },
+    ],
+  },
+  {
+    id: 12,
+    name: "Татьяна Белова",
+    email: "t.belova@himresurs.ru",
+    initials: "ТБ",
+    group: "ЭПБ-2026/01",
+    groupId: 5,
+    organization: "АО «ХимРесурс»",
+    clientOrganizationId: 5,
+    role: "Студент",
+    assignments: [
+      { courseId: 401, active: false, progress: 30, assignedAt: monthsAgo(3), activatedAt: monthsAgo(2), status: "active",  dpoRequired: true },
+      { courseId: 402, active: false, progress: 0,  assignedAt: monthsAgo(1),                            status: "pending", dpoRequired: true },
+    ],
+  },
+  {
+    id: 13,
+    name: "Алексей Морозов",
+    email: "a.morozov@stroigrupp.ru",
+    initials: "АМ",
+    group: "ОТ-2025/03",
+    groupId: 6,
+    organization: "АО «СтройГрупп»",
+    clientOrganizationId: 2,
+    role: "Студент",
+    assignments: [
+      { courseId: 301, active: true,  progress: 60, assignedAt: monthsAgo(1), activatedAt: monthsAgo(1), status: "active",  dpoRequired: false },
+      { courseId: 302, active: false, progress: 0,  assignedAt: daysAgo(5),                              status: "pending", dpoRequired: false },
+    ],
+  },
+  {
+    id: 14,
+    name: "Светлана Попова",
+    email: "s.popova@stroigrupp.ru",
+    initials: "СП",
+    group: "ОТ-2025/03",
+    groupId: 6,
+    organization: "АО «СтройГрупп»",
+    clientOrganizationId: 2,
+    role: "Студент",
+    assignments: [
+      { courseId: 301, active: true,  progress: 100, assignedAt: monthsAgo(1), activatedAt: monthsAgo(1), completedAt: daysAgo(3), status: "completed", testScore: 85, testPassedAt: daysAgo(3), dpoRequired: false },
+      { courseId: 302, active: true,  progress: 70,  assignedAt: daysAgo(5),   activatedAt: daysAgo(4),   status: "active", dpoRequired: false },
+    ],
+  },
+  {
+    id: 15,
+    name: "Дмитрий Волков",
+    email: "d.volkov@stroigrupp.ru",
+    initials: "ДВ",
+    group: "ОТ-2025/03",
+    groupId: 6,
+    organization: "АО «СтройГрупп»",
+    clientOrganizationId: 2,
+    role: "Студент",
+    assignments: [
+      { courseId: 301, active: true,  progress: 25, assignedAt: monthsAgo(1), activatedAt: daysAgo(10), status: "active",  dpoRequired: false },
+      { courseId: 302, active: false, progress: 0,  assignedAt: daysAgo(5),                             status: "pending", dpoRequired: false },
+    ],
+  },
+  {
+    id: 16,
+    name: "Игорь Федоров",
+    email: "i.fedorov@gazpromservis.ru",
+    initials: "ИФ",
+    group: "ПБ-2025/03",
+    groupId: 7,
+    organization: "ООО «ГазПромСервис»",
+    clientOrganizationId: 6,
+    role: "Студент",
+    assignments: [
+      { courseId: 101, active: true,  progress: 100, assignedAt: monthsAgo(2), activatedAt: monthsAgo(2), completedAt: monthsAgo(1), status: "certified", testScore: 97, testPassedAt: monthsAgo(1), dpoRequired: true },
+      { courseId: 103, active: true,  progress: 85,  assignedAt: monthsAgo(1), activatedAt: monthsAgo(1), status: "active", dpoRequired: true },
+    ],
+  },
+  {
+    id: 17,
+    name: "Юлия Новикова",
+    email: "yu.novikova@gazpromservis.ru",
+    initials: "ЮН",
+    group: "ПБ-2025/03",
+    groupId: 7,
+    organization: "ООО «ГазПромСервис»",
+    clientOrganizationId: 6,
+    role: "Студент",
+    assignments: [
+      { courseId: 101, active: true,  progress: 72, assignedAt: monthsAgo(2), activatedAt: monthsAgo(2), status: "active",  dpoRequired: true },
+      { courseId: 103, active: false, progress: 0,  assignedAt: monthsAgo(1),                            status: "pending", dpoRequired: true },
+    ],
+  },
+  {
+    id: 18,
+    name: "Павел Семёнов",
+    email: "p.semenov@gazpromservis.ru",
+    initials: "ПС",
+    group: "ПБ-2025/03",
+    groupId: 7,
+    organization: "ООО «ГазПромСервис»",
+    clientOrganizationId: 6,
+    role: "Студент",
+    assignments: [
+      { courseId: 101, active: true,  progress: 100, assignedAt: monthsAgo(2), activatedAt: monthsAgo(2), completedAt: monthsAgo(1), status: "certified", testScore: 82, testPassedAt: monthsAgo(1), dpoRequired: true },
+      { courseId: 103, active: true,  progress: 50,  assignedAt: monthsAgo(1), activatedAt: monthsAgo(1), status: "active", dpoRequired: true },
+    ],
+  },
+  {
+    id: 19,
+    name: "Марина Титова",
+    email: "m.titova@gazpromservis.ru",
+    initials: "МТ",
+    group: "ПБ-2025/03",
+    groupId: 7,
+    organization: "ООО «ГазПромСервис»",
+    clientOrganizationId: 6,
+    role: "Студент",
+    assignments: [
+      { courseId: 101, active: false, progress: 0, assignedAt: monthsAgo(2), status: "pending", dpoRequired: true },
+      { courseId: 103, active: false, progress: 0, assignedAt: monthsAgo(1), status: "pending", dpoRequired: true },
+    ],
+  },
+  {
+    id: 20,
+    name: "Константин Жуков",
+    email: "k.zhukov@energoset.ru",
+    initials: "КЖ",
+    group: "ЭНБ-2025/02",
+    groupId: 8,
+    organization: "ГУП «Энергосеть»",
+    clientOrganizationId: 3,
+    role: "Студент",
+    assignments: [
+      { courseId: 201, active: true,  progress: 40, assignedAt: daysAgo(20), activatedAt: daysAgo(18), status: "active",  dpoRequired: true },
+      { courseId: 202, active: false, progress: 0,  assignedAt: daysAgo(5),                            status: "pending", dpoRequired: true },
+    ],
+  },
+  {
+    id: 21,
+    name: "Анастасия Громова",
+    email: "a.gromova@energoset.ru",
+    initials: "АГ",
+    group: "ЭНБ-2025/02",
+    groupId: 8,
+    organization: "ГУП «Энергосеть»",
+    clientOrganizationId: 3,
+    role: "Студент",
+    assignments: [
+      { courseId: 201, active: true,  progress: 65, assignedAt: daysAgo(20), activatedAt: daysAgo(19), status: "active", dpoRequired: true },
+      { courseId: 202, active: true,  progress: 20, assignedAt: daysAgo(5),  activatedAt: daysAgo(4),  status: "active", dpoRequired: true },
+    ],
+  },
+  {
+    id: 22,
+    name: "Сергей Эксперт",
+    email: "s.expert@expertpb.ru",
+    initials: "СЭ",
+    group: "ЭПБ-2026/01",
+    groupId: 5,
+    organization: "ООО «ЭкспертПБ»",
+    clientOrganizationId: 2,
+    role: "Студент",
+    assignments: [
+      { courseId: 401, active: true,  progress: 20, assignedAt: daysAgo(10), activatedAt: daysAgo(8), status: "active",  dpoRequired: false },
+      { courseId: 402, active: false, progress: 0,  assignedAt: daysAgo(3),                           status: "pending", dpoRequired: false },
+    ],
+  },
+];
+
+// ─── Системные пользователи (для авторизации) ─────────────────────────────────
+// API: GET /api/system-users → SystemUser[]
+
+export const DEFAULT_SYSTEM_USERS: SystemUser[] = [
+  { id: 1, lastName: "ИВАНОВ",   firstName: "ИВАН",      middleName: "ИВАНОВИЧ",   email: "admin@isp.ru",           role: "Администратор",    department: "",                    password: "admin123",   status: "active", registeredAt: "09.02.2026" },
+  { id: 2, lastName: "ПЕТРОВ",   firstName: "ПЁТР",      middleName: "ПЕТРОВИЧ",   email: "super@isp.ru",           role: "Суперадмин",       department: "",                    password: "super123",   status: "active", registeredAt: "09.02.2026" },
+  { id: 3, lastName: "СИДОРОВА", firstName: "АННА",      middleName: "ОЛЕГОВНА",   email: "manager@isp.ru",         role: "Менеджер",         department: "Отдел продаж",        password: "manager123", status: "active", registeredAt: "09.02.2026" },
+  { id: 4, lastName: "КОЗЛОВ",   firstName: "АНТОН",     middleName: "ВИТАЛЬЕВИЧ", email: "student@isp.ru",         role: "Слушатель",        department: "",                    password: "student123", status: "active", registeredAt: "09.02.2026" },
+  { id: 5, lastName: "ВОРОНОВ",  firstName: "КОНСТАНТИН",middleName: "АЛЕКСЕЕВИЧ", email: "sales@isp.ru",           role: "Менеджер продаж",  department: "Отдел продаж",        password: "sales123",   status: "active", registeredAt: "10.01.2025" },
+  { id: 6, lastName: "СИДОРОВА", firstName: "ЕЛЕНА",     middleName: "ВИКТОРОВНА", email: "support@isp.ru",         role: "Специалист ТП",    department: "Техническая поддержка", password: "support123", status: "active", registeredAt: "15.03.2025" },
+  { id: 7, lastName: "ЭКСПЕРТ",  firstName: "СЕРГЕЙ",    middleName: "ПЕТРОВИЧ",   email: "s.expert@expertpb.ru",   role: "Слушатель",        department: "Слушатели",           password: "expert123",  status: "active", registeredAt: "24.04.2026" },
+];
