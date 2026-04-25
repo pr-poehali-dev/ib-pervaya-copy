@@ -208,23 +208,23 @@ export default function Achievements() {
 
         {/* Заголовок */}
         <div>
-          <h1 className="text-3xl font-bold mb-1">Достижения</h1>
-          <p className="text-muted-foreground">Ваши награды за успехи в обучении</p>
+          <h1 className="text-2xl sm:text-3xl font-bold mb-1">Достижения</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Ваши награды за успехи в обучении</p>
         </div>
 
         {/* Карточка уровня и XP */}
-        <div className="bg-gradient-to-br from-violet-600 to-purple-700 rounded-2xl p-6 text-white">
-          <div className="flex items-start justify-between mb-4">
+        <div className="bg-gradient-to-br from-violet-600 to-purple-700 rounded-2xl p-5 sm:p-6 text-white">
+          <div className="flex items-start justify-between gap-3 mb-4">
             <div>
               <p className="text-white/70 text-sm mb-1">Ваш уровень</p>
-              <p className="text-3xl font-bold">{currentLevelData.title}</p>
+              <p className="text-2xl sm:text-3xl font-bold">{currentLevelData.title}</p>
               <p className="text-white/70 text-sm mt-1">Уровень {currentLevelData.level}</p>
             </div>
-            <div className="text-right">
+            <div className="text-right flex-shrink-0">
               <p className="text-white/70 text-sm mb-1">Опыт (XP)</p>
-              <p className="text-3xl font-bold">{totalXP}</p>
+              <p className="text-2xl sm:text-3xl font-bold">{totalXP}</p>
               {nextLevelData && (
-                <p className="text-white/70 text-sm mt-1">до {nextLevelData.title}: {nextLevelData.xp - totalXP} XP</p>
+                <p className="text-white/70 text-xs sm:text-sm mt-1">до {nextLevelData.title}: {nextLevelData.xp - totalXP} XP</p>
               )}
             </div>
           </div>
@@ -242,7 +242,7 @@ export default function Achievements() {
         </div>
 
         {/* Статистика достижений */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { label: "Получено",   value: earnedList.length,                      icon: "Trophy",   color: "text-amber-500",   bg: "bg-amber-100 dark:bg-amber-900/30" },
             { label: "Всего",      value: ACHIEVEMENTS.length,                    icon: "Target",   color: "text-violet-600",  bg: "bg-violet-100 dark:bg-violet-900/30" },
@@ -346,9 +346,9 @@ export default function Achievements() {
 
         {/* Призыв к действию */}
         {pendingList.length > 0 && (
-          <div className="bg-card rounded-2xl border border-border p-6 flex items-center gap-5">
-            <div className="w-12 h-12 bg-violet-100 dark:bg-violet-900/30 rounded-2xl flex items-center justify-center flex-shrink-0">
-              <Icon name="Zap" size={22} className="text-violet-600 dark:text-violet-400" />
+          <div className="bg-card rounded-2xl border border-border p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-violet-100 dark:bg-violet-900/30 rounded-2xl flex items-center justify-center flex-shrink-0">
+              <Icon name="Zap" size={20} className="text-violet-600 dark:text-violet-400" />
             </div>
             <div className="flex-1">
               <p className="font-bold">Продолжайте обучение!</p>
@@ -358,7 +358,7 @@ export default function Achievements() {
             </div>
             <button
               onClick={() => navigate("/my-learning")}
-              className="px-4 py-2 rounded-xl gradient-primary text-white text-sm font-medium flex-shrink-0"
+              className="w-full sm:w-auto px-4 py-2 rounded-xl gradient-primary text-white text-sm font-medium flex-shrink-0"
             >
               К обучению
             </button>

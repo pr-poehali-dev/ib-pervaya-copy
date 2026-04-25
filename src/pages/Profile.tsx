@@ -151,14 +151,14 @@ export default function Profile() {
       <div className="max-w-4xl mx-auto space-y-8">
 
         {/* Карточка пользователя */}
-        <div className="bg-card rounded-2xl p-8 border border-border shadow-sm">
-          <div className="flex items-start gap-6">
-            <div className="w-20 h-20 gradient-primary rounded-2xl flex items-center justify-center shrink-0">
-              <span className="text-white text-2xl font-bold">{initials}</span>
+        <div className="bg-card rounded-2xl p-5 sm:p-8 border border-border shadow-sm">
+          <div className="flex items-start gap-4 sm:gap-6">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 gradient-primary rounded-2xl flex items-center justify-center shrink-0">
+              <span className="text-white text-xl sm:text-2xl font-bold">{initials}</span>
             </div>
             <div className="flex-1 min-w-0">
-              <h1 className="text-2xl font-bold truncate">{fullName}</h1>
-              <p className="text-muted-foreground">{email}</p>
+              <h1 className="text-xl sm:text-2xl font-bold truncate">{fullName}</h1>
+              <p className="text-sm text-muted-foreground truncate">{email}</p>
               <div className="flex flex-wrap gap-2 mt-3">
                 <Badge variant="secondary">{studentUser.role}</Badge>
                 <Badge variant="outline">{studentUser.organization}</Badge>
@@ -167,17 +167,18 @@ export default function Profile() {
             </div>
             <Button
               variant="outline"
+              size="sm"
               className="rounded-xl gap-2 flex-shrink-0"
               onClick={() => setEditOpen(true)}
             >
               <Icon name="User" size={15} />
-              Мои данные
+              <span className="hidden sm:inline">Мои данные</span>
             </Button>
           </div>
         </div>
 
         {/* Статистика */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {stats.map((s) => (
             <div key={s.label} className="bg-card rounded-2xl p-5 border border-border shadow-sm text-center">
               <Icon name={s.icon} size={24} className={`${s.color} mx-auto mb-2`} />
@@ -233,7 +234,7 @@ export default function Profile() {
               <h2 className="text-lg font-bold">Достижения</h2>
               <span className="text-sm text-muted-foreground">{earnedCount} / {achievements.length}</span>
             </div>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 sm:grid-cols-3 gap-2 sm:gap-3">
               {achievements.map((a) => (
                 <div
                   key={a.id}
