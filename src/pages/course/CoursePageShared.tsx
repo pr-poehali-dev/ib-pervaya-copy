@@ -164,7 +164,7 @@ export function AnswerOptions({
             key={idx}
             disabled={answered}
             onClick={() => onToggle(idx)}
-            className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all flex items-center gap-3 ${cls}`}
+            className={`w-full text-left px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 transition-all flex items-center gap-2 sm:gap-3 ${cls}`}
           >
             <span className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 border-2 transition-all ${
               answered && isCorrectOpt ? "bg-emerald-500 border-emerald-500" :
@@ -205,7 +205,7 @@ export function AnswerResult({
 }) {
   const correctText = correctArr(question).map((i) => question.options[i]).join("; ");
   return (
-    <div className={`rounded-2xl border p-5 space-y-3 ${isCorrect ? "bg-emerald-50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-800" : "bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800"}`}>
+    <div className={`rounded-2xl border p-4 sm:p-5 space-y-3 ${isCorrect ? "bg-emerald-50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-800" : "bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800"}`}>
       <div className="flex items-center gap-2">
         <Icon name={isCorrect ? "CheckCircle" : "XCircle"} size={18} className={isCorrect ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"} />
         <p className={`font-semibold ${isCorrect ? "text-emerald-800 dark:text-emerald-300" : "text-red-800 dark:text-red-300"}`}>

@@ -50,7 +50,7 @@ export function TestResult({
         )}
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row gap-2">
         {isFinal && (
           <Button variant="outline" className="flex-1 rounded-xl gap-2" onClick={onRetry}>
             <Icon name="RotateCcw" size={15} />
@@ -63,11 +63,11 @@ export function TestResult({
         </Button>
         <Button
           variant="outline"
-          className="rounded-xl gap-2 px-4"
+          className="rounded-xl gap-2 sm:px-4"
           onClick={() => setShowProtocol((v) => !v)}
         >
           <Icon name={showProtocol ? "ChevronUp" : "FileText"} size={15} />
-          {showProtocol ? "Скрыть" : "Протокол"}
+          {showProtocol ? "Скрыть протокол" : "Разбор ответов"}
         </Button>
       </div>
 

@@ -27,9 +27,9 @@ export function AdaptiveQuestion({
 
   return (
     <div className="space-y-5">
-      <div className="bg-card rounded-2xl border border-border p-6">
+      <div className="bg-card rounded-2xl border border-border p-4 sm:p-6">
         <div className="flex items-start justify-between gap-3 mb-5">
-          <p className="font-semibold text-base leading-relaxed flex-1">{question.text}</p>
+          <p className="font-semibold text-sm sm:text-base leading-relaxed flex-1">{question.text}</p>
           {onToggleFavorite && (
             <button
               onClick={() => onToggleFavorite(question.id)}

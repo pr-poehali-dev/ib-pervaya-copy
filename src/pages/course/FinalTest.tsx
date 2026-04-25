@@ -150,11 +150,11 @@ export function FinalTest({
           </div>
         )}
 
-        <div className="flex gap-4 items-start">
-          <div className="flex-1 min-w-0 space-y-4">
-            <div className="bg-card rounded-2xl border border-border px-4 py-3 flex items-center gap-4">
-              <span className="text-sm text-muted-foreground flex-shrink-0">
-                {answeredCount} / {questions.length} отвечено
+        <div className="flex flex-col lg:flex-row gap-4 items-start">
+          <div className="flex-1 min-w-0 w-full space-y-4">
+            <div className="bg-card rounded-2xl border border-border px-4 py-3 flex items-center gap-3">
+              <span className="text-xs sm:text-sm text-muted-foreground flex-shrink-0">
+                {answeredCount} / {questions.length}
               </span>
               <Progress value={Math.round((answeredCount / questions.length) * 100)} className="h-2 flex-1" />
               <span className={`text-sm font-mono font-semibold flex-shrink-0 flex items-center gap-1 ${timerWarning ? "text-red-500" : "text-muted-foreground"}`}>
@@ -163,9 +163,9 @@ export function FinalTest({
               </span>
             </div>
 
-            <div className="bg-card rounded-2xl border border-border p-6">
+            <div className="bg-card rounded-2xl border border-border p-4 sm:p-6">
               <div className="flex items-start justify-between gap-2 mb-4">
-                <p className="font-semibold text-base leading-relaxed">{q.text}</p>
+                <p className="font-semibold text-sm sm:text-base leading-relaxed">{q.text}</p>
                 {(finalAnswers[q.id]?.length ?? 0) > 0 && (
                   <span className="text-xs bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 px-2 py-0.5 rounded-lg flex-shrink-0">Отвечен</span>
                 )}
@@ -231,8 +231,8 @@ export function FinalTest({
         <Progress value={progress} className="h-2 flex-1" />
       </div>
 
-      <div className="bg-card rounded-2xl border border-border p-6">
-        <p className="font-semibold text-base leading-relaxed mb-5">{q.text}</p>
+      <div className="bg-card rounded-2xl border border-border p-4 sm:p-6">
+        <p className="font-semibold text-sm sm:text-base leading-relaxed mb-5">{q.text}</p>
         <AnswerOptions question={q} selected={draftSelected} answered={submitted} onToggle={handleToggle} />
       </div>
 
@@ -258,7 +258,7 @@ export function FinalTest({
 
   if (navPanel) {
     return (
-      <div className="flex gap-4 items-start">
+      <div className="flex flex-col lg:flex-row gap-4 items-start">
         {sectionBlock}
         {navPanel}
       </div>
