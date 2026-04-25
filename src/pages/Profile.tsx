@@ -191,7 +191,7 @@ export default function Profile() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
           {/* Завершённые курсы */}
-          <div className="bg-card rounded-2xl p-6 border border-border shadow-sm">
+          <div className="bg-card rounded-2xl p-4 sm:p-6 border border-border shadow-sm">
             <h2 className="text-lg font-bold mb-5">Завершённые курсы</h2>
             {completedWithDetails.length === 0 ? (
               <div className="text-center py-8">
@@ -229,7 +229,7 @@ export default function Profile() {
           </div>
 
           {/* Достижения */}
-          <div className="bg-card rounded-2xl p-6 border border-border shadow-sm">
+          <div className="bg-card rounded-2xl p-4 sm:p-6 border border-border shadow-sm">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-bold">Достижения</h2>
               <span className="text-sm text-muted-foreground">{earnedCount} / {achievements.length}</span>
@@ -255,19 +255,19 @@ export default function Profile() {
         </div>
 
         {/* Активность */}
-        <div className="bg-card rounded-2xl p-6 border border-border shadow-sm">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-lg font-bold">Активность за последние 28 дней</h2>
-            <span className="text-xs text-muted-foreground">{activityData.filter((v) => v > 0.2).length} активных дней</span>
+        <div className="bg-card rounded-2xl p-4 sm:p-6 border border-border shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-base sm:text-lg font-bold">Активность за 28 дней</h2>
+            <span className="text-xs text-muted-foreground">{activityData.filter((v) => v > 0.2).length} дней</span>
           </div>
-          <div className="grid grid-cols-7 gap-1.5">
+          <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
             {activityData.map((intensity, i) => {
               const cls =
                 intensity > 0.7 ? "bg-violet-600" :
                 intensity > 0.4 ? "bg-violet-400 dark:bg-violet-700" :
                 intensity > 0.2 ? "bg-violet-200 dark:bg-violet-900" : "bg-muted";
               return (
-                <div key={i} className={`h-8 rounded-md ${cls}`} title={`День ${i + 1}`} />
+                <div key={i} className={`h-6 sm:h-8 rounded-sm sm:rounded-md ${cls}`} title={`День ${i + 1}`} />
               );
             })}
           </div>
@@ -284,7 +284,7 @@ export default function Profile() {
 
         {/* Активные курсы */}
         {activeAssignments.length > 0 && (
-          <div className="bg-card rounded-2xl p-6 border border-border shadow-sm">
+          <div className="bg-card rounded-2xl p-4 sm:p-6 border border-border shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold">В процессе обучения</h2>
               <button onClick={() => navigate("/my-learning")} className="text-primary text-sm hover:underline">

@@ -38,7 +38,7 @@ function AttachmentItem({ att, isOwn }: { att: ChatAttachment; isOwn: boolean })
         size={14}
         className={isOwn ? "text-white/80 flex-shrink-0" : "text-muted-foreground flex-shrink-0"}
       />
-      <span className="truncate max-w-[180px] font-medium">{att.name}</span>
+      <span className="truncate min-w-0 font-medium">{att.name}</span>
       <span className={cn("ml-auto flex-shrink-0", isOwn ? "text-white/60" : "text-muted-foreground")}>
         {formatSize(att.size)}
       </span>
@@ -48,7 +48,7 @@ function AttachmentItem({ att, isOwn }: { att: ChatAttachment; isOwn: boolean })
 
 export default function ChatMessageBubble({ message, isOwn }: Props) {
   return (
-    <div className={cn("flex flex-col gap-1 max-w-[72%]", isOwn ? "self-end items-end" : "self-start items-start")}>
+    <div className={cn("flex flex-col gap-1 max-w-[85%] sm:max-w-[72%]", isOwn ? "self-end items-end" : "self-start items-start")}>
       {!isOwn && (
         <span className="text-xs font-semibold text-muted-foreground px-1">
           {message.authorName}

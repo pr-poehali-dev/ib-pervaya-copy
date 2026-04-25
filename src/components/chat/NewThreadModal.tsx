@@ -47,7 +47,7 @@ export default function NewThreadModal({ type, onClose, onCreate }: Props) {
 
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="sm:max-w-[520px]">
+      <DialogContent className="sm:max-w-[520px] max-h-[90svh] overflow-y-auto mx-3 sm:mx-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Icon name={type === "support" ? "Headphones" : "MessageSquare"} size={18} className="text-violet-600" />
@@ -110,9 +110,9 @@ export default function NewThreadModal({ type, onClose, onCreate }: Props) {
                 Прикрепить файл
               </Button>
               {fileName && (
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <Icon name="File" size={12} className="text-violet-500" />
-                  <span className="truncate max-w-[200px]">{fileName}</span>
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground min-w-0 flex-1">
+                  <Icon name="File" size={12} className="text-violet-500 flex-shrink-0" />
+                  <span className="truncate min-w-0">{fileName}</span>
                   <button
                     type="button"
                     onClick={() => {
@@ -135,14 +135,14 @@ export default function NewThreadModal({ type, onClose, onCreate }: Props) {
           </div>
         </div>
 
-        <DialogFooter className="gap-2 sm:gap-0">
-          <Button type="button" variant="outline" onClick={onClose}>
+        <DialogFooter className="flex-col-reverse sm:flex-row gap-2">
+          <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={onClose}>
             Отмена
           </Button>
           <Button
             type="button"
             onClick={handleSubmit}
-            className="bg-violet-600 hover:bg-violet-700 text-white"
+            className="w-full sm:w-auto bg-violet-600 hover:bg-violet-700 text-white gap-2"
           >
             <Icon name="Send" size={14} />
             Отправить
