@@ -3,16 +3,7 @@ import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import type { SalesManager } from "./ManagerCredentialsModal";
 
-// ─── Утилиты (локальные копии для независимости модала) ───────────────────────
-
-function generatePassword() {
-  const chars = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789!@#$";
-  return Array.from({ length: 12 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
-}
-
-function copyToClipboard(text: string) {
-  navigator.clipboard.writeText(text).catch(() => {});
-}
+import { generatePassword, copyToClipboard } from "@/lib/authUtils";
 
 // ─── Компонент ────────────────────────────────────────────────────────────────
 

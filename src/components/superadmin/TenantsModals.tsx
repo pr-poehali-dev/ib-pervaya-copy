@@ -6,14 +6,7 @@ import type { Tenant } from "@/components/admin/types";
 
 // ─── Утилиты ──────────────────────────────────────────────────────────────────
 
-export function generatePassword() {
-  const chars = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789!@#$";
-  return Array.from({ length: 12 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
-}
-
-export function copyToClipboard(text: string) {
-  navigator.clipboard.writeText(text).catch(() => {});
-}
+export { generatePassword, copyToClipboard } from "@/lib/authUtils";
 
 // ─── Модал «Учётные данные» ───────────────────────────────────────────────────
 

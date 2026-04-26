@@ -15,11 +15,7 @@ export interface SalesManager {
   createdAt: string;
 }
 
-// ─── Утилита (локальная копия для независимости модала) ────────────────────────
-
-function copyToClipboard(text: string) {
-  navigator.clipboard.writeText(text).catch(() => {});
-}
+import { copyToClipboard } from "@/lib/authUtils";
 
 // ─── Компонент ────────────────────────────────────────────────────────────────
 

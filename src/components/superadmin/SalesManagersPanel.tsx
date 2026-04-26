@@ -19,16 +19,7 @@ const GRADIENTS = [
   "from-emerald-500 to-teal-600",
 ];
 
-// ─── Утилиты ──────────────────────────────────────────────────────────────────
-
-function generatePassword() {
-  const chars = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789!@#$";
-  return Array.from({ length: 12 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
-}
-
-function copyToClipboard(text: string) {
-  navigator.clipboard.writeText(text).catch(() => {});
-}
+import { generatePassword, copyToClipboard } from "@/lib/authUtils";
 
 // ─── Главный компонент ────────────────────────────────────────────────────────
 
@@ -134,4 +125,3 @@ export default function SalesManagersPanel() {
     </div>
   );
 }
-
