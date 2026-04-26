@@ -6,11 +6,7 @@ import ActivateMenu from "@/components/admin/shared/ActivateMenu";
 import UserStatusBadge from "./UserStatusBadge";
 import { User, CourseStatus, allCourses, userColors, courseDirections } from "@/components/admin/types";
 import { useRole } from "@/contexts/RoleContext";
-
-function today(): string {
-  const d = new Date();
-  return `${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}.${d.getFullYear()}`;
-}
+import { today } from "@/data/dateUtils";
 
 interface UserTableRowProps {
   user: User;

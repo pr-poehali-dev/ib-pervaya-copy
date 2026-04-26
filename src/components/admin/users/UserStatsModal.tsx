@@ -1,32 +1,11 @@
 import Icon from "@/components/ui/icon";
-import { User, allCourses, courseDirections, CourseStatus } from "@/components/admin/types";
+import { User, CourseStatus } from "@/components/admin/types";
+import { getCourseInfo, STATUS_MAP, STATUS_LABELS } from "@/components/admin/groups/GroupStatsUtils";
 
 interface UserStatsModalProps {
   user: User | null;
   onClose: () => void;
 }
-
-const STATUS_MAP: Record<CourseStatus, { label: string; cls: string; icon: string }> = {
-  pending:   { label: "Ожидает активации", cls: "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300", icon: "Clock" },
-  active:    { label: "Идёт обучение",      cls: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300", icon: "Play" },
-  completed: { label: "Обучение завершено", cls: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300", icon: "CheckCircle" },
-  certified: { label: "Удостоверение выдано", cls: "bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300", icon: "Award" },
-};
-
-function getCourseInfo(courseId: number) {
-  const simple = allCourses.find((c) => c.id === courseId);
-  if (simple) return { title: simple.title, emoji: simple.emoji, duration: simple.duration, lessons: simple.lessons };
-  const dir = courseDirections.flatMap((d) => d.courses).find((c) => c.id === courseId);
-  if (dir) return { title: `${dir.code} ${dir.title}`, emoji: "📚", duration: "—", lessons: 0 };
-  return { title: `Курс #${courseId}`, emoji: "📚", duration: "—", lessons: 0 };
-}
-
-const STATUS_LABELS: Record<CourseStatus, string> = {
-  pending: "Ожидает активации",
-  active: "Идёт обучение",
-  completed: "Обучение завершено",
-  certified: "Удостоверение выдано",
-};
 
 function exportUserCSV(user: User) {
   const header = ["Курс", "Статус", "Прогресс", "Назначен", "Начато", "Завершено"];

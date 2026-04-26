@@ -32,9 +32,10 @@
 import { useState, useMemo, useEffect } from "react";
 import { User, CourseStatus, getInitials } from "@/components/admin/types";
 import { INITIAL_USERS, GROUPS, ALL_COURSES } from "@/data/mockData";
+import { today } from "@/data/dateUtils";
 
 function todayRu(): string {
-  return new Date().toLocaleDateString("ru-RU");
+  return today();
 }
 
 export function useAdminData() {

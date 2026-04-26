@@ -16,10 +16,10 @@ export const STATUS_LABELS: Record<CourseStatus, string> = {
 
 export function getCourseInfo(courseId: number) {
   const simple = allCourses.find((c) => c.id === courseId);
-  if (simple) return { title: simple.title, emoji: simple.emoji, duration: simple.duration };
+  if (simple) return { title: simple.title, emoji: simple.emoji, duration: simple.duration, lessons: simple.lessons };
   const dir = courseDirections.flatMap((d) => d.courses).find((c) => c.id === courseId);
-  if (dir) return { title: `${dir.code} ${dir.title}`, emoji: "📚", duration: "—" };
-  return { title: `Курс #${courseId}`, emoji: "📚", duration: "—" };
+  if (dir) return { title: `${dir.code} ${dir.title}`, emoji: "📚", duration: "—", lessons: 0 };
+  return { title: `Курс #${courseId}`, emoji: "📚", duration: "—", lessons: 0 };
 }
 
 export interface GroupStats {
