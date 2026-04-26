@@ -2,6 +2,8 @@ import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 import Tip from "@/components/ui/tip";
 import GroupMemberRow from "./GroupMemberRow";
+import UserAvatar from "@/components/admin/shared/UserAvatar";
+import ProgressBar from "@/components/admin/shared/ProgressBar";
 import { User, gradients } from "@/components/admin/types";
 
 function getGroupStatus(members: User[]): string {
@@ -88,9 +90,7 @@ export default function GroupTableRow({
         </td>
         <td className="px-4 py-3">
           <div className="flex items-center gap-2.5">
-            <div className={`w-8 h-8 bg-gradient-to-br ${gradients[idx % gradients.length]} rounded-lg flex items-center justify-center flex-shrink-0`}>
-              <Icon name="UsersRound" size={14} className="text-white" />
-            </div>
+            <UserAvatar gradient={gradients[idx % gradients.length]} icon="UsersRound" />
             <span className="font-medium">{group}</span>
           </div>
         </td>
@@ -103,19 +103,7 @@ export default function GroupTableRow({
 
         {/* Прогресс */}
         <td className="px-4 py-3">
-          {activeAssignments > 0 ? (
-            <div className="flex items-center gap-2 min-w-[90px]">
-              <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-violet-500 to-cyan-500 rounded-full transition-all"
-                  style={{ width: `${avgGroupProgress}%` }}
-                />
-              </div>
-              <span className="text-xs font-semibold w-9 text-right">{avgGroupProgress}%</span>
-            </div>
-          ) : (
-            <span className="text-xs text-muted-foreground">—</span>
-          )}
+          <ProgressBar value={avgGroupProgress} color="cyan" minWidth="min-w-[90px]" />
         </td>
 
         {/* Управление группой */}

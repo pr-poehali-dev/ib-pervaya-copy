@@ -1,12 +1,13 @@
-import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import Icon from "@/components/ui/icon";
 import Tip from "@/components/ui/tip";
 import ActivateMenu from "@/components/admin/shared/ActivateMenu";
 import UserStatusBadge from "./UserStatusBadge";
+import UserAvatar from "@/components/admin/shared/UserAvatar";
+import ProgressBar from "@/components/admin/shared/ProgressBar";
+import LoginPasswordCell from "@/components/admin/shared/LoginPasswordCell";
 import { User, CourseStatus, allCourses, userColors, courseDirections } from "@/components/admin/types";
 import { useRole } from "@/contexts/RoleContext";
-import { today } from "@/data/dateUtils";
 
 interface UserTableRowProps {
   user: User;
@@ -41,17 +42,10 @@ export default function UserTableRow({
   onIssueCertificate,
   onToggleCourse,
 }: UserTableRowProps) {
-  const [pwdCopied, setPwdCopied] = useState(false);
   const { tenantType } = useRole();
   const canIssueCert = tenantType === "training_center";
   const activeCourses = user.assignments.filter((a) => a.active);
   const completedCount = user.assignments.filter((a) => a.progress === 100).length;
-
-  const copyPassword = () => {
-    navigator.clipboard.writeText("••••••••");
-    setPwdCopied(true);
-    setTimeout(() => setPwdCopied(false), 2000);
-  };
 
   return (
     <>
@@ -81,9 +75,7 @@ export default function UserTableRow({
         {/* ФИО */}
         <td className="px-4 py-3">
           <div className="flex items-center gap-2.5">
-            <div className={`w-8 h-8 bg-gradient-to-br ${userColors[idx % userColors.length]} rounded-lg flex items-center justify-center flex-shrink-0`}>
-              <span className="text-white font-bold text-[10px]">{user.initials}</span>
-            </div>
+            <UserAvatar gradient={userColors[idx % userColors.length]} initials={user.initials} />
             <div>
               <p className="font-medium leading-tight">{user.name}</p>
               <p className="text-xs text-muted-foreground">{user.role}</p>
@@ -123,36 +115,11 @@ export default function UserTableRow({
 
         {/* Логин */}
         <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs text-muted-foreground truncate max-w-[130px]">{user.email}</span>
-              <Tip text="Скопировать логин">
-                <button
-                  className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
-                  onClick={() => onCopyLogin(user.id, user.email)}
-                >
-                  {copiedId === user.id
-                    ? <Icon name="Check" size={13} className="text-emerald-500" />
-                    : <Icon name="Copy" size={13} />
-                  }
-                </button>
-              </Tip>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs text-muted-foreground tracking-widest">••••••••</span>
-              <Tip text="Скопировать пароль">
-                <button
-                  className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
-                  onClick={copyPassword}
-                >
-                  {pwdCopied
-                    ? <Icon name="Check" size={13} className="text-emerald-500" />
-                    : <Icon name="KeyRound" size={13} />
-                  }
-                </button>
-              </Tip>
-            </div>
-          </div>
+          <LoginPasswordCell
+            email={user.email}
+            loginCopied={copiedId === user.id}
+            onCopyLogin={() => onCopyLogin(user.id, user.email)}
+          />
         </td>
 
         {/* Управление */}
@@ -248,14 +215,8 @@ export default function UserTableRow({
 
                             {/* Прогресс */}
                             <td className="px-4 py-2.5">
-                              <div className="flex items-center gap-2 min-w-[110px]">
-                                <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                                  <div
-                                    className="h-full bg-gradient-to-r from-violet-500 to-purple-600 rounded-full"
-                                    style={{ width: `${a.progress}%` }}
-                                  />
-                                </div>
-                                <span className="text-xs text-muted-foreground w-8 text-right">{a.progress}%</span>
+                              <div className="flex items-center gap-2">
+                                <ProgressBar value={a.progress} minWidth="min-w-[80px]" />
                                 <Tip text="Статистика обучения" side="top">
                                   <button className="p-1 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-violet-600 flex-shrink-0">
                                     <Icon name="BarChart2" size={13} />

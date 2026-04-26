@@ -3,6 +3,9 @@ import Icon from "@/components/ui/icon";
 import Tip from "@/components/ui/tip";
 import ActivateMenu from "@/components/admin/shared/ActivateMenu";
 import CourseStatusBadge from "@/components/admin/shared/CourseStatusBadge";
+import UserAvatar from "@/components/admin/shared/UserAvatar";
+import ProgressBar from "@/components/admin/shared/ProgressBar";
+import LoginPasswordCell from "@/components/admin/shared/LoginPasswordCell";
 import { User, allCourses, userColors, courseDirections } from "@/components/admin/types";
 import { useRole } from "@/contexts/RoleContext";
 
@@ -32,7 +35,6 @@ export default function GroupMemberRow({
   onToggleAssignment,
 }: GroupMemberRowProps) {
   const [loginCopied, setLoginCopied] = useState(false);
-  const [pwdCopied, setPwdCopied] = useState(false);
   const { tenantType } = useRole();
   const canIssueCert = tenantType === "training_center";
   const activeCnt = member.assignments.filter((a) => a.active).length;
@@ -52,54 +54,22 @@ export default function GroupMemberRow({
         </td>
         <td className="px-4 py-2.5">
           <div className="flex items-center gap-2">
-            <div className={`w-7 h-7 bg-gradient-to-br ${userColors[mi % userColors.length]} rounded-md flex items-center justify-center flex-shrink-0`}>
-              <span className="text-white font-bold text-[9px]">{member.initials}</span>
-            </div>
+            <UserAvatar gradient={userColors[mi % userColors.length]} initials={member.initials} size="sm" />
             <span className="font-medium text-sm">{member.name}</span>
           </div>
         </td>
         <td className="px-4 py-2.5" onClick={(e) => e.stopPropagation()}>
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs text-muted-foreground truncate max-w-[120px]">{member.email}</span>
-              <Tip text="Скопировать логин">
-                <button
-                  className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
-                  onClick={() => { navigator.clipboard.writeText(member.email); setLoginCopied(true); setTimeout(() => setLoginCopied(false), 2000); }}
-                >
-                  {loginCopied ? <Icon name="Check" size={12} className="text-emerald-500" /> : <Icon name="Copy" size={12} />}
-                </button>
-              </Tip>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs text-muted-foreground tracking-widest">••••••••</span>
-              <Tip text="Скопировать пароль">
-                <button
-                  className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
-                  onClick={() => { navigator.clipboard.writeText("••••••••"); setPwdCopied(true); setTimeout(() => setPwdCopied(false), 2000); }}
-                >
-                  {pwdCopied ? <Icon name="Check" size={12} className="text-emerald-500" /> : <Icon name="KeyRound" size={12} />}
-                </button>
-              </Tip>
-            </div>
-          </div>
+          <LoginPasswordCell
+            email={member.email}
+            loginCopied={loginCopied}
+            onCopyLogin={() => { navigator.clipboard.writeText(member.email); setLoginCopied(true); setTimeout(() => setLoginCopied(false), 2000); }}
+            maxEmailWidth="max-w-[120px]"
+          />
         </td>
         <td className="px-4 py-2.5 text-sm text-muted-foreground">{activeCnt}</td>
         <td className="px-4 py-2.5 text-sm text-muted-foreground">{completedCnt}</td>
         <td className="px-4 py-2.5">
-          {activeCnt > 0 ? (
-            <div className="flex items-center gap-2 min-w-[100px]">
-              <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-violet-500 to-purple-600 rounded-full"
-                  style={{ width: `${avgProgress}%` }}
-                />
-              </div>
-              <span className="text-xs text-muted-foreground w-8 text-right">{avgProgress}%</span>
-            </div>
-          ) : (
-            <span className="text-xs text-muted-foreground">—</span>
-          )}
+            <ProgressBar value={avgProgress} />
         </td>
         {/* Действия участника */}
         <td className="px-4 py-2.5" onClick={(e) => e.stopPropagation()}>
