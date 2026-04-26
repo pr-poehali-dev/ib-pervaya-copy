@@ -10,17 +10,9 @@ import { cn } from "@/lib/utils";
 import { getThreadsForTenantAdmin } from "@/data/chatMockData";
 import { useAuth } from "@/contexts/AuthContext";
 import type { ChatThread, ChatMessage, ChatThreadStatus } from "@/types/chat";
+import { ROLE_LABELS } from "@/lib/chatUtils";
 
 type TabType = "incoming" | "support";
-
-const ROLE_LABELS: Record<string, string> = {
-  student:       "Слушатель",
-  admin:         "Администратор",
-  manager:       "Менеджер",
-  sales_manager: "Менеджер продаж",
-  superadmin:    "Суперадмин",
-  support:       "Техподдержка",
-};
 
 export default function ChatTenant() {
   const { user } = useAuth();

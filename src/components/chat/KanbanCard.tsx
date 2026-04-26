@@ -1,35 +1,12 @@
 import type { ChatThread } from "@/types/chat";
 import Icon from "@/components/ui/icon";
 import { cn } from "@/lib/utils";
+import { formatRelativeTime, ROLE_LABELS } from "@/lib/chatUtils";
 
 interface Props {
   thread: ChatThread;
   onClick: () => void;
   canRespond?: boolean;
-}
-
-const ROLE_LABELS: Record<string, string> = {
-  student:       "Слушатель",
-  admin:         "Администратор",
-  manager:       "Менеджер",
-  sales_manager: "Менеджер продаж",
-  superadmin:    "Суперадмин",
-  support:       "Техподдержка",
-};
-
-function formatRelativeTime(iso: string): string {
-  const now = new Date();
-  const date = new Date(iso);
-  const diffMs = now.getTime() - date.getTime();
-  const diffMin = Math.floor(diffMs / 60000);
-  const diffH = Math.floor(diffMin / 60);
-  const diffD = Math.floor(diffH / 24);
-
-  if (diffMin < 1) return "только что";
-  if (diffMin < 60) return `${diffMin} мин. назад`;
-  if (diffH < 24) return `${diffH} ч. назад`;
-  if (diffD < 7) return `${diffD} д. назад`;
-  return date.toLocaleDateString("ru-RU", { day: "numeric", month: "short" });
 }
 
 export default function KanbanCard({ thread, onClick, canRespond = true }: Props) {
@@ -90,7 +67,7 @@ export default function KanbanCard({ thread, onClick, canRespond = true }: Props
       {/* Низ: дата + unread + просмотр */}
       <div className="flex items-center justify-between gap-2 mt-auto">
         <span className="text-[11px] text-muted-foreground/70">
-          {formatRelativeTime(thread.updatedAt)}
+          {formatRelativeTime(thread.updatedAt, true)}
         </span>
         <div className="flex items-center gap-1.5">
           {!canRespond && (
