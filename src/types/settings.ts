@@ -49,7 +49,4 @@ export interface EmailSettings {
   useSsl: boolean;
 }
 
-export function generatePassword(): string {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%";
-  return Array.from({ length: 12 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
-}
+export { generateSystemPassword as generatePassword } from "@/lib/authUtils";
