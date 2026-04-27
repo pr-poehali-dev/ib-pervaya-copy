@@ -148,7 +148,7 @@ export default function Profile() {
         />
       )}
 
-      <div className="max-w-4xl mx-auto space-y-8">
+      <div className="max-w-4xl mx-auto space-y-4 sm:space-y-8">
 
         {/* Карточка пользователя */}
         <div className="bg-card rounded-2xl p-5 sm:p-8 border border-border shadow-sm">
@@ -178,21 +178,21 @@ export default function Profile() {
         </div>
 
         {/* Статистика */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
           {stats.map((s) => (
-            <div key={s.label} className="bg-card rounded-2xl p-5 border border-border shadow-sm text-center">
-              <Icon name={s.icon} size={24} className={`${s.color} mx-auto mb-2`} />
-              <p className="text-2xl font-bold">{s.value}</p>
-              <p className="text-muted-foreground text-xs mt-1">{s.label}</p>
+            <div key={s.label} className="bg-card rounded-2xl p-3 sm:p-5 border border-border shadow-sm text-center">
+              <Icon name={s.icon} size={20} className={`${s.color} mx-auto mb-1.5`} />
+              <p className="text-xl sm:text-2xl font-bold">{s.value}</p>
+              <p className="text-muted-foreground text-[10px] sm:text-xs mt-0.5 leading-tight">{s.label}</p>
             </div>
           ))}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
 
           {/* Завершённые курсы */}
           <div className="bg-card rounded-2xl p-4 sm:p-6 border border-border shadow-sm">
-            <h2 className="text-lg font-bold mb-5">Завершённые курсы</h2>
+            <h2 className="text-base sm:text-lg font-bold mb-3 sm:mb-5">Завершённые курсы</h2>
             {completedWithDetails.length === 0 ? (
               <div className="text-center py-8">
                 <Icon name="BookOpen" size={32} className="text-muted-foreground mx-auto mb-2" />
@@ -207,21 +207,21 @@ export default function Profile() {
             ) : (
               <div className="space-y-4">
                 {completedWithDetails.map(({ assignment, course }) => (
-                  <div key={assignment.courseId} className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="bg-emerald-100 dark:bg-emerald-900/30 w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0">
-                        <Icon name={assignment.status === "certified" ? "Award" : "CheckCircle2"} size={18} className="text-emerald-600 dark:text-emerald-400" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="font-medium text-sm truncate">{course?.title ?? "Курс"}</p>
+                  <div key={assignment.courseId} className="flex items-center gap-3">
+                    <div className="bg-emerald-100 dark:bg-emerald-900/30 w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <Icon name={assignment.status === "certified" ? "Award" : "CheckCircle2"} size={16} className="text-emerald-600 dark:text-emerald-400" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-sm line-clamp-2">{course?.title ?? "Курс"}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
                         <p className="text-xs text-muted-foreground">{assignment.completedAt ?? "—"}</p>
+                        {assignment.testScore && (
+                          <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-0 text-[10px] px-1.5 py-0 flex-shrink-0">
+                            {assignment.testScore}%
+                          </Badge>
+                        )}
                       </div>
                     </div>
-                    {assignment.testScore && (
-                      <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-0 flex-shrink-0">
-                        {assignment.testScore}%
-                      </Badge>
-                    )}
                   </div>
                 ))}
               </div>
@@ -230,24 +230,24 @@ export default function Profile() {
 
           {/* Достижения */}
           <div className="bg-card rounded-2xl p-4 sm:p-6 border border-border shadow-sm">
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-lg font-bold">Достижения</h2>
+            <div className="flex items-center justify-between mb-3 sm:mb-5">
+              <h2 className="text-base sm:text-lg font-bold">Достижения</h2>
               <span className="text-sm text-muted-foreground">{earnedCount} / {achievements.length}</span>
             </div>
-            <div className="grid grid-cols-3 sm:grid-cols-3 gap-2 sm:gap-3">
+            <div className="grid grid-cols-3 gap-2">
               {achievements.map((a) => (
                 <div
                   key={a.id}
-                  className={`text-center p-3 rounded-xl border transition-all ${
+                  className={`text-center p-2 sm:p-3 rounded-xl border transition-all ${
                     a.earned
                       ? "border-violet-300 dark:border-violet-700 bg-violet-50 dark:bg-violet-900/10"
                       : "border-border bg-muted/30 opacity-50 grayscale"
                   }`}
                   title={a.desc}
                 >
-                  <span className="text-2xl block mb-1">{a.emoji}</span>
-                  <p className="text-xs font-medium text-foreground leading-tight">{a.title}</p>
-                  {!a.earned && <p className="text-[10px] text-muted-foreground mt-0.5">Заблокировано</p>}
+                  <span className="text-xl sm:text-2xl block mb-1">{a.emoji}</span>
+                  <p className="text-[10px] sm:text-xs font-medium text-foreground leading-tight">{a.title}</p>
+                  {!a.earned && <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5">Заблокировано</p>}
                 </div>
               ))}
             </div>
@@ -285,8 +285,8 @@ export default function Profile() {
         {/* Активные курсы */}
         {activeAssignments.length > 0 && (
           <div className="bg-card rounded-2xl p-4 sm:p-6 border border-border shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold">В процессе обучения</h2>
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <h2 className="text-base sm:text-lg font-bold">В процессе обучения</h2>
               <button onClick={() => navigate("/my-learning")} className="text-primary text-sm hover:underline">
                 Все курсы →
               </button>
@@ -301,7 +301,7 @@ export default function Profile() {
                     className="flex items-center gap-4 p-3 rounded-xl hover:bg-muted/40 cursor-pointer transition-colors"
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm truncate">{course?.title ?? "Курс"}</p>
+                      <p className="font-medium text-sm line-clamp-2">{course?.title ?? "Курс"}</p>
                       <div className="flex items-center gap-2 mt-1.5">
                         <Progress value={a.progress} className="h-1.5 flex-1" />
                         <span className="text-xs text-violet-600 font-semibold flex-shrink-0">{a.progress}%</span>
