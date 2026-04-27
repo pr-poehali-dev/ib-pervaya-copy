@@ -88,7 +88,7 @@ export function CourseMenu({
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-sm mb-0.5">{m.title}</p>
-                    <p className="text-xs text-muted-foreground leading-relaxed">{m.desc}</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">{m.desc}</p>
                   </div>
                 </div>
                 {best && (
@@ -137,7 +137,7 @@ export function CourseMenu({
                   <Icon name={m.icon} size={18} className="text-white" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex flex-wrap items-center gap-1.5 mb-1">
                     <p className="font-semibold text-sm">{m.title}</p>
                     {m.key === "favorites" && favoritesCount !== undefined && favoritesCount > 0 && (
                       <span className="text-[10px] font-bold bg-pink-500 text-white rounded-full px-1.5 py-0.5 leading-none">
@@ -145,13 +145,13 @@ export function CourseMenu({
                       </span>
                     )}
                     {hasSectionPick && (
-                      <span className="text-[10px] font-medium bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-300 rounded-full px-1.5 py-0.5 leading-none flex items-center gap-0.5">
+                      <span className="text-[10px] font-medium bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-300 rounded-full px-1.5 py-0.5 leading-none flex items-center gap-0.5 flex-shrink-0">
                         <Icon name="Layers" size={9} />
                         По разделам
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground leading-relaxed">{m.desc}</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">{m.desc}</p>
                 </div>
               </div>
             </button>
@@ -162,7 +162,7 @@ export function CourseMenu({
         {isExpertPb && (
           <button
             onClick={() => onSetMode("task_solving")}
-            className="text-left p-5 rounded-2xl border-2 transition-all hover:shadow-md group bg-teal-50 dark:bg-teal-900/10 border-teal-200 dark:border-teal-800 hover:border-teal-400"
+            className="text-left p-3 sm:p-5 rounded-2xl border-2 transition-all hover:shadow-md group bg-teal-50 dark:bg-teal-900/10 border-teal-200 dark:border-teal-800 hover:border-teal-400"
           >
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 bg-gradient-to-br from-teal-500 to-cyan-700 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -245,7 +245,7 @@ export function CourseMenu({
       )}
 
       {/* Материалы курса */}
-      <div className="bg-card rounded-2xl border border-border p-5">
+      <div className="bg-card rounded-2xl border border-border p-3 sm:p-5">
         <div className="flex items-center gap-3 mb-3">
           <div className="w-9 h-9 bg-gradient-to-br from-violet-500 to-purple-700 rounded-xl flex items-center justify-center">
             <Icon name="FolderOpen" size={16} className="text-white" />
@@ -296,7 +296,7 @@ export function CourseMenu({
       )}
 
       {/* Библиотека НТД */}
-      <div className="bg-card rounded-2xl border border-border p-5">
+      <div className="bg-card rounded-2xl border border-border p-3 sm:p-5">
         <div className="flex items-center gap-3 mb-3">
           <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 to-blue-700 rounded-xl flex items-center justify-center">
             <Icon name="Library" size={16} className="text-white" />
