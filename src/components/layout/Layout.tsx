@@ -1,6 +1,7 @@
 import { ReactNode, useState, useEffect } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import Sidebar from "./Sidebar";
+import MobileHeader from "./MobileHeader";
 import Icon from "@/components/ui/icon";
 import { useRole } from "@/contexts/RoleContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -47,14 +48,10 @@ export default function Layout({ children }: LayoutProps) {
   }, []);
 
   const handleToggle = () => {
-    if (isMobile) {
-      setMobileOpen((v) => !v);
-    } else {
-      setCollapsed((v) => {
-        localStorage.setItem("sidebar-collapsed", String(!v));
-        return !v;
-      });
-    }
+    setCollapsed((v) => {
+      localStorage.setItem("sidebar-collapsed", String(!v));
+      return !v;
+    });
   };
 
   const chatUnread = getUnreadCount(CHAT_THREADS, user?.email ?? "");
@@ -66,11 +63,12 @@ export default function Layout({ children }: LayoutProps) {
 
   return (
     <div className="flex min-h-screen bg-background">
-      {/* Overlay на мобильных */}
-      {isMobile && mobileOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-black/50"
-          onClick={() => setMobileOpen(false)}
+      {/* Мобильный хедер с выпадающим меню */}
+      {isMobile && (
+        <MobileHeader
+          open={mobileOpen}
+          onToggle={() => setMobileOpen((v) => !v)}
+          onClose={() => setMobileOpen(false)}
         />
       )}
 
@@ -82,22 +80,11 @@ export default function Layout({ children }: LayoutProps) {
         />
       )}
 
-      {/* Сайдбар (мобильный drawer) */}
-      {isMobile && (
-        <div className={`fixed z-40 top-0 left-0 h-full transition-transform duration-300 ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}>
-          <Sidebar
-            collapsed={false}
-            onToggle={() => setMobileOpen(false)}
-            onNavClick={() => setMobileOpen(false)}
-          />
-        </div>
-      )}
-
       {/* Основной контент */}
       <main
         className={`flex-1 min-h-screen transition-all duration-300 ${
           isMobile
-            ? "ml-0 p-4 pb-24"
+            ? "ml-0 pt-14 p-4 pb-24"
             : collapsed
             ? "ml-16 p-6 md:p-8"
             : "ml-64 p-6 md:p-8"
