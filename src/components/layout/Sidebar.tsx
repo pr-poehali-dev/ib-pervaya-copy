@@ -63,9 +63,10 @@ const ROLE_LABELS: Record<string, string> = {
 interface SidebarProps {
   collapsed: boolean;
   onToggle: () => void;
+  onNavClick?: () => void;
 }
 
-export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
+export default function Sidebar({ collapsed, onToggle, onNavClick }: SidebarProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const { theme } = useTheme();
@@ -161,6 +162,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
               key={item.to}
               to={item.to}
               title={collapsed ? item.label : undefined}
+              onClick={onNavClick}
               className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group ${
                 collapsed ? "justify-center" : ""
               } ${

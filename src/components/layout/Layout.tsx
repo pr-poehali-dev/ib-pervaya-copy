@@ -88,6 +88,7 @@ export default function Layout({ children }: LayoutProps) {
           <Sidebar
             collapsed={false}
             onToggle={() => setMobileOpen(false)}
+            onNavClick={() => setMobileOpen(false)}
           />
         </div>
       )}
