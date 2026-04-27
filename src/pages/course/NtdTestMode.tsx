@@ -152,8 +152,8 @@ function NtdQuiz({
       </div>
 
       {/* Вопрос */}
-      <div className="bg-card rounded-2xl border border-border p-6">
-        <p className="font-semibold text-base leading-relaxed mb-5">{q.text}</p>
+      <div className="bg-card rounded-2xl border border-border p-4 sm:p-6">
+        <p className="font-semibold text-sm sm:text-base leading-relaxed mb-4 sm:mb-5">{q.text}</p>
         <AnswerOptions
           question={q}
           selected={selected}

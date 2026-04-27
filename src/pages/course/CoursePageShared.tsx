@@ -81,8 +81,8 @@ export function QuestionNav({
         </button>
       </div>
 
-      <div className="bg-card border border-border rounded-2xl p-3 space-y-3">
-        <div className="grid grid-cols-6 sm:grid-cols-8 lg:grid-cols-5 gap-1.5">
+      <div className="bg-card border border-border rounded-2xl p-2 sm:p-3 space-y-3">
+        <div className="grid grid-cols-5 sm:grid-cols-7 lg:grid-cols-5 gap-1 sm:gap-1.5">
           {questions.map((q, idx) => {
             const isCurrent = idx === currentIdx;
             let cls = "";
@@ -98,7 +98,7 @@ export function QuestionNav({
               <button
                 key={q.id}
                 onClick={() => onJump(idx)}
-                className={`w-9 h-9 rounded-lg text-xs font-bold transition-all flex items-center justify-center ${cls} ${
+                className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg text-xs font-bold transition-all flex items-center justify-center ${cls} ${
                   isCurrent ? "ring-2 ring-violet-500 ring-offset-1 scale-110" : "hover:scale-105"
                 }`}
                 title={`Вопрос ${idx + 1}`}

@@ -81,7 +81,7 @@ export default function TaskSolvingMode({ onBack }: Props) {
 
       {/* Список задач */}
       {filtered.length === 0 ? (
-        <div className="bg-card border border-border rounded-2xl p-10 flex flex-col items-center gap-3 text-center">
+        <div className="bg-card border border-border rounded-2xl p-6 sm:p-10 flex flex-col items-center gap-3 text-center">
           <Icon name="SearchX" size={32} className="text-muted-foreground/40" />
           <p className="text-sm text-muted-foreground">Задачи не найдены</p>
         </div>

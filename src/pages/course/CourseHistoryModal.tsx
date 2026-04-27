@@ -72,7 +72,7 @@ export function CourseHistoryModal({
             </div>
           ) : (
             <div className="overflow-x-auto">
-            <table className="w-full text-sm min-w-[380px]">
+            <table className="w-full text-sm min-w-[300px] sm:min-w-[380px]">
               <thead>
                 <tr className="border-b border-border bg-muted/30">
                   <th className="px-4 py-2 text-left font-medium text-muted-foreground text-xs">№</th>
