@@ -85,13 +85,13 @@ function NtdQuiz({
           </button>
         </div>
 
-        <div className="bg-card border border-border rounded-2xl p-8 flex flex-col items-center gap-5 text-center">
-          <div className={`w-20 h-20 rounded-2xl flex items-center justify-center ${passed ? "bg-emerald-100 dark:bg-emerald-900/30" : "bg-red-100 dark:bg-red-900/30"}`}>
-            <Icon name={passed ? "Trophy" : "RefreshCw"} size={36} className={passed ? "text-emerald-600" : "text-red-500"} />
+        <div className="bg-card border border-border rounded-2xl p-5 sm:p-8 flex flex-col items-center gap-4 sm:gap-5 text-center">
+          <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center ${passed ? "bg-emerald-100 dark:bg-emerald-900/30" : "bg-red-100 dark:bg-red-900/30"}`}>
+            <Icon name={passed ? "Trophy" : "RefreshCw"} size={30} className={passed ? "text-emerald-600" : "text-red-500"} />
           </div>
 
           <div>
-            <p className="text-2xl font-bold mb-1">{score}%</p>
+            <p className="text-xl sm:text-2xl font-bold mb-1">{score}%</p>
             <p className="text-muted-foreground text-sm">
               {correct} из {results.length} верных ответов
             </p>

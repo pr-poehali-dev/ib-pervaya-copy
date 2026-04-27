@@ -27,23 +27,23 @@ export function TestResult({
 
   return (
     <div className="space-y-5">
-      <div className={`rounded-2xl border p-6 text-center ${passed ? "bg-emerald-50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-800" : "bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800"}`}>
-        <div className={`w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center ${passed ? "bg-emerald-100 dark:bg-emerald-900/30" : "bg-red-100 dark:bg-red-900/30"}`}>
-          <Icon name={passed ? "Trophy" : "XCircle"} size={32} className={passed ? "text-emerald-600 dark:text-emerald-400" : "text-red-500"} />
+      <div className={`rounded-2xl border p-4 sm:p-6 text-center ${passed ? "bg-emerald-50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-800" : "bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800"}`}>
+        <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full mx-auto mb-3 sm:mb-4 flex items-center justify-center ${passed ? "bg-emerald-100 dark:bg-emerald-900/30" : "bg-red-100 dark:bg-red-900/30"}`}>
+          <Icon name={passed ? "Trophy" : "XCircle"} size={28} className={passed ? "text-emerald-600 dark:text-emerald-400" : "text-red-500"} />
         </div>
-        <p className={`text-3xl font-bold mb-1 ${passed ? "text-emerald-700 dark:text-emerald-300" : "text-red-600 dark:text-red-400"}`}>
+        <p className={`text-2xl sm:text-3xl font-bold mb-1 ${passed ? "text-emerald-700 dark:text-emerald-300" : "text-red-600 dark:text-red-400"}`}>
           {score}%
         </p>
-        <p className={`text-lg font-semibold mb-2 ${passed ? "text-emerald-800 dark:text-emerald-200" : "text-red-700 dark:text-red-300"}`}>
+        <p className={`text-base sm:text-lg font-semibold mb-2 ${passed ? "text-emerald-800 dark:text-emerald-200" : "text-red-700 dark:text-red-300"}`}>
           {passed ? "Тест сдан!" : "Тест не сдан"}
         </p>
         <p className="text-sm text-muted-foreground">
           Правильных ответов: <strong>{correct}</strong> из <strong>{total}</strong>
         </p>
         {isFinal && passed && (
-          <div className="mt-4 flex items-center justify-center gap-2 px-4 py-2 bg-amber-100 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-xl">
-            <Icon name="Award" size={16} className="text-amber-600 dark:text-amber-400" />
-            <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+          <div className="mt-4 flex items-center justify-center gap-2 px-3 py-2 bg-amber-100 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-xl">
+            <Icon name="Award" size={15} className="text-amber-600 dark:text-amber-400 flex-shrink-0" />
+            <p className="text-xs sm:text-sm font-medium text-amber-800 dark:text-amber-200 text-left">
               Удостоверение ДПО будет выдано в течение 3 рабочих дней
             </p>
           </div>
@@ -81,7 +81,7 @@ export function TestResult({
               const q = allQuestions.find((q) => q.id === ans.questionId);
               if (!q) return null;
               return (
-                <div key={ans.questionId} className="px-5 py-4 space-y-2">
+                <div key={ans.questionId} className="px-3 sm:px-5 py-3 sm:py-4 space-y-2">
                   <div className="flex items-start gap-2">
                     <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${ans.isCorrect ? "bg-emerald-100 dark:bg-emerald-900/30" : "bg-red-100 dark:bg-red-900/30"}`}>
                       <Icon name={ans.isCorrect ? "Check" : "X"} size={12} className={ans.isCorrect ? "text-emerald-600" : "text-red-500"} />
@@ -129,7 +129,7 @@ export function SearchAnswerMode({ onBack, allQuestions }: { onBack: () => void;
 
   return (
     <div className="space-y-4">
-      <div className="bg-card rounded-2xl border border-border p-5">
+      <div className="bg-card rounded-2xl border border-border p-4 sm:p-5">
         <p className="font-semibold mb-3">Поиск ответа на вопрос</p>
         <div className="relative">
           <Icon name="Search" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -147,7 +147,7 @@ export function SearchAnswerMode({ onBack, allQuestions }: { onBack: () => void;
 
       {selected ? (
         <div className="space-y-4">
-          <div className="bg-card rounded-2xl border border-border p-5 space-y-4">
+          <div className="bg-card rounded-2xl border border-border p-4 sm:p-5 space-y-4">
             <p className="font-semibold leading-relaxed">{selected.text}</p>
             <div className="space-y-2">
               {correctArr(selected).map((correctIdx) => (
