@@ -60,7 +60,7 @@ export default function MyLearning() {
 
   return (
     <Layout>
-      <div className="max-w-5xl mx-auto space-y-8">
+      <div className="max-w-5xl mx-auto space-y-4 sm:space-y-8">
 
         {/* Заголовок */}
         <div>
@@ -69,20 +69,20 @@ export default function MyLearning() {
         </div>
 
         {/* Статистика */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
           {[
             { label: "Всего курсов",  value: assignments.length,      icon: "BookOpen",   color: "from-violet-500 to-purple-700" },
             { label: "В процессе",    value: activeCourses.length,     icon: "PlayCircle", color: "from-cyan-500 to-blue-600" },
             { label: "Завершено",     value: completedCourses.length,  icon: "CheckCircle",color: "from-emerald-500 to-teal-600" },
             { label: "Удостоверений", value: assignments.filter((a) => a.status === "certified").length, icon: "Award", color: "from-amber-500 to-orange-600" },
           ].map((s) => (
-            <div key={s.label} className="bg-card rounded-2xl border border-border p-4 flex items-center gap-3">
-              <div className={`w-10 h-10 bg-gradient-to-br ${s.color} rounded-xl flex items-center justify-center flex-shrink-0`}>
-                <Icon name={s.icon} size={18} className="text-white" />
+            <div key={s.label} className="bg-card rounded-2xl border border-border p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
+              <div className={`w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br ${s.color} rounded-xl flex items-center justify-center flex-shrink-0`}>
+                <Icon name={s.icon} size={16} className="text-white" />
               </div>
-              <div>
-                <p className="text-2xl font-bold leading-none">{s.value}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{s.label}</p>
+              <div className="min-w-0">
+                <p className="text-xl sm:text-2xl font-bold leading-none">{s.value}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 leading-tight">{s.label}</p>
               </div>
             </div>
           ))}
@@ -166,7 +166,7 @@ export default function MyLearning() {
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 sm:gap-3">
                       <div className="min-w-0 flex-1">
                         <div className="flex items-start gap-2 flex-wrap">
-                          <p className="font-semibold text-sm sm:text-base truncate group-hover:text-primary transition-colors">{title}</p>
+                          <p className="font-semibold text-sm sm:text-base line-clamp-2 sm:truncate group-hover:text-primary transition-colors">{title}</p>
                           <span className={`sm:hidden px-2 py-0.5 rounded-lg text-xs font-medium flex items-center gap-1 flex-shrink-0 ${statusInfo.cls}`}>
                             <Icon name={statusInfo.icon} size={11} />
                             {statusInfo.label}
