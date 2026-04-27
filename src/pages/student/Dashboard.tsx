@@ -88,13 +88,13 @@ export default function Dashboard() {
         {/* Статистика */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
           {stats.map((stat) => (
-            <div key={stat.label} className="bg-card rounded-xl px-4 py-3 border border-border shadow-sm flex items-center gap-3">
-              <div className={`w-8 h-8 ${stat.bg} rounded-lg flex items-center justify-center flex-shrink-0`}>
-                <Icon name={stat.icon} size={16} className={stat.color} />
+            <div key={stat.label} className="bg-card rounded-xl px-3 py-2.5 sm:px-4 sm:py-3 border border-border shadow-sm flex items-center gap-2 sm:gap-3">
+              <div className={`w-7 h-7 sm:w-8 sm:h-8 ${stat.bg} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                <Icon name={stat.icon} size={14} className={stat.color} />
               </div>
               <div className="min-w-0">
-                <p className="text-lg font-bold text-foreground leading-none">{stat.value}</p>
-                <p className="text-muted-foreground text-xs mt-0.5 truncate">{stat.label}</p>
+                <p className="text-base sm:text-lg font-bold text-foreground leading-none">{stat.value}</p>
+                <p className="text-muted-foreground text-[10px] sm:text-xs mt-0.5 truncate">{stat.label}</p>
               </div>
             </div>
           ))}

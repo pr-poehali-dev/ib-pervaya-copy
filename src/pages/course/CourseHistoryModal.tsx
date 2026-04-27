@@ -28,7 +28,7 @@ export function CourseHistoryModal({
           </button>
         </div>
 
-        <div className="overflow-y-auto flex-1">
+        <div className="overflow-y-auto overflow-x-hidden flex-1">
           {historyProtocol ? (
             <div className="p-4 space-y-3">
               <button
@@ -71,7 +71,8 @@ export function CourseHistoryModal({
               Попыток пока нет
             </div>
           ) : (
-            <table className="w-full text-sm">
+            <div className="overflow-x-auto">
+            <table className="w-full text-sm min-w-[380px]">
               <thead>
                 <tr className="border-b border-border bg-muted/30">
                   <th className="px-4 py-2 text-left font-medium text-muted-foreground text-xs">№</th>
@@ -101,6 +102,7 @@ export function CourseHistoryModal({
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
       </div>

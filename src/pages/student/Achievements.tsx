@@ -249,12 +249,12 @@ export default function Achievements() {
             { label: "Суммарно XP",value: totalXP,                               icon: "Star",     color: "text-emerald-600", bg: "bg-emerald-100 dark:bg-emerald-900/30" },
             { label: "Осталось",   value: pendingList.length,                     icon: "Lock",     color: "text-blue-500",    bg: "bg-blue-100 dark:bg-blue-900/30" },
           ].map((s) => (
-            <div key={s.label} className="bg-card rounded-2xl border border-border p-5 text-center">
-              <div className={`w-10 h-10 ${s.bg} rounded-xl flex items-center justify-center mx-auto mb-2`}>
-                <Icon name={s.icon} size={18} className={s.color} />
+            <div key={s.label} className="bg-card rounded-2xl border border-border p-3 sm:p-5 text-center">
+              <div className={`w-8 h-8 sm:w-10 sm:h-10 ${s.bg} rounded-xl flex items-center justify-center mx-auto mb-2`}>
+                <Icon name={s.icon} size={16} className={s.color} />
               </div>
-              <p className="text-2xl font-bold">{s.value}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">{s.label}</p>
+              <p className="text-xl sm:text-2xl font-bold">{s.value}</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">{s.label}</p>
             </div>
           ))}
         </div>

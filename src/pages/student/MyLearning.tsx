@@ -118,14 +118,14 @@ export default function MyLearning() {
               <button
                 key={f.key}
                 onClick={() => setFilter(f.key)}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-medium transition-all flex items-center gap-1 sm:gap-1.5 ${
                   filter === f.key
                     ? "gradient-primary text-white shadow-md shadow-purple-200"
                     : "bg-card border border-border text-muted-foreground hover:border-primary hover:text-primary"
                 }`}
               >
                 {f.label}
-                <span className={`text-xs rounded-full px-1.5 py-0.5 leading-none ${filter === f.key ? "bg-white/20" : "bg-muted"}`}>
+                <span className={`text-[10px] sm:text-xs rounded-full px-1 sm:px-1.5 py-0.5 leading-none ${filter === f.key ? "bg-white/20" : "bg-muted"}`}>
                   {count}
                 </span>
               </button>

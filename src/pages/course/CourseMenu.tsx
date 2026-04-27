@@ -81,7 +81,7 @@ export function CourseMenu({
               ? finalTestHistory.reduce((a, b) => a.score > b.score ? a : b)
               : null;
             return (
-              <div key={m.key} className={`p-5 rounded-2xl border-2 ${m.bg} space-y-3`}>
+              <div key={m.key} className={`p-3 sm:p-5 rounded-2xl border-2 ${m.bg} space-y-3`}>
                 <div className="flex items-start gap-3">
                   <div className={`w-10 h-10 bg-gradient-to-br ${m.color} rounded-xl flex items-center justify-center flex-shrink-0`}>
                     <Icon name={m.icon} size={18} className="text-white" />
@@ -130,7 +130,7 @@ export function CourseMenu({
             <button
               key={m.key}
               onClick={() => onSetMode(m.key)}
-              className={`text-left p-5 rounded-2xl border-2 transition-all hover:shadow-md group ${m.bg}`}
+              className={`text-left p-3 sm:p-5 rounded-2xl border-2 transition-all hover:shadow-md group ${m.bg}`}
             >
               <div className="flex items-start gap-3">
                 <div className={`w-10 h-10 bg-gradient-to-br ${m.color} rounded-xl flex items-center justify-center flex-shrink-0`}>

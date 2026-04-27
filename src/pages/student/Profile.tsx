@@ -40,7 +40,7 @@ function EditProfileModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="bg-background rounded-2xl border border-border w-full max-w-md shadow-2xl">
-        <div className="flex items-center justify-between p-6 border-b border-border">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-border">
           <div>
             <h2 className="font-bold text-base">Данные профиля</h2>
             <p className="text-xs text-muted-foreground mt-0.5">Изменение данных — только через администратора</p>
@@ -49,7 +49,7 @@ function EditProfileModal({
             <Icon name="X" size={18} />
           </button>
         </div>
-        <div className="p-6 space-y-3">
+        <div className="p-4 sm:p-6 space-y-3">
           <div className="space-y-1">
             <label className="text-xs text-muted-foreground">Фамилия</label>
             <input value={user.lastName} disabled className="w-full h-9 px-3 rounded-xl border border-border bg-muted text-sm text-muted-foreground cursor-not-allowed" />
@@ -71,7 +71,7 @@ function EditProfileModal({
             <p className="text-xs text-amber-700 dark:text-amber-300">Для изменения данных обратитесь к администратору</p>
           </div>
         </div>
-        <div className="p-6 border-t border-border">
+        <div className="p-4 sm:p-6 border-t border-border">
           <Button className="w-full rounded-xl" variant="outline" onClick={onClose}>Закрыть</Button>
         </div>
       </div>

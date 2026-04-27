@@ -168,7 +168,7 @@ export default function ChatStudent() {
 
   return (
     <Layout>
-      <div className="flex h-[calc(100svh-7rem)] -mx-4 -mt-4 sm:-mx-6 sm:-mt-6 md:-mx-8 md:-mt-8 overflow-hidden rounded-none md:rounded-xl border border-border bg-background shadow-sm">
+      <div className="flex h-[calc(100svh-8.5rem)] md:h-[calc(100svh-7rem)] -mx-4 -mt-4 md:-mx-8 md:-mt-8 overflow-hidden rounded-none md:rounded-xl border border-border bg-background shadow-sm">
 
         {/* ── Левая колонка: список тредов ─────────────────────────────── */}
         <div className={`${showList ? "flex" : "hidden"} md:flex w-full md:w-80 flex-shrink-0 flex-col border-r border-border bg-card`}>
