@@ -15,6 +15,7 @@ import { StatsProvider } from "./contexts/StatsContext";
 import { RoleProvider, useRole } from "./contexts/RoleContext";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { BrandingProvider } from "./contexts/BrandingContext";
+import { AccessibilityProvider } from "./contexts/AccessibilityContext";
 
 const queryClient = new QueryClient();
 
@@ -97,7 +98,9 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <AppRoutes />
+          <AccessibilityProvider>
+            <AppRoutes />
+          </AccessibilityProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

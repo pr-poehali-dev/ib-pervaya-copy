@@ -4,7 +4,9 @@ import { useRole } from "@/contexts/RoleContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBranding } from "@/contexts/BrandingContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useAccessibility } from "@/contexts/AccessibilityContext";
 import ThemePicker from "@/components/ui/ThemePicker";
+import AccessibilityPanel from "@/components/ui/AccessibilityPanel";
 import { CHAT_THREADS, getUnreadCount } from "@/data/chatMockData";
 import { useState } from "react";
 
@@ -71,6 +73,8 @@ export default function MobileHeader({ open, onToggle, onClose }: MobileHeaderPr
   const { theme } = useTheme();
   const navigate = useNavigate();
   const [themePickerOpen, setThemePickerOpen] = useState(false);
+  const [a11yOpen, setA11yOpen] = useState(false);
+  const { isModified: a11yModified } = useAccessibility();
 
   const chatUnread = getUnreadCount(CHAT_THREADS, user?.email ?? "");
 
@@ -196,6 +200,15 @@ export default function MobileHeader({ open, onToggle, onClose }: MobileHeaderPr
             <span className="font-medium text-sm">Тема оформления</span>
             <Icon name="ChevronRight" size={16} className="ml-auto text-white/40" />
           </button>
+          <button
+            onClick={() => { setA11yOpen(true); onClose(); }}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white/60 hover:text-white hover:bg-white/10 transition-all relative"
+          >
+            <Icon name="Accessibility" size={20} className="text-white/60" />
+            <span className="font-medium text-sm">Для слабовидящих</span>
+            {a11yModified && <span className="w-2 h-2 bg-primary rounded-full ml-1" />}
+            <Icon name="ChevronRight" size={16} className="ml-auto text-white/40" />
+          </button>
 
           <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/5">
             <div className="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center flex-shrink-0 text-white text-xs font-bold">
@@ -219,6 +232,7 @@ export default function MobileHeader({ open, onToggle, onClose }: MobileHeaderPr
       {themePickerOpen && (
         <ThemePicker onClose={() => setThemePickerOpen(false)} />
       )}
+      <AccessibilityPanel open={a11yOpen} onClose={() => setA11yOpen(false)} />
     </>
   );
 }

@@ -6,7 +6,9 @@ import { useStats } from "@/contexts/StatsContext";
 import { useRole } from "@/contexts/RoleContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBranding } from "@/contexts/BrandingContext";
+import { useAccessibility } from "@/contexts/AccessibilityContext";
 import ThemePicker from "@/components/ui/ThemePicker";
+import AccessibilityPanel from "@/components/ui/AccessibilityPanel";
 import { TENANTS } from "@/data/mockData";
 import { CHAT_THREADS, getUnreadCount } from "@/data/chatMockData";
 
@@ -74,7 +76,9 @@ export default function Sidebar({ collapsed, onToggle, onNavClick }: SidebarProp
   const { role } = useRole();
   const { user, logout } = useAuth();
   const { branding } = useBranding();
-  const [themePickerOpen, setThemePickerOpen] = useState(false);
+  const [themePickerOpen, setThemePickerOpen]   = useState(false);
+  const [a11yOpen,        setA11yOpen]          = useState(false);
+  const { isModified: a11yModified } = useAccessibility();
 
   function handleLogout() {
     logout();
@@ -271,6 +275,22 @@ export default function Sidebar({ collapsed, onToggle, onNavClick }: SidebarProp
         open={themePickerOpen}
         onToggle={() => setThemePickerOpen((p) => !p)}
       />
+
+      {/* Доступность */}
+      <div className="px-2 pb-1">
+        <button
+          onClick={() => setA11yOpen(true)}
+          title="Для слабовидящих"
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-white/10 transition-all relative ${collapsed ? "justify-center" : ""}`}
+        >
+          <Icon name="Accessibility" size={18} className="flex-shrink-0" />
+          {!collapsed && <span className="text-sm font-medium flex-1 text-left">Для слабовидящих</span>}
+          {a11yModified && (
+            <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full" />
+          )}
+        </button>
+      </div>
+      <AccessibilityPanel open={a11yOpen} onClose={() => setA11yOpen(false)} />
 
       {/* Пользователь + выход */}
       <div className="p-2 border-t border-white/10 space-y-1">
