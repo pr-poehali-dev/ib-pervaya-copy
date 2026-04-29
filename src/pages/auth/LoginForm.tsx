@@ -147,6 +147,20 @@ export default function LoginForm({
               </button>
             ))}
           </div>
+
+          {/* Сброс согласия для тестирования */}
+          <button
+            type="button"
+            onClick={() => {
+              TEST_ACCOUNTS.forEach((acc) => {
+                localStorage.removeItem(`consent_accepted_${acc.email}`);
+              });
+              alert("Согласие сброшено — модалка появится при следующем входе");
+            }}
+            className="mt-2 w-full py-1.5 rounded-lg border border-dashed border-orange-200 bg-orange-50 text-[10px] text-orange-500 hover:bg-orange-100 transition-all"
+          >
+            🔄 Сбросить согласие (для тестирования)
+          </button>
         </div>
       </form>
     </div>
