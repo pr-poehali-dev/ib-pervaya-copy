@@ -16,10 +16,14 @@ export default function CertificatesPanel() {
   const [viewCert, setViewCert] = useState<Certificate | null>(null);
   const [protocolCert, setProtocolCert] = useState<Certificate | null>(null);
   const [filterOrg, setFilterOrg] = useState<string>("");
+  const [filterUser, setFilterUser] = useState<string>("");
+  const [filterCourse, setFilterCourse] = useState<string>("");
 
   const ready  = certs.filter((c) => c.status === "ready");
   const issued = certs.filter((c) => c.status === "issued");
   const orgOptions = [...new Set(issued.map((c) => c.userOrganization).filter(Boolean))] as string[];
+  const readyOrgOptions = [...new Set(ready.map((c) => c.userOrganization).filter(Boolean))] as string[];
+  const courseOptions = [...new Set([...ready, ...issued].map((c) => c.courseTitle).filter(Boolean))] as string[];
 
   function handleIssue(certNum: string, issuedBy: string) {
     if (!issueTarget) return;
@@ -39,9 +43,26 @@ export default function CertificatesPanel() {
     setIssueTarget(null);
   }
 
+  function applyFilters(arr: Certificate[]) {
+    return arr.filter((c) => {
+      if (filterOrg && c.userOrganization !== filterOrg) return false;
+      if (filterUser && !c.userName.toLowerCase().includes(filterUser.toLowerCase())) return false;
+      if (filterCourse && c.courseTitle !== filterCourse) return false;
+      return true;
+    });
+  }
+
   const list = tab === "ready"
-    ? ready
-    : issued.filter((c) => !filterOrg || c.userOrganization === filterOrg);
+    ? applyFilters(ready)
+    : applyFilters(issued);
+
+  const hasFilters = !!filterOrg || !!filterUser || !!filterCourse;
+
+  function resetFilters() {
+    setFilterOrg("");
+    setFilterUser("");
+    setFilterCourse("");
+  }
 
   function toggleSelect(id: number) {
     setSelectedIds((prev) => {
@@ -115,51 +136,70 @@ export default function CertificatesPanel() {
         </div>
       )}
 
-      {/* Панель действий и фильтров — только для вкладки «Выданные» */}
-      {tab === "issued" && (
-        <div className="flex items-center gap-2 flex-wrap">
+      {/* Панель фильтров — для табов «Готовы к выдаче» и «Выданные» */}
+      {(tab === "ready" || tab === "issued") && (
+        <div className="flex flex-wrap gap-2 items-center">
+          {/* Поиск по слушателю */}
+          <div className="relative">
+            <Icon name="Search" size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+            <input
+              value={filterUser}
+              onChange={(e) => setFilterUser(e.target.value)}
+              placeholder="Слушатель..."
+              className="h-9 pl-8 pr-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30 w-44"
+            />
+          </div>
+
+          {/* Фильтр по организации */}
           <select
             value={filterOrg}
             onChange={(e) => setFilterOrg(e.target.value)}
             className="h-9 px-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30 text-foreground"
           >
             <option value="">Все организации</option>
-            {orgOptions.map((org) => (
+            {(tab === "ready" ? readyOrgOptions : orgOptions).map((org) => (
               <option key={org} value={org}>{org}</option>
             ))}
           </select>
-          {filterOrg && (
+
+          {/* Фильтр по курсу */}
+          <select
+            value={filterCourse}
+            onChange={(e) => setFilterCourse(e.target.value)}
+            className="h-9 px-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30 text-foreground"
+          >
+            <option value="">Все курсы</option>
+            {courseOptions.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+
+          {hasFilters && (
             <button
-              onClick={() => setFilterOrg("")}
-              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+              onClick={resetFilters}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
               <Icon name="X" size={12} />
               Сбросить
             </button>
           )}
+
           {selectedIds.size > 0 && (
             <span className="text-sm text-muted-foreground">Выбрано: {selectedIds.size}</span>
           )}
-          <div className="ml-auto flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-xl gap-2 text-sm"
-              disabled={selectedIds.size === 0}
-            >
-              <Icon name="Printer" size={14} />
-              Печать
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-xl gap-2 text-sm"
-              disabled={selectedIds.size === 0}
-            >
-              <Icon name="Download" size={14} />
-              Скачать
-            </Button>
-          </div>
+
+          {tab === "issued" && (
+            <div className="ml-auto flex gap-2">
+              <Button variant="outline" size="sm" className="rounded-xl gap-2 text-sm" disabled={selectedIds.size === 0}>
+                <Icon name="Printer" size={14} />
+                Печать
+              </Button>
+              <Button variant="outline" size="sm" className="rounded-xl gap-2 text-sm" disabled={selectedIds.size === 0}>
+                <Icon name="Download" size={14} />
+                Скачать
+              </Button>
+            </div>
+          )}
         </div>
       )}
 
