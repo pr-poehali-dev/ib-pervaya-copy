@@ -110,7 +110,7 @@ export default function Admin() {
   if (error) {
     return (
       <Layout>
-        <div className="max-w-6xl mx-auto flex flex-col items-center justify-center min-h-[40vh] gap-4 text-center">
+        <div className="flex flex-col items-center justify-center min-h-[40vh] gap-4 text-center">
           <div className="w-14 h-14 bg-red-100 dark:bg-red-900/30 rounded-2xl flex items-center justify-center">
             <span className="text-2xl">⚠️</span>
           </div>
@@ -126,7 +126,7 @@ export default function Admin() {
   if (loading) {
     return (
       <Layout>
-        <div className="max-w-6xl mx-auto space-y-6 animate-pulse">
+        <div className="space-y-6 animate-pulse">
           <div className="h-20 bg-muted rounded-2xl" />
           <div className="flex gap-2">
             {[1,2,3,4,5].map(i => <div key={i} className="h-10 flex-1 bg-muted rounded-xl" />)}
@@ -142,7 +142,7 @@ export default function Admin() {
 
   return (
     <Layout>
-      <div className="max-w-6xl mx-auto space-y-6">
+      <div className="space-y-6">
         <AdminHeader
           showAddGroup={showAddGroup}
           setShowAddGroup={setShowAddGroup}
