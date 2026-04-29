@@ -84,13 +84,17 @@ export default function Layout({ children }: LayoutProps) {
       <main
         className={`flex-1 min-h-screen transition-all duration-300 ${
           isMobile
-            ? "ml-0 pt-14 p-4 pb-24"
+            ? "ml-0 pt-14 pb-24"
             : collapsed
-            ? "ml-16 p-6 md:p-8"
-            : "ml-64 p-6 md:p-8"
+            ? "ml-16"
+            : "ml-64"
         }`}
       >
-        {children}
+        <div className={`mx-auto w-full max-w-screen-xl ${
+          isMobile ? "p-4" : "p-6 md:p-8"
+        }`}>
+          {children}
+        </div>
       </main>
 
       {/* Нижняя навигация на мобильном */}
