@@ -28,6 +28,7 @@ export default function CheckJournal({
   const [view, setView] = useState<JournalView>({ type: "orgs" });
   const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [orgSearch, setOrgSearch] = useState("");
 
   // Collect all orgs that appear in protocols + known orgs
   const orgIds = Array.from(new Set([
@@ -73,8 +74,21 @@ export default function CheckJournal({
           </div>
         </div>
 
+        <div className="relative">
+          <Icon name="Search" size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+          <input
+            className="w-full border border-border rounded-xl pl-9 pr-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30"
+            placeholder="Поиск по организации..."
+            value={orgSearch}
+            onChange={(e) => setOrgSearch(e.target.value)}
+          />
+        </div>
+
         <div className="space-y-3">
-          {orgIds.map((orgId) => {
+          {orgIds.filter((orgId) => {
+            if (!orgSearch.trim()) return true;
+            return getOrgName(orgId).toLowerCase().includes(orgSearch.toLowerCase());
+          }).map((orgId) => {
             const orgProtos = protocols.filter((p) => p.orgId === orgId);
             const approved = orgProtos.filter((p) => p.status === "approved").length;
             const draft = orgProtos.filter((p) => p.status === "draft").length;
