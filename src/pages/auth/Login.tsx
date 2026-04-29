@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useRole } from "@/contexts/RoleContext";
 import LoginFeatures from "./LoginFeatures";
 import LoginForm from "./LoginForm";
+import ConsentModal from "@/components/ui/ConsentModal";
 
 const ROLE_REDIRECT: Record<string, string> = {
   superadmin:    "/super-admin",
@@ -13,6 +14,8 @@ const ROLE_REDIRECT: Record<string, string> = {
   student:       "/",
   support:       "/chat",
 };
+
+const CONSENT_KEY = (email: string) => `consent_accepted_${email}`;
 
 export default function Login() {
   const navigate = useNavigate();
@@ -25,6 +28,9 @@ export default function Login() {
   const [remember, setRemember] = useState(false);
   const [error,    setError]    = useState("");
   const [loading,  setLoading]  = useState(false);
+
+  const [pendingUser,   setPendingUser]   = useState<{ appRole: string; email: string } | null>(null);
+  const [consentOpen,   setConsentOpen]   = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -44,11 +50,31 @@ export default function Login() {
     const saved = sessionStorage.getItem("auth_user");
     if (saved) {
       const u = JSON.parse(saved);
-      setRole(u.appRole);
-      navigate(ROLE_REDIRECT[u.appRole] ?? "/");
+
+      const alreadyAccepted = localStorage.getItem(CONSENT_KEY(u.email)) === "true";
+      if (alreadyAccepted) {
+        setRole(u.appRole);
+        navigate(ROLE_REDIRECT[u.appRole] ?? "/");
+      } else {
+        setPendingUser({ appRole: u.appRole, email: u.email });
+        setConsentOpen(true);
+      }
     }
 
     setLoading(false);
+  }
+
+  function handleConsentAccept() {
+    if (!pendingUser) return;
+    localStorage.setItem(CONSENT_KEY(pendingUser.email), "true");
+    setRole(pendingUser.appRole);
+    setConsentOpen(false);
+    navigate(ROLE_REDIRECT[pendingUser.appRole] ?? "/");
+  }
+
+  function handleConsentDecline() {
+    setConsentOpen(false);
+    setPendingUser(null);
   }
 
   return (
@@ -65,6 +91,12 @@ export default function Login() {
           onSubmit={handleSubmit}
         />
       </div>
+
+      <ConsentModal
+        open={consentOpen}
+        onAccept={handleConsentAccept}
+        onDecline={handleConsentDecline}
+      />
     </div>
   );
 }
