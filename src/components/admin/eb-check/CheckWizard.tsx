@@ -57,14 +57,18 @@ type WizardState = {
 const STEP_LABELS = ["Комиссия и сессия", "Проверяемые", "Результаты", "Заключение"];
 
 export default function CheckWizard({
-  onSave, onCancel, editProtocol, commissions,
+  onSave, onCancel, editProtocol, commissions, defaultOrgId,
 }: {
   onSave: (p: CheckProtocol) => void;
   onCancel: () => void;
   editProtocol?: CheckProtocol;
   commissions?: Commission[];
+  defaultOrgId?: number;
 }) {
-  const availableCommissions = commissions ?? MOCK_COMMISSIONS;
+  const allCommissions = commissions ?? MOCK_COMMISSIONS;
+  const availableCommissions = defaultOrgId
+    ? allCommissions.filter((c) => c.orgId === defaultOrgId)
+    : allCommissions;
 
   const [step, setStep] = useState<WizardStep>(1);
   const [state, setState] = useState<WizardState>(() => {

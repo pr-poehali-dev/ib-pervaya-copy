@@ -12,6 +12,7 @@ export default function EbCheckPanel() {
   const [protocols, setProtocols] = useState<CheckProtocol[]>(MOCK_PROTOCOLS);
   const [commissions, setCommissions] = useState<Commission[]>(MOCK_COMMISSIONS);
   const [editingProtocol, setEditingProtocol] = useState<CheckProtocol | undefined>(undefined);
+  const [newForOrgId, setNewForOrgId] = useState<number | undefined>(undefined);
 
   function handleSaveProtocol(p: CheckProtocol) {
     setProtocols((prev) => {
@@ -58,8 +59,8 @@ export default function EbCheckPanel() {
       {activeTab === "journal" && (
         <CheckJournal
           protocols={protocols}
-          onEdit={(p) => { setEditingProtocol(p); setActiveTab("wizard"); }}
-          onNew={() => { setEditingProtocol(undefined); setActiveTab("wizard"); }}
+          onEdit={(p) => { setEditingProtocol(p); setNewForOrgId(undefined); setActiveTab("wizard"); }}
+          onNew={(orgId) => { setEditingProtocol(undefined); setNewForOrgId(orgId); setActiveTab("wizard"); }}
         />
       )}
 
@@ -67,8 +68,9 @@ export default function EbCheckPanel() {
         <CheckWizard
           commissions={commissions}
           onSave={handleSaveProtocol}
-          onCancel={() => { setEditingProtocol(undefined); setActiveTab("journal"); }}
+          onCancel={() => { setEditingProtocol(undefined); setNewForOrgId(undefined); setActiveTab("journal"); }}
           editProtocol={editingProtocol}
+          defaultOrgId={newForOrgId}
         />
       )}
 
