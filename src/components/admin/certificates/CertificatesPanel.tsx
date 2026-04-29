@@ -11,7 +11,7 @@ import TestProtocolModal from "./TestProtocolModal";
 export default function CertificatesPanel() {
   const [certs, setCerts] = useState<Certificate[]>(CERTIFICATES);
   const [issueTarget, setIssueTarget] = useState<Certificate | null>(null);
-  const [tab, setTab] = useState<"ready" | "issued">("ready");
+  const [tab, setTab] = useState<"ready" | "issued" | "fis_frdo">("ready");
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [viewCert, setViewCert] = useState<Certificate | null>(null);
   const [protocolCert, setProtocolCert] = useState<Certificate | null>(null);
@@ -96,6 +96,13 @@ export default function CertificatesPanel() {
           <Icon name="Award" size={15} />
           Выданные ({issued.length})
         </button>
+        <button
+          onClick={() => setTab("fis_frdo")}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border transition-colors ${tab === "fis_frdo" ? "gradient-primary text-white border-transparent" : "border-border text-muted-foreground hover:bg-muted/60"}`}
+        >
+          <Icon name="Database" size={15} />
+          ФИС ФРДО
+        </button>
       </div>
 
       {/* Уведомление */}
@@ -156,8 +163,25 @@ export default function CertificatesPanel() {
         </div>
       )}
 
+      {/* ФИС ФРДО */}
+      {tab === "fis_frdo" && (
+        <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-200">
+            <Icon name="Database" size={30} className="text-white" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold">ФИС ФРДО</h2>
+            <p className="text-muted-foreground text-sm mt-1.5 max-w-sm">Раздел находится в разработке. Здесь будет интеграция с Федеральной информационной системой Федерального реестра документов об образовании.</p>
+          </div>
+          <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-600 font-medium">
+            <Icon name="Clock" size={13} />
+            В разработке
+          </div>
+        </div>
+      )}
+
       {/* Таблица */}
-      <div className="bg-card rounded-2xl border border-border overflow-hidden">
+      {tab !== "fis_frdo" && <div className="bg-card rounded-2xl border border-border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -272,7 +296,7 @@ export default function CertificatesPanel() {
             </tbody>
           </table>
         </div>
-      </div>
+      </div>}
     </div>
   );
 }
