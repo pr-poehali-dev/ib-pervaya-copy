@@ -72,7 +72,7 @@ export default function EbCheckPanel() {
         />
       )}
 
-      {activeTab === "commissions" && <CommissionsPanel />}
+      {activeTab === "commissions" && <CommissionsPanel protocols={protocols} />}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import {
-  Commission, CommissionMember, EbGroup, EbOrganization,
+  Commission, CommissionMember, EbGroup, EbOrganization, CheckProtocol,
   MOCK_COMMISSIONS, MOCK_EB_ORGS, MOCK_SDO_MEMBERS,
 } from "@/data/ebCheckData";
 
@@ -55,7 +55,7 @@ function formFromCommission(c: Commission): CommissionForm {
 
 type View = { type: "orgs" } | { type: "commissions"; orgId: number } | { type: "edit-commission"; orgId: number; commId: number | null };
 
-export default function CommissionsPanel() {
+export default function CommissionsPanel({ protocols = [] }: { protocols?: CheckProtocol[] }) {
   const [orgs, setOrgs] = useState<EbOrganization[]>(MOCK_EB_ORGS);
   const [commissions, setCommissions] = useState<Commission[]>(MOCK_COMMISSIONS);
   const [view, setView] = useState<View>({ type: "orgs" });
@@ -237,6 +237,8 @@ export default function CommissionsPanel() {
           {orgs.map((org) => {
             const orgComms = commissions.filter((c) => c.orgId === org.id);
             const activeComms = orgComms.filter((c) => c.isActive).length;
+            const orgProtocols = protocols.filter((p) => p.orgId === org.id);
+            const approvedProtos = orgProtocols.filter((p) => p.status === "approved").length;
             return (
               <div key={org.id} className="bg-card border border-border rounded-2xl p-5 hover:border-primary/40 hover:shadow-sm transition-all group">
                 <div className="flex items-start justify-between gap-2">
@@ -257,21 +259,30 @@ export default function CommissionsPanel() {
                   </button>
                 </div>
 
-                <div className="mt-4 flex items-center gap-3">
-                  <div className="flex-1 px-3 py-2 bg-muted/50 rounded-xl text-center">
-                    <div className="text-lg font-bold">{orgComms.length}</div>
-                    <div className="text-[10px] text-muted-foreground">комиссий</div>
+                <div className="mt-4 grid grid-cols-4 gap-2">
+                  <div className="px-2 py-2 bg-muted/50 rounded-xl text-center">
+                    <div className="text-base font-bold">{orgComms.length}</div>
+                    <div className="text-[10px] text-muted-foreground leading-tight">комиссий</div>
                   </div>
-                  <div className="flex-1 px-3 py-2 bg-emerald-50 border border-emerald-100 rounded-xl text-center">
-                    <div className="text-lg font-bold text-emerald-700">{activeComms}</div>
-                    <div className="text-[10px] text-emerald-600">активных</div>
+                  <div className="px-2 py-2 bg-emerald-50 border border-emerald-100 rounded-xl text-center">
+                    <div className="text-base font-bold text-emerald-700">{activeComms}</div>
+                    <div className="text-[10px] text-emerald-600 leading-tight">активных</div>
                   </div>
-                  <button onClick={() => setView({ type: "commissions", orgId: org.id })}
-                    className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-border hover:border-primary hover:text-primary hover:bg-primary/5 transition-all text-xs font-semibold">
-                    Открыть
-                    <Icon name="ChevronRight" size={13} />
-                  </button>
+                  <div className="px-2 py-2 bg-blue-50 border border-blue-100 rounded-xl text-center">
+                    <div className="text-base font-bold text-blue-700">{orgProtocols.length}</div>
+                    <div className="text-[10px] text-blue-600 leading-tight">протоколов</div>
+                  </div>
+                  <div className="px-2 py-2 bg-violet-50 border border-violet-100 rounded-xl text-center">
+                    <div className="text-base font-bold text-violet-700">{approvedProtos}</div>
+                    <div className="text-[10px] text-violet-600 leading-tight">утверждено</div>
+                  </div>
                 </div>
+
+                <button onClick={() => setView({ type: "commissions", orgId: org.id })}
+                  className="mt-3 w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-border hover:border-primary hover:text-primary hover:bg-primary/5 transition-all text-xs font-semibold">
+                  Управление комиссиями
+                  <Icon name="ChevronRight" size={13} />
+                </button>
               </div>
             );
           })}
@@ -312,7 +323,12 @@ export default function CommissionsPanel() {
           </div>
         ) : (
           <div className="space-y-3">
-            {orgComms.map((c) => (
+            {orgComms.map((c) => {
+              const commProtos = protocols.filter((p) => p.commissionId === c.id);
+              const commApproved = commProtos.filter((p) => p.status === "approved").length;
+              const commDraft = commProtos.filter((p) => p.status === "draft").length;
+              const lastProto = commProtos.sort((a, b) => b.verifyDate.localeCompare(a.verifyDate))[0];
+              return (
               <div key={c.id} className="bg-card border border-border rounded-2xl p-5">
                 <div className="flex items-start justify-between gap-3 flex-wrap">
                   <div className="flex-1 min-w-0">
@@ -335,6 +351,42 @@ export default function CommissionsPanel() {
                     </button>
                   </div>
                 </div>
+
+                {/* Protocol stats */}
+                {commProtos.length > 0 ? (
+                  <div className="mt-3 flex items-center gap-2 flex-wrap">
+                    <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-muted/60 rounded-xl">
+                      <Icon name="FileText" size={12} className="text-muted-foreground" />
+                      <span className="text-xs font-semibold">{commProtos.length}</span>
+                      <span className="text-xs text-muted-foreground">протоколов</span>
+                    </div>
+                    {commApproved > 0 && (
+                      <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-50 border border-emerald-100 rounded-xl">
+                        <Icon name="CheckCircle2" size={12} className="text-emerald-600" />
+                        <span className="text-xs font-semibold text-emerald-700">{commApproved}</span>
+                        <span className="text-xs text-emerald-600">утверждено</span>
+                      </div>
+                    )}
+                    {commDraft > 0 && (
+                      <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-amber-50 border border-amber-100 rounded-xl">
+                        <Icon name="Clock" size={12} className="text-amber-600" />
+                        <span className="text-xs font-semibold text-amber-700">{commDraft}</span>
+                        <span className="text-xs text-amber-600">черновик</span>
+                      </div>
+                    )}
+                    {lastProto && (
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground ml-auto">
+                        <Icon name="Calendar" size={11} />
+                        Последняя: {lastProto.verifyDate}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Icon name="Info" size={12} />
+                    Проверок по этой комиссии ещё не проводилось
+                  </div>
+                )}
 
                 {/* Chairman */}
                 <div className="mt-4 flex items-center gap-3 px-3 py-2.5 bg-primary/5 border border-primary/20 rounded-xl">
@@ -368,7 +420,8 @@ export default function CommissionsPanel() {
                   </div>
                 )}
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
