@@ -90,9 +90,7 @@ export default function Layout({ children }: LayoutProps) {
             : "ml-64"
         }`}
       >
-        <div className={`mx-auto w-full max-w-screen-xl ${
-          isMobile ? "p-4" : "p-6 md:p-8"
-        }`}>
+        <div className={isMobile ? "p-4" : "p-5"}>
           {children}
         </div>
       </main>
