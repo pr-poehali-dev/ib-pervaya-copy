@@ -4,8 +4,9 @@ import { CheckProtocol, Commission, EbOrganization, MOCK_PROTOCOLS, MOCK_COMMISS
 import CommissionsPanel from "./CommissionsPanel";
 import CheckWizard from "./CheckWizard";
 import CheckJournal from "./CheckJournal";
+import EbWaitingList from "./EbWaitingList";
 
-type EbTab = "journal" | "wizard" | "commissions";
+type EbTab = "journal" | "waiting" | "wizard" | "commissions";
 
 function OrgPicker({
   orgs,
@@ -90,6 +91,7 @@ export default function EbCheckPanel() {
 
   const tabs: { key: EbTab; icon: string; label: string }[] = [
     { key: "journal", icon: "BookOpen", label: "Журнал проверок" },
+    { key: "waiting", icon: "ListChecks", label: "Лист ожидания" },
     { key: "wizard", icon: "FilePlus2", label: "Оформить проверку" },
     { key: "commissions", icon: "Users", label: "Комиссии" },
   ];
@@ -108,7 +110,7 @@ export default function EbCheckPanel() {
                 setEditingProtocol(undefined);
                 setNewForOrgId(undefined);
                 setShowOrgPicker(false);
-                setActiveTab(tab.key);
+                setActiveTab(tab.key as EbTab);
               }
             }}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all relative ${
@@ -160,6 +162,18 @@ export default function EbCheckPanel() {
           onCancel={handleCancelWizard}
           editProtocol={editingProtocol}
           defaultOrgId={newForOrgId}
+        />
+      )}
+
+      {activeTab === "waiting" && (
+        <EbWaitingList
+          protocols={protocols}
+          onCreateCheck={(orgId) => {
+            setNewForOrgId(orgId);
+            setShowOrgPicker(false);
+            setEditingProtocol(undefined);
+            setActiveTab("wizard");
+          }}
         />
       )}
 
