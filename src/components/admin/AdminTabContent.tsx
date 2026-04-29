@@ -85,6 +85,24 @@ export default function AdminTabContent({
     return <AdminCatalogPanel />;
   }
 
+  if (activeTab === "eb_check") {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-200">
+          <Icon name="ClipboardCheck" size={30} className="text-white" />
+        </div>
+        <div>
+          <h2 className="text-xl font-bold">Оформление проверки знаний ЭБ</h2>
+          <p className="text-muted-foreground text-sm mt-1.5 max-w-sm">Раздел находится в разработке. Здесь будет оформление проверки знаний по электробезопасности.</p>
+        </div>
+        <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-600 font-medium">
+          <Icon name="Clock" size={13} />
+          В разработке
+        </div>
+      </div>
+    );
+  }
+
   if (activeTab === "stp") {
     return <STPPanel />;
   }
