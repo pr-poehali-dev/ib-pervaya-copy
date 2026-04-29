@@ -69,7 +69,7 @@ export default function Dashboard() {
 
   return (
     <Layout>
-      <div className="max-w-6xl mx-auto space-y-8">
+      <div className="space-y-8">
 
         {/* Заголовок */}
         <div className="flex items-start justify-between gap-3">

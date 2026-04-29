@@ -60,7 +60,7 @@ export default function MyLearning() {
 
   return (
     <Layout>
-      <div className="max-w-5xl mx-auto space-y-4 sm:space-y-8">
+      <div className="space-y-4 sm:space-y-8">
 
         {/* Заголовок */}
         <div>

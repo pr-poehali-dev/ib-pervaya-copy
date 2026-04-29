@@ -77,7 +77,7 @@ export default function SuperAdmin() {
 
   return (
     <Layout>
-      <div className="max-w-6xl mx-auto space-y-6">
+      <div className="space-y-6">
         {/* Заголовок */}
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 bg-gradient-to-br from-violet-500 to-purple-700 rounded-2xl flex items-center justify-center">

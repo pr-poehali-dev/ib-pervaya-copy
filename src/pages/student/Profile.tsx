@@ -148,7 +148,7 @@ export default function Profile() {
         />
       )}
 
-      <div className="max-w-4xl mx-auto space-y-4 sm:space-y-8">
+      <div className="space-y-4 sm:space-y-8">
 
         {/* Карточка пользователя */}
         <div className="bg-card rounded-2xl p-5 sm:p-8 border border-border shadow-sm">

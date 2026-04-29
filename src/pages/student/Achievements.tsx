@@ -204,7 +204,7 @@ export default function Achievements() {
 
   return (
     <Layout>
-      <div className="max-w-4xl mx-auto space-y-8">
+      <div className="space-y-8">
 
         {/* Заголовок */}
         <div>
