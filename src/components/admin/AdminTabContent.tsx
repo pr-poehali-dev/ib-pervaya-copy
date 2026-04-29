@@ -12,6 +12,7 @@ import SubscriptionReportModal from "@/components/admin/reports/SubscriptionRepo
 import STPPanel from "@/components/admin/stp/STPPanel";
 import CertificatesPanel from "@/components/admin/certificates/CertificatesPanel";
 import TenantClosingReportModal from "@/components/admin/reports/TenantClosingReportModal";
+import EbCheckPanel from "@/components/admin/eb-check/EbCheckPanel";
 
 import { AdminTabKey } from "@/components/admin/AdminTabBar";
 
@@ -86,6 +87,10 @@ export default function AdminTabContent({
   }
 
   if (activeTab === "eb_check") {
+    return <EbCheckPanel />;
+  }
+
+  if (activeTab === "eb_check_stub") {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-200">
@@ -93,7 +98,7 @@ export default function AdminTabContent({
         </div>
         <div>
           <h2 className="text-xl font-bold">Оформление проверки знаний ЭБ</h2>
-          <p className="text-muted-foreground text-sm mt-1.5 max-w-sm">Раздел находится в разработке. Здесь будет оформление проверки знаний по электробезопасности.</p>
+          <p className="text-muted-foreground text-sm mt-1.5 max-w-sm">Раздел находится в разработке.</p>
         </div>
         <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-600 font-medium">
           <Icon name="Clock" size={13} />
