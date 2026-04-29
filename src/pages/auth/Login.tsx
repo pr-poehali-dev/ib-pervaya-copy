@@ -2,9 +2,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRole } from "@/contexts/RoleContext";
+import { DEFAULT_SYSTEM_USERS } from "@/data/mockData";
 import LoginFeatures from "./LoginFeatures";
 import LoginForm from "./LoginForm";
 import ConsentModal from "@/components/ui/ConsentModal";
+import type { AppRole } from "@/contexts/RoleContext";
 
 const ROLE_REDIRECT: Record<string, string> = {
   superadmin:    "/super-admin",
@@ -13,6 +15,16 @@ const ROLE_REDIRECT: Record<string, string> = {
   manager:       "/admin",
   student:       "/",
   support:       "/chat",
+};
+
+const ROLE_MAP: Record<string, AppRole> = {
+  "Администратор":   "admin",
+  "Менеджер":        "manager",
+  "Слушатель":       "student",
+  "Наблюдатель":     "student",
+  "Суперадмин":      "superadmin",
+  "Менеджер продаж": "sales_manager",
+  "Специалист ТП":   "support",
 };
 
 const CONSENT_KEY = (email: string) => `consent_accepted_${email}`;
@@ -29,8 +41,8 @@ export default function Login() {
   const [error,    setError]    = useState("");
   const [loading,  setLoading]  = useState(false);
 
-  const [pendingUser,   setPendingUser]   = useState<{ appRole: string; email: string } | null>(null);
-  const [consentOpen,   setConsentOpen]   = useState(false);
+  const [pendingUser, setPendingUser] = useState<{ appRole: AppRole; email: string } | null>(null);
+  const [consentOpen, setConsentOpen] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -39,26 +51,34 @@ export default function Login() {
 
     await new Promise((r) => setTimeout(r, 300));
 
-    const result = login(email, password);
+    // Проверяем учётные данные без вызова login() (чтобы не менять isAuthenticated)
+    const found = DEFAULT_SYSTEM_USERS.find(
+      (u) => u.email.toLowerCase() === email.toLowerCase() && u.status === "active"
+    );
 
-    if (!result.ok) {
-      setError(result.error ?? "Ошибка входа");
+    if (!found) {
+      setError("Пользователь не найден или неактивен");
       setLoading(false);
       return;
     }
 
-    const saved = sessionStorage.getItem("auth_user");
-    if (saved) {
-      const u = JSON.parse(saved);
+    if (found.password && found.password !== password) {
+      setError("Неверный пароль");
+      setLoading(false);
+      return;
+    }
 
-      const alreadyAccepted = localStorage.getItem(CONSENT_KEY(u.email)) === "true";
-      if (alreadyAccepted) {
-        setRole(u.appRole);
-        navigate(ROLE_REDIRECT[u.appRole] ?? "/");
-      } else {
-        setPendingUser({ appRole: u.appRole, email: u.email });
-        setConsentOpen(true);
-      }
+    const appRole = ROLE_MAP[found.role] ?? "student";
+
+    // Если согласие уже было — сразу логиним
+    if (localStorage.getItem(CONSENT_KEY(found.email)) === "true") {
+      login(email, password);
+      setRole(appRole);
+      navigate(ROLE_REDIRECT[appRole] ?? "/");
+    } else {
+      // Показываем модалку, login() вызовем после принятия
+      setPendingUser({ appRole, email: found.email });
+      setConsentOpen(true);
     }
 
     setLoading(false);
@@ -67,6 +87,7 @@ export default function Login() {
   function handleConsentAccept() {
     if (!pendingUser) return;
     localStorage.setItem(CONSENT_KEY(pendingUser.email), "true");
+    login(email, password);
     setRole(pendingUser.appRole);
     setConsentOpen(false);
     navigate(ROLE_REDIRECT[pendingUser.appRole] ?? "/");
