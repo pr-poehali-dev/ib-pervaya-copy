@@ -19,6 +19,77 @@ function formatTime(minutes: number): string {
   return `${h} ч ${m} мин`;
 }
 
+function exportMemberCSV(member: User, assignment: CourseAssignment, courseTitle: string, totalMinutes: number, sessionsCount: number) {
+  const rows = [
+    ["Слушатель", member.name],
+    ["Email", member.email],
+    ["Организация", member.organization ?? ""],
+    ["Группа", member.group ?? ""],
+    ["Курс", courseTitle],
+    ["Прогресс", `${assignment.progress}%`],
+    ["Статус", assignment.status],
+    ["Назначен", assignment.assignedAt],
+    ["Активирован", assignment.activatedAt ?? "—"],
+    ["Завершён", assignment.completedAt ?? "—"],
+    ["Время в системе (мин)", String(totalMinutes)],
+    ["Сессий", String(sessionsCount)],
+    ["Результат теста", assignment.testScore !== undefined ? `${assignment.testScore}%` : "—"],
+    ["Дата теста", assignment.testPassedAt ?? "—"],
+  ];
+  const csv = rows.map((r) => r.map((v) => `"${v}"`).join(";")).join("\n");
+  const bom = "\uFEFF";
+  const blob = new Blob([bom + csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${member.name}_${courseTitle}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportMemberPDF(member: User, assignment: CourseAssignment, courseTitle: string, totalMinutes: number, sessionsCount: number, avgSession: number) {
+  const formatTime = (m: number) => { const h = Math.floor(m / 60); const min = m % 60; if (h === 0) return `${min} мин`; if (min === 0) return `${h} ч`; return `${h} ч ${min} мин`; };
+  const lastVisit = assignment.completedAt ?? assignment.activatedAt ?? assignment.assignedAt;
+  const html = `<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><title>Статистика слушателя</title>
+  <style>
+    body { font-family: Arial, sans-serif; font-size: 13px; padding: 32px; color: #111; }
+    h1 { font-size: 18px; margin-bottom: 4px; }
+    .sub { color: #666; margin-bottom: 24px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    th { text-align: left; background: #f3f4f6; padding: 8px 12px; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: #555; }
+    td { padding: 8px 12px; border-bottom: 1px solid #e5e7eb; }
+    .badge { display: inline-block; padding: 2px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; }
+    .green { background: #d1fae5; color: #065f46; } .amber { background: #fef3c7; color: #92400e; }
+    .progress-wrap { background: #e5e7eb; border-radius: 99px; height: 8px; width: 120px; overflow: hidden; }
+    .progress-bar { height: 100%; background: linear-gradient(90deg,#8b5cf6,#7c3aed); border-radius: 99px; }
+    @media print { body { padding: 16px; } }
+  </style></head><body>
+  <h1>Статистика обучения</h1>
+  <div class="sub">${member.name} · ${courseTitle}</div>
+  <table>
+    <tr><th>Параметр</th><th>Значение</th></tr>
+    <tr><td>Организация</td><td>${member.organization ?? "—"}</td></tr>
+    <tr><td>Группа</td><td>${member.group ?? "—"}</td></tr>
+    <tr><td>Назначен</td><td>${assignment.assignedAt}</td></tr>
+    <tr><td>Активирован</td><td>${assignment.activatedAt ?? "—"}</td></tr>
+    <tr><td>Завершён</td><td>${assignment.completedAt ?? "—"}</td></tr>
+    <tr><td>Последний визит</td><td>${lastVisit ?? "—"}</td></tr>
+    <tr><td>Прогресс</td><td><div class="progress-wrap"><div class="progress-bar" style="width:${assignment.progress}%"></div></div> ${assignment.progress}%</td></tr>
+    <tr><td>Время в системе</td><td>${formatTime(totalMinutes)}</td></tr>
+    <tr><td>Сессий</td><td>${sessionsCount}</td></tr>
+    <tr><td>Среднее время сессии</td><td>${formatTime(avgSession)}</td></tr>
+    <tr><td>Результат теста</td><td>${assignment.testScore !== undefined ? `<span class="badge ${assignment.testScore >= 70 ? "green" : "amber"}">${assignment.testScore}%</span>` : "—"}</td></tr>
+    <tr><td>Дата теста</td><td>${assignment.testPassedAt ?? "—"}</td></tr>
+  </table>
+  </body></html>`;
+  const win = window.open("", "_blank");
+  if (!win) return;
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  setTimeout(() => { win.print(); }, 400);
+}
+
 export default function MemberStatsModal({ member, assignment, courseTitle, onClose }: Props) {
   const [showProtocol, setShowProtocol] = useState(false);
 
@@ -61,12 +132,30 @@ export default function MemberStatsModal({ member, assignment, courseTitle, onCl
             </div>
             <div>
               <p className="font-semibold text-sm">{member.name}</p>
-              <p className="text-xs text-muted-foreground truncate max-w-[220px]">{courseTitle}</p>
+              <p className="text-xs text-muted-foreground truncate max-w-[180px]">{courseTitle}</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
-            <Icon name="X" size={16} />
-          </button>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => exportMemberCSV(member, assignment, courseTitle, totalMinutes, sessionsCount)}
+              title="Скачать Excel (CSV)"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-border hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:border-emerald-300 dark:hover:border-emerald-700 text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400 text-xs font-medium transition-colors"
+            >
+              <Icon name="FileSpreadsheet" size={13} />
+              Excel
+            </button>
+            <button
+              onClick={() => exportMemberPDF(member, assignment, courseTitle, totalMinutes, sessionsCount, avgSession)}
+              title="Печать / сохранить PDF"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-border hover:bg-rose-50 dark:hover:bg-rose-900/20 hover:border-rose-300 dark:hover:border-rose-700 text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400 text-xs font-medium transition-colors"
+            >
+              <Icon name="FileText" size={13} />
+              PDF
+            </button>
+            <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors ml-1">
+              <Icon name="X" size={16} />
+            </button>
+          </div>
         </div>
 
         {/* Содержимое */}
