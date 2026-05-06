@@ -45,18 +45,26 @@ export interface GroupStats {
 }
 
 export function exportCSV(groupName: string, members: User[]) {
-  const header = ["ФИО", "Email", "Роль", "Курс", "Статус", "Прогресс", "Назначен", "Начато", "Завершено"];
+  const header = ["№", "Организация", "Группа", "ФИО участника группы", "Курс", "Дата активации", "Дата завершения", "Дата лучшего теста", "Результат лучшего теста", "Количество попыток итогового теста"];
   const rows: string[][] = [];
+  let idx = 1;
   members.forEach((u) => {
     if (u.assignments.length === 0) {
-      rows.push([u.name, u.email, u.role, "—", "—", "—", "—", "—", "—"]);
+      rows.push([String(idx++), u.organization, groupName, u.name, "—", "—", "—", "—", "—", "0"]);
     } else {
       u.assignments.forEach((a) => {
         const info = getCourseInfo(a.courseId);
         rows.push([
-          u.name, u.email, u.role, info.title,
-          STATUS_LABELS[a.status], `${a.progress}%`,
-          a.assignedAt, a.activatedAt ?? "—", a.completedAt ?? "—",
+          String(idx++),
+          u.organization,
+          groupName,
+          u.name,
+          info.title,
+          a.activatedAt ?? "—",
+          a.completedAt ?? "—",
+          a.testPassedAt ?? "—",
+          a.testScore != null ? `${a.testScore}%` : "—",
+          a.testScore != null ? "1" : "0",
         ]);
       });
     }
