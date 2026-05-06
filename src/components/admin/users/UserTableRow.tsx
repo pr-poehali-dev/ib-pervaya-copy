@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import Icon from "@/components/ui/icon";
 import Tip from "@/components/ui/tip";
@@ -8,6 +9,8 @@ import ProgressBar from "@/components/admin/shared/ProgressBar";
 import LoginPasswordCell from "@/components/admin/shared/LoginPasswordCell";
 import { User, CourseStatus, allCourses, userColors, courseDirections } from "@/components/admin/types";
 import { useRole } from "@/contexts/RoleContext";
+import MemberStatsModal from "@/components/admin/groups/MemberStatsModal";
+import { CourseAssignment } from "@/types/admin";
 
 interface UserTableRowProps {
   user: User;
@@ -42,6 +45,7 @@ export default function UserTableRow({
   onIssueCertificate,
   onToggleCourse,
 }: UserTableRowProps) {
+  const [statsTarget, setStatsTarget] = useState<{ assignment: CourseAssignment; courseTitle: string } | null>(null);
   const { tenantType } = useRole();
   const canIssueCert = tenantType === "training_center";
   const activeCourses = user.assignments.filter((a) => a.active);
@@ -218,7 +222,10 @@ export default function UserTableRow({
                               <div className="flex items-center gap-2">
                                 <ProgressBar value={a.progress} minWidth="min-w-[80px]" />
                                 <Tip text="Статистика обучения" side="top">
-                                  <button className="p-1 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-violet-600 flex-shrink-0">
+                                  <button
+                                    className="p-1 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-violet-600 flex-shrink-0"
+                                    onClick={(e) => { e.stopPropagation(); setStatsTarget({ assignment: a, courseTitle }); }}
+                                  >
                                     <Icon name="BarChart2" size={13} />
                                   </button>
                                 </Tip>
@@ -271,6 +278,15 @@ export default function UserTableRow({
             </div>
           </td>
         </tr>
+      )}
+
+      {statsTarget && (
+        <MemberStatsModal
+          member={user}
+          assignment={statsTarget.assignment}
+          courseTitle={statsTarget.courseTitle}
+          onClose={() => setStatsTarget(null)}
+        />
       )}
     </>
   );
