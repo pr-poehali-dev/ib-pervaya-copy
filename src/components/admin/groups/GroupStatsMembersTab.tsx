@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import Tip from "@/components/ui/tip";
+import UserStatsModal from "@/components/admin/users/UserStatsModal";
 import { User, userColors } from "@/components/admin/types";
 import { GroupStats, getCourseInfo, STATUS_MAP } from "./GroupStatsUtils";
 import MemberStatsModal from "./MemberStatsModal";
@@ -48,50 +49,64 @@ export default function GroupStatsMembersTab({
   onUserStats,
 }: GroupStatsMembersTabProps) {
   const [statsTarget, setStatsTarget] = useState<{ assignment: CourseAssignment; courseTitle: string } | null>(null);
+  const [userStatsTarget, setUserStatsTarget] = useState<User | null>(null);
 
   if (!selectedUser) {
     return (
-      <div className="space-y-2">
-        {members.length === 0 ? (
-          <div className="bg-card rounded-xl border border-border p-10 text-center text-muted-foreground text-sm">
-            В группе нет слушателей
-          </div>
-        ) : stats.memberStats.map((u) => (
-          <div
-            key={u.id}
-            className="bg-card rounded-xl border border-border p-4 flex items-center gap-4 hover:bg-muted/20 transition-colors cursor-pointer group"
-            onClick={() => onSelectUser(u)}
-          >
-            <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${userColors[u.id % userColors.length]} flex items-center justify-center text-white text-sm font-bold flex-shrink-0`}>
-              {u.initials}
+      <>
+        {userStatsTarget && (
+          <UserStatsModal user={userStatsTarget} onClose={() => setUserStatsTarget(null)} />
+        )}
+        <div className="space-y-2">
+          {members.length === 0 ? (
+            <div className="bg-card rounded-xl border border-border p-10 text-center text-muted-foreground text-sm">
+              В группе нет слушателей
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-sm">{u.name}</p>
-              <p className="text-xs text-muted-foreground">{u.role} · {u.email}</p>
-            </div>
-            <div className="flex items-center gap-5 flex-shrink-0">
-              <div className="text-center hidden sm:block">
-                <p className="text-sm font-bold">{u.activeCount}</p>
-                <p className="text-xs text-muted-foreground">активных</p>
+          ) : stats.memberStats.map((u) => (
+            <div
+              key={u.id}
+              className="bg-card rounded-xl border border-border p-4 flex items-center gap-4 hover:bg-muted/20 transition-colors cursor-pointer group"
+              onClick={() => onSelectUser(u)}
+            >
+              <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${userColors[u.id % userColors.length]} flex items-center justify-center text-white text-sm font-bold flex-shrink-0`}>
+                {u.initials}
               </div>
-              <div className="text-center hidden sm:block">
-                <p className="text-sm font-bold text-emerald-500">{u.completedCount}</p>
-                <p className="text-xs text-muted-foreground">завершено</p>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-sm">{u.name}</p>
+                <p className="text-xs text-muted-foreground">{u.role} · {u.email}</p>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-violet-500 to-cyan-500 rounded-full"
-                    style={{ width: `${u.avgProgress}%` }}
-                  />
+              <div className="flex items-center gap-5 flex-shrink-0">
+                <div className="text-center hidden sm:block">
+                  <p className="text-sm font-bold">{u.activeCount}</p>
+                  <p className="text-xs text-muted-foreground">активных</p>
                 </div>
-                <span className="text-sm font-bold w-10 text-right">{u.avgProgress}%</span>
+                <div className="text-center hidden sm:block">
+                  <p className="text-sm font-bold text-emerald-500">{u.completedCount}</p>
+                  <p className="text-xs text-muted-foreground">завершено</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-violet-500 to-cyan-500 rounded-full"
+                      style={{ width: `${u.avgProgress}%` }}
+                    />
+                  </div>
+                  <span className="text-sm font-bold w-10 text-right">{u.avgProgress}%</span>
+                </div>
               </div>
+              <Tip text="Статистика обучения" side="top">
+                <button
+                  className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-violet-600 flex-shrink-0"
+                  onClick={(e) => { e.stopPropagation(); setUserStatsTarget(u); }}
+                >
+                  <Icon name="BarChart2" size={14} />
+                </button>
+              </Tip>
+              <Icon name="ChevronRight" size={16} className="text-muted-foreground group-hover:text-foreground transition-colors flex-shrink-0" />
             </div>
-            <Icon name="ChevronRight" size={16} className="text-muted-foreground group-hover:text-foreground transition-colors" />
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      </>
     );
   }
 
