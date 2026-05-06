@@ -5,6 +5,8 @@ import Tip from "@/components/ui/tip";
 import ActivateMenu from "@/components/admin/shared/ActivateMenu";
 import { User, CourseStatus, allCourses, courseDirections, userColors } from "@/components/admin/types";
 import { useRole } from "@/contexts/RoleContext";
+import MemberStatsModal from "./MemberStatsModal";
+import { CourseAssignment } from "@/types/admin";
 
 interface MemberCoursesViewProps {
   member: User;
@@ -49,6 +51,7 @@ export default function MemberCoursesView({
   const canIssueCert = tenantType === "training_center";
   const [loginCopied, setLoginCopied] = useState(false);
   const [pwdCopied, setPwdCopied] = useState(false);
+  const [statsTarget, setStatsTarget] = useState<{ assignment: CourseAssignment; courseTitle: string } | null>(null);
 
   const activeAssignments = member.assignments.filter((a) => a.active);
   const completedCount = member.assignments.filter((a) => a.progress === 100).length;
@@ -207,6 +210,14 @@ export default function MemberCoursesView({
                             />
                           </div>
                           <span className="text-xs text-muted-foreground w-8 text-right">{a.progress}%</span>
+                          <Tip text="Статистика обучения" side="top">
+                            <button
+                              className="p-1 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-violet-600 flex-shrink-0"
+                              onClick={(e) => { e.stopPropagation(); setStatsTarget({ assignment: a, courseTitle }); }}
+                            >
+                              <Icon name="BarChart2" size={13} />
+                            </button>
+                          </Tip>
                         </div>
                       </td>
 
@@ -259,6 +270,15 @@ export default function MemberCoursesView({
           </div>
         )}
       </div>
+
+      {statsTarget && (
+        <MemberStatsModal
+          member={member}
+          assignment={statsTarget.assignment}
+          courseTitle={statsTarget.courseTitle}
+          onClose={() => setStatsTarget(null)}
+        />
+      )}
     </div>
   );
 }
