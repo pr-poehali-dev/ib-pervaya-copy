@@ -128,7 +128,7 @@ export default function MemberStatsModal({ member, assignment, courseTitle, onCl
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-card rounded-2xl border border-border shadow-xl w-full max-w-md flex flex-col">
+      <div className="bg-card rounded-2xl border border-border shadow-xl w-full max-w-lg flex flex-col">
 
         {/* Шапка */}
         <div className="flex items-center justify-between p-5 border-b border-border">
