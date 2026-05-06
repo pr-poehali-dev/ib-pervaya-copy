@@ -37,18 +37,15 @@ const MANAGER_NAV: NavItem[] = [
 const SUPERADMIN_NAV: NavItem[] = [
   { to: "/super-admin", icon: "Crown",          label: "Суперадмин" },
   { to: "/chat",        icon: "MessageCircle",  label: "Все обращения" },
-  { to: "/profile",     icon: "User",           label: "Профиль" },
 ];
 
 const SALES_NAV: NavItem[] = [
   { to: "/sales",   icon: "Briefcase",     label: "Менеджер продаж" },
   { to: "/chat",    icon: "MessageCircle", label: "Обращения" },
-  { to: "/profile", icon: "User",          label: "Профиль" },
 ];
 
 const SUPPORT_NAV: NavItem[] = [
   { to: "/chat",    icon: "HeadphonesIcon", label: "Техподдержка" },
-  { to: "/profile", icon: "User",           label: "Профиль" },
 ];
 
 const ROLE_LABELS: Record<string, string> = {
