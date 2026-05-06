@@ -152,15 +152,14 @@ export default function GroupTableRow({
                   Участники группы {group}
                 </p>
                 <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="rounded-xl gap-1.5 text-xs h-7 border-cyan-200 dark:border-cyan-800 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/20"
-                    onClick={() => onOpenGroupStats(group)}
-                  >
-                    <Icon name="BarChart2" size={12} />
-                    Статистика группы
-                  </Button>
+                  <Tip text="Статистика группы">
+                    <button
+                      className="p-1 rounded-md hover:bg-cyan-100 dark:hover:bg-cyan-900/30 transition-colors text-muted-foreground hover:text-cyan-600 dark:hover:text-cyan-400 flex-shrink-0"
+                      onClick={() => onOpenGroupStats(group)}
+                    >
+                      <Icon name="BarChart2" size={13} />
+                    </button>
+                  </Tip>
                   <Button
                     size="sm"
                     className="gradient-primary text-white rounded-xl gap-1.5 text-xs h-7"
