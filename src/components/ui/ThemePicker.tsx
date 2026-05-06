@@ -22,7 +22,7 @@ export default function ThemePicker({ collapsed, open, onToggle }: ThemePickerPr
         title="Выбор темы"
         className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-white/10 transition-all ${collapsed ? "justify-center" : ""}`}
       >
-        <Icon name={isA11y ? "Accessibility" : theme === "dark" ? "Moon" : "Sun"} size={18} className="flex-shrink-0" />
+        <Icon name={isA11y ? "Eye" : theme === "dark" ? "Moon" : "Sun"} size={18} className="flex-shrink-0" />
         {!collapsed && (
           <>
             <span className="text-sm font-medium flex-1 text-left">Тема оформления</span>
