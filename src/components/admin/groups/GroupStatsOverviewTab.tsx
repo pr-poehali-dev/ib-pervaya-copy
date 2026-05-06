@@ -1,4 +1,5 @@
 import Icon from "@/components/ui/icon";
+import Tip from "@/components/ui/tip";
 import { User, userColors } from "@/components/admin/types";
 import { GroupStats } from "./GroupStatsUtils";
 
@@ -32,9 +33,10 @@ interface GroupStatsOverviewTabProps {
   members: User[];
   stats: GroupStats;
   onSelectMember: (user: User) => void;
+  onUserStats?: (user: User) => void;
 }
 
-export default function GroupStatsOverviewTab({ members, stats, onSelectMember }: GroupStatsOverviewTabProps) {
+export default function GroupStatsOverviewTab({ members, stats, onSelectMember, onUserStats }: GroupStatsOverviewTabProps) {
   return (
     <>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -95,8 +97,18 @@ export default function GroupStatsOverviewTab({ members, stats, onSelectMember }
                 </div>
                 <span className="text-sm font-bold w-10 text-right">{u.avgProgress}%</span>
               </div>
+              {onUserStats && (
+                <Tip text="Статистика обучения" side="top">
+                  <button
+                    className="p-1 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-violet-600 flex-shrink-0"
+                    onClick={() => onUserStats(u)}
+                  >
+                    <Icon name="BarChart2" size={13} />
+                  </button>
+                </Tip>
+              )}
               <button
-                className="ml-1 w-7 h-7 rounded-lg hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                className="w-7 h-7 rounded-lg hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
                 onClick={() => onSelectMember(u)}
                 title="Карточка слушателя"
               >

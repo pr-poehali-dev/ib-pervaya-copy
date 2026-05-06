@@ -141,6 +141,7 @@ export default function GroupStatsModal({ groupName, users, onClose, onUserStats
               members={members}
               stats={stats}
               onSelectMember={(u) => { setSelectedUser(u); setTab("members"); }}
+              onUserStats={onUserStats}
             />
           )}
 
