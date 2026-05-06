@@ -194,6 +194,8 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
           actionsButtonRef={actionsButtonRef}
           actionsMenuRef={actionsMenuRef}
           actionsPos={actionsPos}
+          selectedGroups={selectedGroups}
+          allUsers={localUsers}
         />
       )}
 

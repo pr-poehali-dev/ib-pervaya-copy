@@ -3,6 +3,8 @@ import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 import { MultiSelect, SearchSelect, FilterTags } from "@/components/admin/shared/FilterControls";
+import { User } from "@/components/admin/types";
+import { getCourseInfo } from "./GroupStatsUtils";
 
 type ViewMode = "table" | "cards";
 
@@ -35,6 +37,8 @@ interface GroupsFiltersPanelProps {
   actionsButtonRef: RefObject<HTMLButtonElement>;
   actionsMenuRef: RefObject<HTMLDivElement>;
   actionsPos: { top: number; right: number };
+  selectedGroups: Set<string>;
+  allUsers: User[];
 }
 
 export default function GroupsFiltersPanel({
@@ -62,7 +66,48 @@ export default function GroupsFiltersPanel({
   actionsButtonRef,
   actionsMenuRef,
   actionsPos,
+  selectedGroups,
+  allUsers,
 }: GroupsFiltersPanelProps) {
+
+  function exportStatsExcel() {
+    const escape = (v: string) => `"${String(v).replace(/"/g, '""')}"`;
+    const headers = ["№", "Организация", "Группа", "ФИО участника", "Курс", "Дата активации", "Дата завершения", "Дата лучшего теста", "Результат лучшего теста", "Кол-во попыток итогового теста"];
+
+    const rows: string[][] = [];
+    let idx = 1;
+
+    [...selectedGroups].forEach((groupName) => {
+      const members = allUsers.filter((u) => u.group === groupName);
+      members.forEach((u) => {
+        u.assignments.forEach((a) => {
+          const info = getCourseInfo(a.courseId);
+          rows.push([
+            String(idx++),
+            u.organization,
+            groupName,
+            u.name,
+            info.title,
+            a.activatedAt ?? "—",
+            a.completedAt ?? "—",
+            a.testPassedAt ?? "—",
+            a.testScore != null ? `${a.testScore}%` : "—",
+            a.testScore != null ? "1" : "0",
+          ]);
+        });
+      });
+    });
+
+    const csv = "\uFEFF" + [headers, ...rows].map((r) => r.map(escape).join(";")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Статистика_обучения_${new Date().toLocaleDateString("ru")}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setActionsOpen(false);
+  }
   return (
     <div className="flex items-start gap-3">
       <div className="flex-1 bg-card rounded-2xl border border-border px-4 pt-3 pb-3 space-y-2.5">
@@ -140,14 +185,15 @@ export default function GroupsFiltersPanel({
             className="bg-background border border-border rounded-xl shadow-2xl w-52 overflow-hidden"
           >
             {[
-              { icon: "Send", label: "Отправить пароли" },
-              { icon: "Download", label: "Скачать пароли" },
-              { icon: "FileText", label: "Сформировать отчёт" },
+              { icon: "Send",       label: "Отправить пароли",    action: () => setActionsOpen(false) },
+              { icon: "Download",   label: "Скачать пароли",       action: () => setActionsOpen(false) },
+              { icon: "FileText",   label: "Сформировать отчёт",   action: () => setActionsOpen(false) },
+              { icon: "BarChart2",  label: "Статистика обучения",  action: exportStatsExcel },
             ].map((item) => (
               <button
                 key={item.label}
                 className="w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-muted transition-colors text-left"
-                onClick={() => setActionsOpen(false)}
+                onClick={item.action}
               >
                 <Icon name={item.icon as "Send"} size={15} className="text-muted-foreground" />
                 {item.label}
