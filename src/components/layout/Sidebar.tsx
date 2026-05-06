@@ -26,14 +26,12 @@ const ADMIN_NAV: NavItem[] = [
   { to: "/admin",   icon: "ShieldCheck",   label: "Панель управления" },
   { to: "/catalog", icon: "BookOpen",      label: "Каталог курсов" },
   { to: "/chat",    icon: "MessageCircle", label: "Поддержка" },
-  { to: "/profile", icon: "User",          label: "Профиль" },
 ];
 
 const MANAGER_NAV: NavItem[] = [
   { to: "/admin",   icon: "ShieldCheck",   label: "Панель управления" },
   { to: "/catalog", icon: "BookOpen",      label: "Каталог курсов" },
   { to: "/chat",    icon: "MessageCircle", label: "Поддержка" },
-  { to: "/profile", icon: "User",          label: "Профиль" },
 ];
 
 const SUPERADMIN_NAV: NavItem[] = [
