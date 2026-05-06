@@ -14,6 +14,7 @@ type ViewMode = "table" | "cards";
 interface TenantsPanelProps {
   initialTenants?: Tenant[];
   canCreate?: boolean;
+  canEdit?: boolean;
 }
 
 // ─── Сокращённый бейдж типа для таблицы ──────────────────────────────────────
@@ -28,7 +29,7 @@ function TypeBadgeShort({ type }: { type: TenantType }) {
 
 // ─── Главный компонент ────────────────────────────────────────────────────────
 
-export default function TenantsPanel({ initialTenants, canCreate = true }: TenantsPanelProps) {
+export default function TenantsPanel({ initialTenants, canCreate = true, canEdit = true }: TenantsPanelProps) {
   const [tenants,    setTenants]    = useState<Tenant[]>(initialTenants ?? TENANTS);
   const [editTenant, setEditTenant] = useState<Tenant | null | undefined>(undefined);
   const [viewSubs,   setViewSubs]   = useState<Tenant | null>(null);
@@ -129,12 +130,16 @@ export default function TenantsPanel({ initialTenants, canCreate = true }: Tenan
                         <button onClick={() => setViewCreds(t)} className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground" title="Учётные данные">
                           <Icon name="KeyRound" size={15} />
                         </button>
-                        <button onClick={() => setEditTenant(t)} className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground" title="Редактировать">
-                          <Icon name="Settings" size={15} />
-                        </button>
-                        <button className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground" title="Войти как тенант">
-                          <Icon name="LogIn" size={15} />
-                        </button>
+                        {canEdit && (
+                          <button onClick={() => setEditTenant(t)} className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground" title="Редактировать">
+                            <Icon name="Settings" size={15} />
+                          </button>
+                        )}
+                        {canEdit && (
+                          <button className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground" title="Войти как тенант">
+                            <Icon name="LogIn" size={15} />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -164,7 +169,7 @@ export default function TenantsPanel({ initialTenants, canCreate = true }: Tenan
               <TenantCard
                 key={t.id}
                 tenant={t}
-                canEdit={true}
+                canEdit={canEdit}
                 onCreds={() => setViewCreds(t)}
                 onEdit={() => setEditTenant(t)}
                 onSubs={() => setViewSubs(t)}

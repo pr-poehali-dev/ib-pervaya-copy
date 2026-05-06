@@ -7,6 +7,7 @@ import { Login } from "./pages/auth";
 import { Dashboard, Courses, Profile, MyLearning, Achievements, Catalog } from "./pages/student";
 import { Admin } from "./pages/admin";
 import { SuperAdmin, SalesManager } from "./pages/superadmin";
+import SupportTenants from "./pages/support/SupportTenants";
 import { ChatStudent, ChatTenant, ChatSalesManager, ChatSupport, ChatSuperAdmin } from "./pages/chat";
 import CoursePage from "./pages/CoursePage";
 import NotFound from "./pages/NotFound";
@@ -53,8 +54,8 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
     return <Navigate to={ROLE_HOME[role] ?? "/admin"} replace />;
   }
 
-  // Специалист ТП — только /chat и /profile
-  if (role === "support" && location.pathname !== "/chat" && location.pathname !== "/profile") {
+  // Специалист ТП — только /chat и /support-tenants
+  if (role === "support" && location.pathname !== "/chat" && location.pathname !== "/support-tenants") {
     return <Navigate to="/chat" replace />;
   }
 
@@ -82,6 +83,7 @@ function AppRoutes() {
       <Route path="/sales" element={<RequireAuth><SalesManager /></RequireAuth>} />
       <Route path="/catalog" element={<RequireAuth><Catalog /></RequireAuth>} />
       <Route path="/chat" element={<RequireAuth><ChatPage /></RequireAuth>} />
+      <Route path="/support-tenants" element={<RequireAuth><SupportTenants /></RequireAuth>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

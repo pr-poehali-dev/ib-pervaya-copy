@@ -45,7 +45,8 @@ const SALES_NAV: NavItem[] = [
 ];
 
 const SUPPORT_NAV: NavItem[] = [
-  { to: "/chat",    icon: "HeadphonesIcon", label: "Техподдержка" },
+  { to: "/chat",             icon: "HeadphonesIcon", label: "Техподдержка" },
+  { to: "/support-tenants",  icon: "Building2",      label: "Тенанты" },
 ];
 
 const ROLE_LABELS: Record<string, string> = {
