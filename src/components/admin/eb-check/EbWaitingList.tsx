@@ -3,7 +3,8 @@ import Icon from "@/components/ui/icon";
 import { INITIAL_USERS } from "@/data/users";
 import { COURSE_DIRECTIONS } from "@/data/courses";
 import { CheckProtocol } from "@/data/ebCheckData";
-import { User, CourseAssignment } from "@/types/admin";
+import { User, CourseAssignment, Certificate } from "@/types/admin";
+import TestProtocolModal from "@/components/admin/certificates/TestProtocolModal";
 
 const EB_COURSE_IDS: number[] = (() => {
   const dir = COURSE_DIRECTIONS.find((d) => d.subscriptionType === "energy_safety");
@@ -63,6 +64,7 @@ export default function EbWaitingList({
   const [expandedOrg, setExpandedOrg] = useState<number | null>(null);
   const [selectedIds, setSelectedIds] = useState<Record<number, Set<number>>>({});
   const [filterStatus, setFilterStatus] = useState<"all" | "waiting" | "in_draft" | "checked">("all");
+  const [protocolEntry, setProtocolEntry] = useState<WaitingEntry | null>(null);
 
   const courseMap: Record<number, string> = {};
   COURSE_DIRECTIONS.find((d) => d.subscriptionType === "energy_safety")
@@ -272,6 +274,15 @@ export default function EbWaitingList({
                                   <div className="text-[10px] text-muted-foreground">дата сдачи</div>
                                 </div>
                               )}
+                              {entry.assignment.testScore !== undefined && (
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); setProtocolEntry(entry); }}
+                                  className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                                  title="Протокол тестирования"
+                                >
+                                  <Icon name="FileText" size={15} />
+                                </button>
+                              )}
                             </div>
 
                             <StatusBadge status={entry.status} />
@@ -285,6 +296,25 @@ export default function EbWaitingList({
             );
           })}
         </div>
+      )}
+
+      {protocolEntry && (
+        <TestProtocolModal
+          cert={{
+            id: protocolEntry.user.id * 1000 + protocolEntry.assignment.courseId,
+            userId: protocolEntry.user.id,
+            userName: protocolEntry.user.name,
+            userEmail: protocolEntry.user.email,
+            userOrganization: protocolEntry.user.organization,
+            courseId: protocolEntry.assignment.courseId,
+            courseTitle: protocolEntry.courseTitle,
+            testScore: protocolEntry.assignment.testScore ?? 0,
+            testPassedAt: protocolEntry.assignment.testPassedAt ?? "",
+            status: "ready",
+            tenantId: 0,
+          } as Certificate}
+          onClose={() => setProtocolEntry(null)}
+        />
       )}
     </div>
   );
