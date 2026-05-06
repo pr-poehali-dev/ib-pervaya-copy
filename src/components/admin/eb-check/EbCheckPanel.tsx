@@ -93,7 +93,7 @@ export default function EbCheckPanel() {
     { key: "journal", icon: "BookOpen", label: "Журнал проверок" },
     { key: "waiting", icon: "ListChecks", label: "Лист ожидания" },
     { key: "wizard", icon: "FilePlus2", label: "Оформить проверку" },
-    { key: "commissions", icon: "Users", label: "Комиссии" },
+    { key: "commissions", icon: "Users", label: "Управление комиссиями" },
   ];
 
   const draftCount = protocols.filter((p) => p.status === "draft").length;
