@@ -8,6 +8,8 @@ import ProgressBar from "@/components/admin/shared/ProgressBar";
 import LoginPasswordCell from "@/components/admin/shared/LoginPasswordCell";
 import { User, allCourses, userColors, courseDirections } from "@/components/admin/types";
 import { useRole } from "@/contexts/RoleContext";
+import MemberStatsModal from "@/components/admin/groups/MemberStatsModal";
+import { CourseAssignment } from "@/types/admin";
 
 interface GroupMemberRowProps {
   member: User;
@@ -35,6 +37,7 @@ export default function GroupMemberRow({
   onToggleAssignment,
 }: GroupMemberRowProps) {
   const [loginCopied, setLoginCopied] = useState(false);
+  const [statsTarget, setStatsTarget] = useState<{ assignment: CourseAssignment; courseTitle: string } | null>(null);
   const { tenantType } = useRole();
   const canIssueCert = tenantType === "training_center";
   const activeCnt = member.assignments.filter((a) => a.active).length;
@@ -162,7 +165,10 @@ export default function GroupMemberRow({
                               </div>
                               <span className="text-muted-foreground w-7 text-right">{a.progress}%</span>
                               <Tip text="Статистика обучения">
-                                <button className="p-1 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-violet-600 flex-shrink-0">
+                                <button
+                                  className="p-1 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-violet-600 flex-shrink-0"
+                                  onClick={(e) => { e.stopPropagation(); setStatsTarget({ assignment: a, courseTitle }); }}
+                                >
                                   <Icon name="BarChart2" size={12} />
                                 </button>
                               </Tip>
@@ -214,6 +220,15 @@ export default function GroupMemberRow({
             )}
           </td>
         </tr>
+      )}
+
+      {statsTarget && (
+        <MemberStatsModal
+          member={member}
+          assignment={statsTarget.assignment}
+          courseTitle={statsTarget.courseTitle}
+          onClose={() => setStatsTarget(null)}
+        />
       )}
     </>
   );
