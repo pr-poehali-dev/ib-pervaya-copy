@@ -3,6 +3,7 @@ import Icon from "@/components/ui/icon";
 import { User, Certificate, CourseAssignment } from "@/types/admin";
 import { courseDirections, allCourses } from "@/components/admin/types";
 import TestProtocolModal from "@/components/admin/certificates/TestProtocolModal";
+import UserStatsModal from "@/components/admin/users/UserStatsModal";
 
 interface Props {
   member: User;
@@ -92,6 +93,7 @@ function exportMemberPDF(member: User, assignment: CourseAssignment, courseTitle
 
 export default function MemberStatsModal({ member, assignment, courseTitle, onClose }: Props) {
   const [showProtocol, setShowProtocol] = useState(false);
+  const [showAllCourses, setShowAllCourses] = useState(false);
 
   const seed = member.id * 17 + assignment.courseId * 3;
   const totalMinutes = 45 + (seed % 120);
@@ -120,6 +122,10 @@ export default function MemberStatsModal({ member, assignment, courseTitle, onCl
     return <TestProtocolModal cert={certForModal} onClose={() => setShowProtocol(false)} />;
   }
 
+  if (showAllCourses) {
+    return <UserStatsModal user={member} onClose={() => setShowAllCourses(false)} />;
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="bg-card rounded-2xl border border-border shadow-xl w-full max-w-md flex flex-col">
@@ -136,6 +142,14 @@ export default function MemberStatsModal({ member, assignment, courseTitle, onCl
             </div>
           </div>
           <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setShowAllCourses(true)}
+              title="Сводный отчёт по всем курсам"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-border hover:bg-violet-50 dark:hover:bg-violet-900/20 hover:border-violet-300 dark:hover:border-violet-700 text-muted-foreground hover:text-violet-600 dark:hover:text-violet-400 text-xs font-medium transition-colors"
+            >
+              <Icon name="LayoutList" size={13} />
+              Все курсы
+            </button>
             <button
               onClick={() => exportMemberCSV(member, assignment, courseTitle, totalMinutes, sessionsCount)}
               title="Скачать Excel (CSV)"
