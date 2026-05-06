@@ -103,20 +103,22 @@ export default function GroupTableRow({
 
         {/* Прогресс */}
         <td className="px-4 py-3">
-          <ProgressBar value={avgGroupProgress} color="cyan" minWidth="min-w-[90px]" />
+          <div className="flex items-center gap-2">
+            <ProgressBar value={avgGroupProgress} color="cyan" minWidth="min-w-[90px]" />
+            <Tip text="Статистика группы" side="top">
+              <button
+                className="p-1 rounded-md hover:bg-cyan-100 dark:hover:bg-cyan-900/30 transition-colors text-muted-foreground hover:text-cyan-600 dark:hover:text-cyan-400 flex-shrink-0"
+                onClick={(e) => { e.stopPropagation(); onOpenGroupStats(group); }}
+              >
+                <Icon name="BarChart2" size={13} />
+              </button>
+            </Tip>
+          </div>
         </td>
 
         {/* Управление группой */}
         <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center gap-1">
-            <Tip text="Статистика группы">
-              <button
-                className="p-2 rounded-lg hover:bg-cyan-100 dark:hover:bg-cyan-900/30 transition-colors text-cyan-600 dark:text-cyan-400"
-                onClick={() => onOpenGroupStats(group)}
-              >
-                <Icon name="BarChart2" size={16} />
-              </button>
-            </Tip>
             <Tip text="Редактировать группу">
               <button className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
                 <Icon name="Pencil" size={16} />
