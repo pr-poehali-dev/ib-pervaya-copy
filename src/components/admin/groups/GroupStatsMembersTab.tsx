@@ -1,6 +1,10 @@
+import { useState } from "react";
 import Icon from "@/components/ui/icon";
+import Tip from "@/components/ui/tip";
 import { User, userColors } from "@/components/admin/types";
 import { GroupStats, getCourseInfo, STATUS_MAP } from "./GroupStatsUtils";
+import MemberStatsModal from "./MemberStatsModal";
+import { CourseAssignment } from "@/types/admin";
 
 function ProgressRing({ value, size = 64 }: { value: number; size?: number }) {
   const r = size / 2 - 6;
@@ -43,6 +47,8 @@ export default function GroupStatsMembersTab({
   onSelectUser,
   onUserStats,
 }: GroupStatsMembersTabProps) {
+  const [statsTarget, setStatsTarget] = useState<{ assignment: CourseAssignment; courseTitle: string } | null>(null);
+
   if (!selectedUser) {
     return (
       <div className="space-y-2">
@@ -180,10 +186,20 @@ export default function GroupStatsMembersTab({
                         <p className="text-xs text-muted-foreground">{info.duration}</p>
                       </div>
                     </div>
-                    <span className={`shrink-0 flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${s.cls}`}>
-                      <Icon name={s.icon} size={11} />
-                      {s.label}
-                    </span>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${s.cls}`}>
+                        <Icon name={s.icon} size={11} />
+                        {s.label}
+                      </span>
+                      <Tip text="Статистика обучения" side="top">
+                        <button
+                          className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-violet-600"
+                          onClick={() => setStatsTarget({ assignment: a, courseTitle: info.title })}
+                        >
+                          <Icon name="BarChart2" size={13} />
+                        </button>
+                      </Tip>
+                    </div>
                   </div>
                   <div className="space-y-1.5">
                     <div className="flex justify-between text-xs">
@@ -215,6 +231,15 @@ export default function GroupStatsMembersTab({
           </div>
         )}
       </div>
+
+      {statsTarget && selectedUser && (
+        <MemberStatsModal
+          member={selectedUser}
+          assignment={statsTarget.assignment}
+          courseTitle={statsTarget.courseTitle}
+          onClose={() => setStatsTarget(null)}
+        />
+      )}
     </div>
   );
 }
