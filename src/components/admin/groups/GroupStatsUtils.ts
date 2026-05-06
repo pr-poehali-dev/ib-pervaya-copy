@@ -88,6 +88,16 @@ export function exportPDF(groupName: string, members: User[], stats: GroupStats)
   const coursesRows = stats.courseStats.map((c) => `
     <tr><td>${c.title}</td><td>${c.enrolled}</td><td>${c.completed}</td><td><b>${c.avgProgress}%</b></td></tr>`).join("");
 
+  let detailIdx = 1;
+  const detailRows = members.flatMap((u) =>
+    u.assignments.length === 0
+      ? [`<tr><td>${detailIdx++}</td><td>${u.organization}</td><td>${groupName}</td><td>${u.name}</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>0</td></tr>`]
+      : u.assignments.map((a) => {
+          const info = getCourseInfo(a.courseId);
+          return `<tr><td>${detailIdx++}</td><td>${u.organization}</td><td>${groupName}</td><td>${u.name}</td><td>${info.title}</td><td>${a.activatedAt ?? "—"}</td><td>${a.completedAt ?? "—"}</td><td>${a.testPassedAt ?? "—"}</td><td>${a.testScore != null ? a.testScore + "%" : "—"}</td><td>${a.testScore != null ? 1 : 0}</td></tr>`;
+        })
+  ).join("");
+
   const html = `<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8">
 <title>Статистика группы ${groupName}</title>
 <style>
@@ -103,6 +113,7 @@ export function exportPDF(groupName: string, members: User[], stats: GroupStats)
   td { padding: 7px 10px; border-bottom: 1px solid #f0f0f0; }
   tr:last-child td { border: none; }
   h2 { font-size: 14px; margin: 20px 0 8px; border-left: 3px solid #7c3aed; padding-left: 8px; }
+  .detail td, .detail th { font-size: 10px; padding: 5px 6px; }
   @media print { body { padding: 16px; } }
 </style></head><body>
 <h1>Статистика группы ${groupName}</h1>
@@ -121,6 +132,9 @@ export function exportPDF(groupName: string, members: User[], stats: GroupStats)
 <h2>Слушатели</h2>
 <table><thead><tr><th>ФИО</th><th>Email</th><th>Роль</th><th>Активных курсов</th><th>Завершено</th><th>Ср. прогресс</th></tr></thead>
 <tbody>${membersRows}</tbody></table>
+<h2>Детализация по курсам</h2>
+<table class="detail"><thead><tr><th>№</th><th>Организация</th><th>Группа</th><th>ФИО участника группы</th><th>Курс</th><th>Дата активации</th><th>Дата завершения</th><th>Дата лучшего теста</th><th>Результат лучшего теста</th><th>Кол-во попыток</th></tr></thead>
+<tbody>${detailRows}</tbody></table>
 </body></html>`;
 
   const win = window.open("", "_blank");
