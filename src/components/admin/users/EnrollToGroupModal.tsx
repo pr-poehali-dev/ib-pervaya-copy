@@ -8,10 +8,15 @@ interface EnrollToGroupModalProps {
   user: User;
   onClose: () => void;
   onEnroll: (userId: number, groupId: number) => void;
+  onUnenroll: (userId: number, groupId: number) => void;
 }
 
-export default function EnrollToGroupModal({ user, onClose, onEnroll }: EnrollToGroupModalProps) {
+type Tab = "add" | "remove";
+
+export default function EnrollToGroupModal({ user, onClose, onEnroll, onUnenroll }: EnrollToGroupModalProps) {
+  const [tab, setTab] = useState<Tab>(user.enrollments.length > 0 ? "add" : "add");
   const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
+  const [confirmGroupId, setConfirmGroupId] = useState<number | null>(null);
 
   const enrolledGroupIds = new Set(user.enrollments.map((e) => e.groupId));
   const availableGroups = GROUPS_DATA.filter((g) => !enrolledGroupIds.has(g.id));
@@ -28,6 +33,12 @@ export default function EnrollToGroupModal({ user, onClose, onEnroll }: EnrollTo
     completed: "text-muted-foreground bg-muted",
   };
 
+  function handleTabChange(t: Tab) {
+    setTab(t);
+    setSelectedGroupId(null);
+    setConfirmGroupId(null);
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
@@ -36,7 +47,7 @@ export default function EnrollToGroupModal({ user, onClose, onEnroll }: EnrollTo
         {/* Шапка */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border flex-shrink-0">
           <div>
-            <h2 className="font-semibold text-base">Добавить в группу</h2>
+            <h2 className="font-semibold text-base">Управление группами</h2>
             <p className="text-xs text-muted-foreground mt-0.5">{user.name}</p>
           </div>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
@@ -44,77 +55,157 @@ export default function EnrollToGroupModal({ user, onClose, onEnroll }: EnrollTo
           </button>
         </div>
 
-        {/* Текущие группы */}
-        {user.enrollments.length > 0 && (
-          <div className="px-5 py-3 border-b border-border bg-muted/30 flex-shrink-0">
-            <p className="text-xs font-medium text-muted-foreground mb-2">Уже в группах:</p>
-            <div className="flex flex-wrap gap-1.5">
-              {user.enrollments.map((e) => (
-                <span key={e.groupId} className="px-2 py-0.5 text-xs rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 font-medium">
-                  {e.groupName}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Вкладки */}
+        <div className="flex border-b border-border flex-shrink-0">
+          <button
+            className={`flex-1 py-2.5 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${tab === "add" ? "text-violet-600 dark:text-violet-400 border-b-2 border-violet-600" : "text-muted-foreground hover:text-foreground"}`}
+            onClick={() => handleTabChange("add")}
+          >
+            <Icon name="UserPlus" size={14} />
+            Добавить в группу
+          </button>
+          <button
+            className={`flex-1 py-2.5 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${tab === "remove" ? "text-red-600 dark:text-red-400 border-b-2 border-red-500" : "text-muted-foreground hover:text-foreground"}`}
+            onClick={() => handleTabChange("remove")}
+          >
+            <Icon name="UserMinus" size={14} />
+            Исключить из группы
+            {user.enrollments.length > 0 && (
+              <span className="px-1.5 py-0.5 text-xs rounded-full bg-muted font-medium">
+                {user.enrollments.length}
+              </span>
+            )}
+          </button>
+        </div>
 
-        {/* Список групп */}
+        {/* Содержимое */}
         <div className="flex-1 overflow-y-auto">
-          {availableGroups.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 gap-2 text-center px-6">
-              <Icon name="CheckCircle2" size={32} className="text-emerald-500" />
-              <p className="font-medium text-sm">Пользователь уже во всех группах</p>
-              <p className="text-xs text-muted-foreground">Новых групп для добавления нет</p>
-            </div>
-          ) : (
-            availableGroups.map((g) => {
-              const isSelected = selectedGroupId === g.id;
-              return (
-                <button
-                  key={g.id}
-                  className={`w-full flex items-center justify-between px-5 py-3.5 border-b border-border/60 last:border-0 text-left transition-colors ${isSelected ? "bg-violet-50 dark:bg-violet-900/20" : "hover:bg-muted/40"}`}
-                  onClick={() => setSelectedGroupId(isSelected ? null : g.id)}
-                >
-                  <div className="flex-1 min-w-0">
-                    <p className={`font-medium text-sm ${isSelected ? "text-violet-700 dark:text-violet-300" : ""}`}>
-                      {g.name}
-                    </p>
-                    {g.clientOrganizationName && (
-                      <p className="text-xs text-muted-foreground mt-0.5 truncate">{g.clientOrganizationName}</p>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2 ml-3 flex-shrink-0">
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColor[g.status]}`}>
-                      {statusLabel[g.status]}
-                    </span>
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${isSelected ? "border-violet-600 bg-violet-600" : "border-border"}`}>
-                      {isSelected && <Icon name="Check" size={11} className="text-white" />}
+          {tab === "add" && (
+            availableGroups.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 gap-2 text-center px-6">
+                <Icon name="CheckCircle2" size={32} className="text-emerald-500" />
+                <p className="font-medium text-sm">Пользователь уже во всех группах</p>
+                <p className="text-xs text-muted-foreground">Новых групп для добавления нет</p>
+              </div>
+            ) : (
+              availableGroups.map((g) => {
+                const isSelected = selectedGroupId === g.id;
+                return (
+                  <button
+                    key={g.id}
+                    className={`w-full flex items-center justify-between px-5 py-3.5 border-b border-border/60 last:border-0 text-left transition-colors ${isSelected ? "bg-violet-50 dark:bg-violet-900/20" : "hover:bg-muted/40"}`}
+                    onClick={() => setSelectedGroupId(isSelected ? null : g.id)}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className={`font-medium text-sm ${isSelected ? "text-violet-700 dark:text-violet-300" : ""}`}>
+                        {g.name}
+                      </p>
+                      {g.clientOrganizationName && (
+                        <p className="text-xs text-muted-foreground mt-0.5 truncate">{g.clientOrganizationName}</p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 ml-3 flex-shrink-0">
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColor[g.status]}`}>
+                        {statusLabel[g.status]}
+                      </span>
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${isSelected ? "border-violet-600 bg-violet-600" : "border-border"}`}>
+                        {isSelected && <Icon name="Check" size={11} className="text-white" />}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })
+            )
+          )}
+
+          {tab === "remove" && (
+            user.enrollments.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 gap-2 text-center px-6">
+                <Icon name="Users" size={32} className="text-muted-foreground" />
+                <p className="font-medium text-sm">Пользователь не в группах</p>
+                <p className="text-xs text-muted-foreground">Нечего исключать</p>
+              </div>
+            ) : (
+              user.enrollments.map((e) => {
+                const g = GROUPS_DATA.find((grp) => grp.id === e.groupId);
+                const isConfirm = confirmGroupId === e.groupId;
+                const assignmentsCount = e.assignments.length;
+                return (
+                  <div
+                    key={e.groupId}
+                    className={`flex items-center justify-between px-5 py-3.5 border-b border-border/60 last:border-0 transition-colors ${isConfirm ? "bg-red-50 dark:bg-red-900/10" : ""}`}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm">{e.groupName}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        {g?.clientOrganizationName && (
+                          <p className="text-xs text-muted-foreground truncate">{g.clientOrganizationName}</p>
+                        )}
+                        {assignmentsCount > 0 && (
+                          <span className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-0.5 flex-shrink-0">
+                            <Icon name="BookOpen" size={10} />
+                            {assignmentsCount} {assignmentsCount === 1 ? "курс" : "курсов"}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="ml-3 flex-shrink-0">
+                      {isConfirm ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-red-600 dark:text-red-400 font-medium">Исключить?</span>
+                          <button
+                            className="px-2.5 py-1 text-xs font-medium rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 transition-colors"
+                            onClick={() => {
+                              onUnenroll(user.id, e.groupId);
+                              setConfirmGroupId(null);
+                            }}
+                          >
+                            Да
+                          </button>
+                          <button
+                            className="px-2.5 py-1 text-xs font-medium rounded-lg bg-muted text-muted-foreground hover:bg-muted/80 transition-colors"
+                            onClick={() => setConfirmGroupId(null)}
+                          >
+                            Нет
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-lg border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                          onClick={() => setConfirmGroupId(e.groupId)}
+                        >
+                          <Icon name="UserMinus" size={12} />
+                          Исключить
+                        </button>
+                      )}
                     </div>
                   </div>
-                </button>
-              );
-            })
+                );
+              })
+            )
           )}
         </div>
 
         {/* Футер */}
         <div className="p-4 border-t border-border flex gap-3 flex-shrink-0">
           <Button variant="outline" className="rounded-xl flex-1" onClick={onClose}>
-            Отмена
+            Закрыть
           </Button>
-          <Button
-            className="rounded-xl gradient-primary text-white flex-1 gap-2"
-            disabled={selectedGroupId === null}
-            onClick={() => {
-              if (selectedGroupId !== null) {
-                onEnroll(user.id, selectedGroupId);
-                onClose();
-              }
-            }}
-          >
-            <Icon name="UserPlus" size={15} />
-            Зачислить
-          </Button>
+          {tab === "add" && (
+            <Button
+              className="rounded-xl gradient-primary text-white flex-1 gap-2"
+              disabled={selectedGroupId === null}
+              onClick={() => {
+                if (selectedGroupId !== null) {
+                  onEnroll(user.id, selectedGroupId);
+                  setSelectedGroupId(null);
+                }
+              }}
+            >
+              <Icon name="UserPlus" size={15} />
+              Зачислить
+            </Button>
+          )}
         </div>
       </div>
     </div>

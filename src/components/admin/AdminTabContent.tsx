@@ -22,6 +22,7 @@ interface AdminTabContentProps {
   filteredUsers: User[];
   toggleCourse: (userId: number, courseId: number) => void;
   enrollUserToGroup?: (userId: number, groupId: number) => void;
+  unenrollUserFromGroup?: (userId: number, groupId: number) => void;
 }
 
 const reportItems = [
@@ -64,7 +65,7 @@ const reportItems = [
 ];
 
 export default function AdminTabContent({
-  activeTab, users, filteredUsers, toggleCourse, enrollUserToGroup,
+  activeTab, users, filteredUsers, toggleCourse, enrollUserToGroup, unenrollUserFromGroup,
 }: AdminTabContentProps) {
   const [showStatsModal,   setShowStatsModal]   = useState(false);
   const [showCertModal,    setShowCertModal]    = useState(false);
@@ -80,6 +81,7 @@ export default function AdminTabContent({
         filteredUsers={filteredUsers}
         toggleCourse={toggleCourse}
         enrollUserToGroup={enrollUserToGroup}
+        unenrollUserFromGroup={unenrollUserFromGroup}
       />
     );
   }
