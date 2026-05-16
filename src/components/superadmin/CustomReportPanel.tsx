@@ -196,17 +196,31 @@ export default function CustomReportPanel() {
         {/* Выбор тенантов */}
         <div className="border border-border rounded-xl overflow-hidden">
           {/* Заголовок-кнопка */}
-          <button
-            onClick={() => setTenantsOpen((v) => !v)}
-            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/20 transition-colors text-left"
-          >
-            <Icon name="Building2" size={15} className="text-muted-foreground flex-shrink-0" />
-            <span className="text-sm font-medium flex-1">Тенанты</span>
-            <span className="text-xs text-muted-foreground">
-              выбрано <span className="font-semibold text-foreground">{selectedTenants.length}</span> / {allTenants.length}
-            </span>
-            <Icon name={tenantsOpen ? "ChevronUp" : "ChevronDown"} size={15} className="text-muted-foreground flex-shrink-0" />
-          </button>
+          <div className="flex items-center gap-2 px-4 py-3">
+            <button
+              onClick={() => setTenantsOpen((v) => !v)}
+              className="flex items-center gap-3 flex-1 text-left hover:opacity-70 transition-opacity"
+            >
+              <Icon name="Building2" size={15} className="text-muted-foreground flex-shrink-0" />
+              <span className="text-sm font-medium">Тенанты</span>
+              <span className="text-xs text-muted-foreground">
+                выбрано <span className="font-semibold text-foreground">{selectedTenants.length}</span> / {allTenants.length}
+              </span>
+              <Icon name={tenantsOpen ? "ChevronUp" : "ChevronDown"} size={15} className="text-muted-foreground flex-shrink-0" />
+            </button>
+            <button
+              onClick={() => setSelectedTenants(allTenants.map((t) => t.id))}
+              className="px-3 h-7 rounded-lg border border-border text-xs font-medium text-muted-foreground hover:text-foreground hover:border-blue-400 transition-colors flex-shrink-0"
+            >
+              Выбрать все
+            </button>
+            <button
+              onClick={() => setSelectedTenants([])}
+              className="px-3 h-7 rounded-lg border border-border text-xs font-medium text-muted-foreground hover:text-foreground hover:border-red-400 transition-colors flex-shrink-0"
+            >
+              Снять все
+            </button>
+          </div>
 
           {/* Раскрывающаяся часть */}
           {tenantsOpen && (
