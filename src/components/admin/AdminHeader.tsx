@@ -1,3 +1,4 @@
+import { innError } from "@/utils/validation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -98,12 +99,13 @@ export default function AdminHeader({
             <div className="space-y-1.5">
               <Label>ИНН</Label>
               <Input
-                placeholder=""
+                placeholder="7701234567"
                 value={newGroupInn}
-                onChange={(e) => setNewGroupInn(e.target.value)}
-                className="rounded-xl"
+                onChange={(e) => setNewGroupInn(e.target.value.replace(/\D/g, "").slice(0, 12))}
+                className={`rounded-xl ${innError(newGroupInn) ? "border-red-400" : ""}`}
                 maxLength={12}
               />
+              {innError(newGroupInn) && <p className="text-xs text-red-500">{innError(newGroupInn)}</p>}
             </div>
 
             <div className="flex items-center gap-3">

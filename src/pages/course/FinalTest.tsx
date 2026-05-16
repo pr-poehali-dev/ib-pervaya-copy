@@ -17,6 +17,7 @@ export function FinalTest({
   onCurrentChange,
   onAnswer,
   navPanel,
+  testTimeSec = 30 * 60,
 }: {
   onFinish: (answers: QuestionAnswer[]) => void;
   isFinal: boolean;
@@ -24,6 +25,7 @@ export function FinalTest({
   onCurrentChange?: (idx: number) => void;
   onAnswer?: (questionId: number, isCorrect: boolean) => void;
   navPanel?: React.ReactNode;
+  testTimeSec?: number;
 }) {
   const questions = isFinal ? allQuestions.slice(0, 10) : allQuestions.slice(0, 5);
   const [current,        setCurrent]        = useState(0);
@@ -33,7 +35,7 @@ export function FinalTest({
   const [finalAnswers,   setFinalAnswers]   = useState<Record<number, number[]>>({});
   const [showConfirm,    setShowConfirm]    = useState(false);
 
-  const TOTAL_SECONDS = 30 * 60;
+  const TOTAL_SECONDS = testTimeSec > 0 ? testTimeSec : 30 * 60;
   const [timeLeft, setTimeLeft] = useState(TOTAL_SECONDS);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const onFinishRef = useRef(onFinish);

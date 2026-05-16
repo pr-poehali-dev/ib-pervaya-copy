@@ -12,17 +12,19 @@ export function TestResult({
   onRetry,
   onMenu,
   allQuestions,
+  passScore = 70,
 }: {
   answers: QuestionAnswer[];
   isFinal: boolean;
   onRetry: () => void;
   onMenu: () => void;
   allQuestions: Question[];
+  passScore?: number;
 }) {
   const correct = answers.filter((a) => a.isCorrect).length;
   const total   = answers.length;
   const score   = Math.round((correct / total) * 100);
-  const passed  = score >= 70;
+  const passed  = score >= passScore;
   const [showProtocol, setShowProtocol] = useState(false);
 
   return (

@@ -38,6 +38,8 @@ export type DirectionCourse = {
   hours?: number;
   hasTest?: boolean;
   dpoAvailable?: boolean;
+  finalTestPassScore?: number;
+  finalTestTime?: number;
 };
 
 export type CourseDirection = {

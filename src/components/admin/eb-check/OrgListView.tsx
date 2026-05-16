@@ -1,4 +1,5 @@
 import Icon from "@/components/ui/icon";
+import { innError } from "@/utils/validation";
 import { Commission, CheckProtocol, EbOrganization } from "@/data/ebCheckData";
 
 export function GroupBadge({ group }: { group: string }) {
@@ -69,9 +70,10 @@ export default function OrgListView({
             </div>
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-muted-foreground uppercase">ИНН</label>
-              <input className="border border-border rounded-xl px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30"
-                value={orgForm.inn} onChange={(e) => onOrgFormChange({ ...orgForm, inn: e.target.value })}
+              <input className={`border rounded-xl px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 transition-colors ${innError(orgForm.inn) ? "border-red-400 focus:ring-red-400/30" : "border-border focus:ring-primary/30"}`}
+                value={orgForm.inn} onChange={(e) => onOrgFormChange({ ...orgForm, inn: e.target.value.replace(/\D/g, "").slice(0, 12) })}
                 placeholder="7701234567" maxLength={12} />
+              {innError(orgForm.inn) && <p className="text-xs text-red-500">{innError(orgForm.inn)}</p>}
             </div>
           </div>
           <div className="flex gap-2 justify-end">

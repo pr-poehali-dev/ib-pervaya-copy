@@ -104,6 +104,9 @@ export default function CoursePage() {
     }));
   }
 
+  const passScore   = course?.finalTestPassScore ?? 70;
+  const testTimeSec = course?.finalTestTime ? course.finalTestTime * 60 : 30 * 60;
+
   function handleTestFinish(answers: QuestionAnswer[], isFinalTest = false) {
     setTestAnswers(answers);
     if (isFinalTest) {
@@ -117,7 +120,7 @@ export default function CoursePage() {
         correct,
         total,
         score,
-        passed: score >= 70,
+        passed: score >= passScore,
       };
       setFinalTestHistory((prev) => [attempt, ...prev]);
     }
@@ -329,11 +332,11 @@ export default function CoursePage() {
               <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-xl px-3 py-1.5">
                 <Icon name="AlertCircle" size={13} className="text-amber-600 dark:text-amber-400 flex-shrink-0" />
                 <p className="text-xs text-amber-800 dark:text-amber-300">
-                  {Math.min(10, questions.length)} вопросов · 30 мин · Без подсказок · Порог: 70%
+                  {Math.min(10, questions.length)} вопросов · {testTimeSec > 0 ? `${testTimeSec / 60} мин` : "Без ограничений"} · Без подсказок · Порог: {passScore}%
                 </p>
               </div>
             </div>
-            <FinalTest onFinish={(ans) => handleTestFinish(ans, true)} isFinal={true} allQuestions={activeQuestions} />
+            <FinalTest onFinish={(ans) => handleTestFinish(ans, true)} isFinal={true} allQuestions={activeQuestions} testTimeSec={testTimeSec} />
           </div>
         )}
 
@@ -352,6 +355,7 @@ export default function CoursePage() {
               onRetry={() => { setTestAnswers([]); setMode("final_test"); }}
               onMenu={resetToMenu}
               allQuestions={activeQuestions}
+              passScore={passScore}
             />
           </div>
         )}

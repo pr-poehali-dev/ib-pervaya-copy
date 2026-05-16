@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { innError } from "@/utils/validation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Icon from "@/components/ui/icon";
@@ -20,6 +21,7 @@ function OrgModal({
 }) {
   const [name,    setName]    = useState(org?.name ?? "");
   const [inn,     setInn]     = useState(org?.inn ?? "");
+  const innErr = innError(inn);
   const [person,  setPerson]  = useState(org?.contactPerson ?? "");
   const [email,   setEmail]   = useState(org?.contactEmail ?? "");
   const [phone,   setPhone]   = useState(org?.contactPhone ?? "");
@@ -40,7 +42,8 @@ function OrgModal({
           </div>
           <div className="space-y-1">
             <label className="text-xs text-muted-foreground">ИНН</label>
-            <input value={inn} onChange={(e) => setInn(e.target.value)} className="w-full h-9 px-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30" placeholder="7701234567" />
+            <input value={inn} onChange={(e) => setInn(e.target.value.replace(/\D/g, "").slice(0, 12))} className={`w-full h-9 px-3 rounded-xl border bg-background text-sm focus:outline-none focus:ring-2 transition-colors ${innErr ? "border-red-400 focus:ring-red-400/30" : "border-border focus:ring-violet-500/30"}`} placeholder="7701234567" maxLength={12} />
+            {innErr && <p className="text-xs text-red-500">{innErr}</p>}
           </div>
           <div className="space-y-1">
             <label className="text-xs text-muted-foreground">Контактное лицо</label>
@@ -62,7 +65,7 @@ function OrgModal({
           <Button
             className="flex-1 rounded-xl gradient-primary text-white"
             onClick={() => onSave({ name, inn, contactPerson: person, contactEmail: email, contactPhone: phone })}
-            disabled={!name.trim() || !inn.trim()}
+            disabled={!name.trim() || !inn.trim() || !!innErr}
           >
             Сохранить
           </Button>

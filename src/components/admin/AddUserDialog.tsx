@@ -1,3 +1,4 @@
+import { innError } from "@/utils/validation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -95,7 +96,8 @@ export default function AddUserDialog({
               ИНН организации
               <span className="text-xs text-amber-600 dark:text-amber-400 font-normal">(рекомендуется заполнить)</span>
             </Label>
-            <Input className="rounded-xl" placeholder="" value={newInn} onChange={(e) => setNewInn(e.target.value)} maxLength={12} />
+            <Input className={`rounded-xl ${innError(newInn) ? "border-red-400" : ""}`} placeholder="7701234567" value={newInn} onChange={(e) => setNewInn(e.target.value.replace(/\D/g, "").slice(0, 12))} maxLength={12} />
+            {innError(newInn) && <p className="text-xs text-red-500 mt-0.5">{innError(newInn)}</p>}
           </div>
 
           {/* Email */}

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { innError } from "@/utils/validation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +18,7 @@ interface OrgPanelProps {
 export default function OrgPanel({ org, onSave, onBack }: OrgPanelProps) {
   const [editOrg, setEditOrg] = useState(false);
   const [orgDraft, setOrgDraft] = useState<OrgData>(org);
+  const innErr = innError(orgDraft.inn);
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
@@ -119,7 +121,8 @@ export default function OrgPanel({ org, onSave, onBack }: OrgPanelProps) {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label>ИНН</Label>
-                <Input className="rounded-xl" value={orgDraft.inn} onChange={(e) => setOrgDraft({ ...orgDraft, inn: e.target.value })} />
+                <Input className={`rounded-xl ${innErr ? "border-red-400 focus:ring-red-400/30" : ""}`} value={orgDraft.inn} onChange={(e) => setOrgDraft({ ...orgDraft, inn: e.target.value.replace(/\D/g, "").slice(0, 12) })} maxLength={12} />
+                {innErr && <p className="text-xs text-red-500">{innErr}</p>}
               </div>
               <div className="space-y-1.5">
                 <Label>№ лицензии</Label>
@@ -144,7 +147,7 @@ export default function OrgPanel({ org, onSave, onBack }: OrgPanelProps) {
             </div>
             <div className="flex gap-2 pt-1">
               <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setEditOrg(false)}>Отмена</Button>
-              <Button className="flex-1 rounded-xl gradient-primary text-white" onClick={handleSaveOrg}>Сохранить</Button>
+              <Button className="flex-1 rounded-xl gradient-primary text-white" onClick={handleSaveOrg} disabled={!!innErr}>Сохранить</Button>
             </div>
           </div>
         </DialogContent>
