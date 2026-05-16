@@ -203,6 +203,7 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
       {viewMode === "table" && (
         <GroupsTableView
           filteredGroups={filteredGroups}
+          totalGroups={groups.length}
           localUsers={localUsers}
           expandedGroups={expandedGroups}
           expandedMembers={expandedMembers}
@@ -229,6 +230,7 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
         <GroupsCardsView
           navLevel={navLevel}
           filteredGroups={filteredGroups}
+          totalGroups={groups.length}
           localUsers={localUsers}
           activeGroup={activeGroup}
           activeMember={activeMember}

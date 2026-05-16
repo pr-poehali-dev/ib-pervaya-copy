@@ -61,6 +61,47 @@ export default function SalesManagersPanel() {
         </Button>
       </div>
 
+      {/* Лидерборд */}
+      {managers.filter((m) => m.status === "active").length > 1 && (
+        <div className="bg-card rounded-2xl border border-border overflow-hidden">
+          <div className="px-5 py-3 border-b border-border flex items-center gap-2">
+            <Icon name="Trophy" size={15} className="text-amber-500" />
+            <span className="font-semibold text-sm">Рейтинг менеджеров</span>
+          </div>
+          <div className="divide-y divide-border">
+            {managers
+              .filter((m) => m.status === "active")
+              .sort((a, b) => b.tenantsCount !== a.tenantsCount ? b.tenantsCount - a.tenantsCount : b.totalSubscriptions - a.totalSubscriptions)
+              .map((m, idx) => {
+                const medal = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : null;
+                return (
+                  <div key={m.id} className="flex items-center gap-3 px-5 py-3 hover:bg-muted/20 transition-colors">
+                    <div className="w-7 text-center flex-shrink-0">
+                      {medal ? <span className="text-lg">{medal}</span> : <span className="text-sm font-bold text-muted-foreground">{idx + 1}</span>}
+                    </div>
+                    <div className={`w-8 h-8 bg-gradient-to-br ${GRADIENTS[idx % GRADIENTS.length]} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                      <span className="text-white font-bold text-xs">{m.initials}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{m.name}</p>
+                    </div>
+                    <div className="flex items-center gap-4 flex-shrink-0 text-right">
+                      <div>
+                        <p className="text-sm font-bold">{m.tenantsCount}</p>
+                        <p className="text-[10px] text-muted-foreground">компаний</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold">{m.totalSubscriptions}</p>
+                        <p className="text-[10px] text-muted-foreground">подписок</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {managers.map((m, idx) => (
           <div key={m.id} className="bg-card rounded-2xl border border-border p-5 space-y-4">

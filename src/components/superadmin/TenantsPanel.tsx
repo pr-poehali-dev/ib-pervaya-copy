@@ -68,6 +68,10 @@ export default function TenantsPanel({ initialTenants, canCreate = true, canEdit
         canCreate={canCreate}     onAdd={() => setEditTenant(null)}
       />
 
+      <p className="text-xs text-muted-foreground">
+        Показано <span className="font-medium text-foreground">{filtered.length}</span> из <span className="font-medium text-foreground">{tenants.length}</span> тенантов
+      </p>
+
       {/* ── Таблица ─────────────────────────────────────────────────────────── */}
       {viewMode === "table" && (
         <div className="bg-card rounded-2xl border border-border overflow-x-auto">

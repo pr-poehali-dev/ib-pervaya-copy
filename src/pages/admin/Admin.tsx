@@ -3,8 +3,9 @@ import { useLocation } from "react-router-dom";
 import { useStats } from "@/contexts/StatsContext";
 import { useRole } from "@/contexts/RoleContext";
 import { useAdminData } from "@/hooks/useAdminData";
-import { CERTIFICATES } from "@/data/mockData";
+import { CERTIFICATES, TENANTS } from "@/data/mockData";
 import Layout from "@/components/layout/Layout";
+import DeadlineAlerts from "@/components/shared/DeadlineAlerts";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AddUserDialog from "@/components/admin/AddUserDialog";
 import AdminTabBar, { AdminTabKey } from "@/components/admin/AdminTabBar";
@@ -180,6 +181,8 @@ export default function Admin() {
           setNewGroup={setNewGroup}
           onSave={handleAddUser}
         />
+
+        <DeadlineAlerts tenants={TENANTS.slice(0, 1)} />
 
         <AdminTabBar activeTab={activeTab} setActiveTab={setActiveTab} hideSettings={isManager} certReadyCount={certReadyCount} />
 

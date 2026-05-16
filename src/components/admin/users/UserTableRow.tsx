@@ -23,6 +23,7 @@ interface UserTableRowProps {
   onCopyLogin: (id: number, email: string) => void;
   onOpenStats: (user: User) => void;
   onAddCourse: (userId: number) => void;
+  onEditUser: (user: User) => void;
   onActivateCourse: (userId: number, courseId: number, date: string) => void;
   onExtendCourse: (userId: number, courseId: number) => void;
   onIssueCertificate: (userId: number, courseId: number) => void;
@@ -40,12 +41,14 @@ export default function UserTableRow({
   onCopyLogin,
   onOpenStats,
   onAddCourse,
+  onEditUser,
   onActivateCourse,
   onExtendCourse,
   onIssueCertificate,
   onToggleCourse,
 }: UserTableRowProps) {
   const [statsTarget, setStatsTarget] = useState<{ assignment: CourseAssignment; courseTitle: string } | null>(null);
+  const [historyTarget, setHistoryTarget] = useState<CourseAssignment | null>(null);
   const { tenantType } = useRole();
   const canIssueCert = tenantType === "training_center";
   const activeCourses = user.assignments.filter((a) => a.active);
@@ -130,7 +133,7 @@ export default function UserTableRow({
         <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center gap-1.5">
             <Tip text="Редактировать слушателя">
-              <button className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
+              <button onClick={() => onEditUser(user)} className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
                 <Icon name="Pencil" size={16} />
               </button>
             </Tip>
@@ -266,7 +269,30 @@ export default function UserTableRow({
                                     </button>
                                   </Tip>
                                 )}
+                                {(a.history?.length ?? 0) > 0 && (
+                                  <Tip text="История изменений" side="top">
+                                    <button
+                                      className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground relative"
+                                      onClick={() => setHistoryTarget(historyTarget?.courseId === a.courseId ? null : a)}
+                                    >
+                                      <Icon name="History" size={14} />
+                                      <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-blue-500 rounded-full text-[8px] text-white flex items-center justify-center font-bold">{a.history!.length}</span>
+                                    </button>
+                                  </Tip>
+                                )}
                               </div>
+                              {historyTarget?.courseId === a.courseId && (
+                                <div className="mt-2 rounded-xl border border-border bg-muted/30 overflow-hidden">
+                                  {a.history!.map((h, hi) => (
+                                    <div key={hi} className="flex items-center gap-2 px-3 py-1.5 border-b border-border last:border-0 text-xs">
+                                      <Icon name="Clock" size={11} className="text-muted-foreground flex-shrink-0" />
+                                      <span className="text-muted-foreground flex-shrink-0">{h.date}</span>
+                                      <span className="font-medium flex-1">{h.action}</span>
+                                      <span className="text-muted-foreground flex-shrink-0">{h.by}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
                             </td>
                           </tr>
                         );

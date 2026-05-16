@@ -10,6 +10,7 @@ type NavLevel = "groups" | "members" | "member";
 interface GroupsCardsViewProps {
   navLevel: NavLevel;
   filteredGroups: string[];
+  totalGroups: number;
   localUsers: User[];
   activeGroup: string | null;
   activeMember: User | null;
@@ -33,6 +34,7 @@ interface GroupsCardsViewProps {
 export default function GroupsCardsView({
   navLevel,
   filteredGroups,
+  totalGroups,
   localUsers,
   activeGroup,
   activeMember,
@@ -56,7 +58,7 @@ export default function GroupsCardsView({
       {/* Уровень групп */}
       {navLevel === "groups" && (
         <>
-          <p className="text-xs text-muted-foreground">Найдено групп: {filteredGroups.length}</p>
+          <p className="text-xs text-muted-foreground">Показано <span className="font-medium text-foreground">{filteredGroups.length}</span> из <span className="font-medium text-foreground">{totalGroups}</span> групп</p>
           {filteredGroups.length === 0 ? (
             <div className="p-10 text-center bg-card rounded-2xl border border-border">
               <Icon name="SearchX" size={32} className="text-muted-foreground mx-auto mb-3" />

@@ -4,6 +4,7 @@ import { User } from "@/components/admin/types";
 
 interface GroupsTableViewProps {
   filteredGroups: string[];
+  totalGroups: number;
   localUsers: User[];
   expandedGroups: Set<string>;
   expandedMembers: Set<number>;
@@ -26,6 +27,7 @@ interface GroupsTableViewProps {
 
 export default function GroupsTableView({
   filteredGroups,
+  totalGroups,
   localUsers,
   expandedGroups,
   expandedMembers,
@@ -48,7 +50,7 @@ export default function GroupsTableView({
   return (
     <>
       <p className="text-xs text-muted-foreground">
-        Найдено групп: {filteredGroups.length}
+        Показано <span className="font-medium text-foreground">{filteredGroups.length}</span> из <span className="font-medium text-foreground">{totalGroups}</span> групп
         {selectedGroups.size > 0 && <span className="ml-2 text-primary font-medium">· Выбрано: {selectedGroups.size}</span>}
       </p>
 

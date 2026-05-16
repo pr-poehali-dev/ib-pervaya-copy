@@ -4,8 +4,10 @@ import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 import UserStatsModal from "./UserStatsModal";
 import UserAddCourseModal from "./UserAddCourseModal";
+import UserEditModal from "./UserEditModal";
 import UserTableRow from "./UserTableRow";
 import { User, CourseAssignment, CourseStatus, allCourses } from "@/components/admin/types";
+import { useAuth } from "@/contexts/AuthContext";
 import { MultiSelect, SearchSelect, FilterTags } from "@/components/admin/shared/FilterControls";
 import { useRole } from "@/contexts/RoleContext";
 
@@ -26,6 +28,8 @@ export default function AdminUsers({
   toggleCourse,
 }: AdminUsersProps) {
   const { tenantType } = useRole();
+  const { user: authUser } = useAuth();
+  const adminName = authUser ? `${authUser.lastName ?? ""} ${authUser.firstName ?? ""}`.trim() || authUser.email : "Администратор";
   const canIssueCert = tenantType === "training_center";
   const [filterStatus, setFilterStatus] = useState("Все");
   const [filterOrgs, setFilterOrgs] = useState<string[]>([]);
@@ -39,6 +43,7 @@ export default function AdminUsers({
   const [addCourseForUser, setAddCourseForUser] = useState<number | null>(null);
   const [localUsers, setLocalUsers] = useState<User[]>(users);
   const [statsUser, setStatsUser] = useState<User | null>(null);
+  const [editUser, setEditUser] = useState<User | null>(null);
 
   const actionsButtonRef = useRef<HTMLButtonElement>(null);
   const actionsMenuRef = useRef<HTMLDivElement>(null);
@@ -124,7 +129,10 @@ export default function AdminUsers({
       return {
         ...u,
         assignments: u.assignments.map((a) =>
-          a.courseId !== courseId ? a : { ...a, activatedAt: date ?? today(), status: "active" as CourseStatus, progress: 0 }
+          a.courseId !== courseId ? a : {
+            ...a, activatedAt: date ?? today(), status: "active" as CourseStatus, progress: 0,
+            history: [...(a.history ?? []), { date: today(), action: "Курс активирован", by: adminName }],
+          }
         ),
       };
     }));
@@ -136,7 +144,10 @@ export default function AdminUsers({
       return {
         ...u,
         assignments: u.assignments.map((a) =>
-          a.courseId !== courseId ? a : { ...a, status: "active" as CourseStatus, progress: a.progress }
+          a.courseId !== courseId ? a : {
+            ...a, status: "active" as CourseStatus, progress: a.progress,
+            history: [...(a.history ?? []), { date: today(), action: "Курс продлён", by: adminName }],
+          }
         ),
       };
     }));
@@ -148,7 +159,10 @@ export default function AdminUsers({
       return {
         ...u,
         assignments: u.assignments.map((a) =>
-          a.courseId !== courseId ? a : { ...a, status: "certified" as CourseStatus, progress: 100, completedAt: a.completedAt ?? today() }
+          a.courseId !== courseId ? a : {
+            ...a, status: "certified" as CourseStatus, progress: 100, completedAt: a.completedAt ?? today(),
+            history: [...(a.history ?? []), { date: today(), action: "Выдано удостоверение", by: adminName }],
+          }
         ),
       };
     }));
@@ -197,6 +211,16 @@ export default function AdminUsers({
         />
       )}
       <UserStatsModal user={statsUser} onClose={() => setStatsUser(null)} />
+      {editUser && (
+        <UserEditModal
+          user={editUser}
+          onSave={(updated) => {
+            setLocalUsers((prev) => prev.map((u) => u.id === updated.id ? updated : u));
+            setEditUser(null);
+          }}
+          onClose={() => setEditUser(null)}
+        />
+      )}
 
       {/* Фильтры + кнопка действий */}
       <div className="flex items-start gap-3">
@@ -271,7 +295,7 @@ export default function AdminUsers({
       </div>
 
       <p className="text-xs text-muted-foreground">
-        Найдено: {localFiltered.length}
+        Показано <span className="font-medium text-foreground">{localFiltered.length}</span> из <span className="font-medium text-foreground">{localUsers.length}</span>
         {selectedIds.size > 0 && <span className="ml-2 text-violet-600 font-medium">· Выбрано: {selectedIds.size}</span>}
       </p>
 
@@ -312,6 +336,7 @@ export default function AdminUsers({
                   onCopyLogin={copyLogin}
                   onOpenStats={(u) => setStatsUser(localUsers.find((lu) => lu.id === u.id) ?? u)}
                   onAddCourse={(userId) => setAddCourseForUser(userId)}
+                  onEditUser={(u) => setEditUser(u)}
                   onActivateCourse={activateCourse}
                   onExtendCourse={extendCourse}
                   onIssueCertificate={issueCertificate}

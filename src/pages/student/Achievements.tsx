@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
 import { Progress } from "@/components/ui/progress";
@@ -166,8 +167,31 @@ const XP_LEVELS = [
   { level: 6, title: "Мастер",        xp: 3500 },
 ];
 
+function calcUserXP(userId: number): number {
+  const u = INITIAL_USERS.find((x) => x.id === userId);
+  if (!u) return 0;
+  const a = u.assignments ?? [];
+  const stats: UserStats = {
+    completed:  a.filter((x) => x.status === "completed" || x.status === "certified").length,
+    certified:  a.filter((x) => x.status === "certified").length,
+    active:     a.filter((x) => x.status === "active").length,
+    total:      a.length,
+    totalHours: a.reduce((s, x) => {
+      const c = COURSE_DIRECTIONS.flatMap((d) => d.courses).find((c) => c.id === x.courseId);
+      return s + (c?.hours ?? 0);
+    }, 0),
+    avgScore: (() => {
+      const sc = a.filter((x) => x.testScore);
+      return sc.length > 0 ? sc.reduce((s, x) => s + (x.testScore ?? 0), 0) / sc.length : 0;
+    })(),
+    maxScore: Math.max(0, ...a.map((x) => x.testScore ?? 0)),
+  };
+  return ACHIEVEMENTS.filter((ach) => ach.condition(stats)).reduce((s, ach) => s + ach.xp, 0);
+}
+
 export default function Achievements() {
   const navigate = useNavigate();
+  const [tab, setTab] = useState<"achievements" | "leaderboard">("achievements");
 
   const user = INITIAL_USERS[0] ?? null;
   const assignments = user?.assignments ?? [];
@@ -202,15 +226,84 @@ export default function Achievements() {
 
   const categories = Array.from(new Set(ACHIEVEMENTS.map((a) => a.category)));
 
+  const leaderboard = INITIAL_USERS
+    .map((u) => {
+      const xp = calcUserXP(u.id);
+      const level = XP_LEVELS.slice().reverse().find((l) => xp >= l.xp) ?? XP_LEVELS[0];
+      const completed = (u.assignments ?? []).filter((a) => a.status === "completed" || a.status === "certified").length;
+      return { user: u, xp, level, completed };
+    })
+    .sort((a, b) => b.xp - a.xp);
+
   return (
     <Layout>
-      <div className="space-y-8">
+      <div className="space-y-6">
 
-        {/* Заголовок */}
+        {/* Заголовок + вкладки */}
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold mb-1">Достижения</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">Ваши награды за успехи в обучении</p>
+          <p className="text-sm sm:text-base text-muted-foreground mb-4">Ваши награды за успехи в обучении</p>
+          <div className="flex gap-1 p-1 bg-muted rounded-xl w-fit">
+            <button
+              onClick={() => setTab("achievements")}
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${tab === "achievements" ? "bg-card shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              Достижения
+            </button>
+            <button
+              onClick={() => setTab("leaderboard")}
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${tab === "leaderboard" ? "bg-card shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              Рейтинг
+            </button>
+          </div>
         </div>
+
+        {/* Лидерборд */}
+        {tab === "leaderboard" && (
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground">Рейтинг слушателей по опыту (XP) в вашей организации</p>
+            {leaderboard.map((entry, idx) => {
+              const isMe = entry.user.id === user?.id;
+              const medal = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : null;
+              return (
+                <div
+                  key={entry.user.id}
+                  className={`flex items-center gap-3 p-3 sm:p-4 rounded-2xl border transition-all ${
+                    isMe ? "border-violet-300 dark:border-violet-700 bg-violet-50/60 dark:bg-violet-900/10" : "border-border bg-card"
+                  }`}
+                >
+                  <div className="w-8 text-center flex-shrink-0">
+                    {medal ? (
+                      <span className="text-xl">{medal}</span>
+                    ) : (
+                      <span className="text-sm font-bold text-muted-foreground">{idx + 1}</span>
+                    )}
+                  </div>
+                  <div className="w-9 h-9 rounded-xl gradient-primary flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                    {entry.user.initials}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className={`text-sm font-semibold truncate ${isMe ? "text-violet-700 dark:text-violet-300" : ""}`}>
+                        {entry.user.name}
+                        {isMe && <span className="ml-1 text-xs font-normal text-muted-foreground">(вы)</span>}
+                      </p>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{entry.level.title} · {entry.completed} курсов</p>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-sm font-bold text-violet-600 dark:text-violet-400">{entry.xp} XP</p>
+                    <p className="text-[10px] text-muted-foreground">Ур. {entry.level.level}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Достижения */}
+        {tab === "achievements" && <>
 
         {/* Карточка уровня и XP */}
         <div className="bg-gradient-to-br from-violet-600 to-purple-700 rounded-2xl p-5 sm:p-6 text-white">
@@ -364,6 +457,7 @@ export default function Achievements() {
             </button>
           </div>
         )}
+        </>}
       </div>
     </Layout>
   );

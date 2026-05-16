@@ -10,6 +10,7 @@ import type { Tenant } from "@/components/admin/types";
 import ReportsPanel from "@/components/superadmin/ReportsPanel";
 import TenantsPanel from "@/components/superadmin/TenantsPanel";
 import PlatformCoursesPanel from "@/components/superadmin/PlatformCoursesPanel";
+import DeadlineAlerts from "@/components/shared/DeadlineAlerts";
 
 type SalesTab = "tenants" | "courses" | "invoices" | "reports" | "profile";
 
@@ -338,6 +339,8 @@ export default function SalesManager() {
             </div>
           ))}
         </div>
+
+        <DeadlineAlerts tenants={MY_TENANTS} />
 
         <div className="flex gap-2">
           {TABS.map((tab) => (

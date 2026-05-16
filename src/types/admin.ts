@@ -9,6 +9,12 @@ export type CourseStatus = "pending" | "active" | "completed" | "certified";
 
 export type TenantCourseStatus = "draft" | "pending_approval" | "approved" | "rejected";
 
+export type CourseHistoryEntry = {
+  date: string;
+  action: string;
+  by: string;
+};
+
 export type CourseAssignment = {
   courseId: number;
   active: boolean;
@@ -20,6 +26,7 @@ export type CourseAssignment = {
   testScore?: number;
   testPassedAt?: string;
   dpoRequired?: boolean;
+  history?: CourseHistoryEntry[];
 };
 
 export type Course = {
@@ -178,6 +185,11 @@ export type Group = {
 export type User = {
   id: number;
   name: string;
+  lastName?: string;
+  firstName?: string;
+  middleName?: string;
+  phone?: string;
+  position?: string;
   email: string;
   initials: string;
   group: string;
