@@ -82,7 +82,7 @@ export default function Layout({ children }: LayoutProps) {
 
       {/* Основной контент */}
       <main
-        className={`flex-1 min-h-screen transition-all duration-300 ${
+        className={`flex-1 min-h-screen transition-all duration-300 overflow-x-hidden ${
           isMobile
             ? "ml-0 pt-14 pb-24"
             : collapsed
@@ -90,7 +90,7 @@ export default function Layout({ children }: LayoutProps) {
             : "ml-64"
         }`}
       >
-        <div className={isMobile ? "p-4" : "p-5"}>
+        <div className={isMobile ? "p-3" : "p-5"}>
           {children}
         </div>
       </main>

@@ -148,32 +148,34 @@ export default function Profile() {
         />
       )}
 
-      <div className="space-y-4 sm:space-y-8">
+      <div className="space-y-4 sm:space-y-8 overflow-x-hidden">
 
         {/* Карточка пользователя */}
-        <div className="bg-card rounded-2xl p-5 sm:p-8 border border-border shadow-sm">
-          <div className="flex items-start gap-4 sm:gap-6">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 gradient-primary rounded-2xl flex items-center justify-center shrink-0">
-              <span className="text-white text-xl sm:text-2xl font-bold">{initials}</span>
+        <div className="bg-card rounded-2xl p-4 sm:p-8 border border-border shadow-sm">
+          <div className="flex items-start gap-3 sm:gap-6">
+            <div className="w-14 h-14 sm:w-20 sm:h-20 gradient-primary rounded-2xl flex items-center justify-center shrink-0">
+              <span className="text-white text-lg sm:text-2xl font-bold">{initials}</span>
             </div>
             <div className="flex-1 min-w-0">
-              <h1 className="text-xl sm:text-2xl font-bold truncate">{fullName}</h1>
-              <p className="text-sm text-muted-foreground truncate">{email}</p>
-              <div className="flex flex-wrap gap-2 mt-3">
-                <Badge variant="secondary">{studentUser.role}</Badge>
-                <Badge variant="outline">{studentUser.organization}</Badge>
-                <Badge variant="outline">Группа {studentUser.group}</Badge>
+              <div className="flex items-start justify-between gap-2">
+                <h1 className="text-base sm:text-2xl font-bold leading-tight break-words">{fullName}</h1>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl gap-1.5 flex-shrink-0 text-xs px-2.5 h-8"
+                  onClick={() => setEditOpen(true)}
+                >
+                  <Icon name="User" size={13} />
+                  <span className="hidden xs:inline sm:inline">Данные</span>
+                </Button>
+              </div>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 truncate">{email}</p>
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                <Badge variant="secondary" className="text-[11px]">{studentUser.role}</Badge>
+                <Badge variant="outline" className="text-[11px]">{studentUser.organization}</Badge>
+                <Badge variant="outline" className="text-[11px]">Группа {studentUser.group}</Badge>
               </div>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-xl gap-2 flex-shrink-0"
-              onClick={() => setEditOpen(true)}
-            >
-              <Icon name="User" size={15} />
-              <span className="hidden sm:inline">Мои данные</span>
-            </Button>
           </div>
         </div>
 
@@ -245,9 +247,9 @@ export default function Profile() {
                   }`}
                   title={a.desc}
                 >
-                  <span className="text-xl sm:text-2xl block mb-1">{a.emoji}</span>
-                  <p className="text-[10px] sm:text-xs font-medium text-foreground leading-tight">{a.title}</p>
-                  {!a.earned && <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5">Заблокировано</p>}
+                  <span className="text-2xl block mb-1">{a.emoji}</span>
+                  <p className="text-[10px] font-medium text-foreground leading-tight line-clamp-2">{a.title}</p>
+                  {!a.earned && <p className="text-[9px] text-muted-foreground mt-0.5">Заблок.</p>}
                 </div>
               ))}
             </div>
