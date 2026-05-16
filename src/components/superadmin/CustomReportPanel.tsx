@@ -96,8 +96,8 @@ function getMonthsList(
 // ─── Экспорт CSV ──────────────────────────────────────────────────────────────
 
 function exportCSV(rows: WriteoffRow[], label: string) {
-  const header = ["Тенант", "ИНН тенанта", "Курс", "Дата списания", "ФИО обучающегося"];
-  const data = rows.map((r) => [r.tenantName, r.tenantInn, r.course, r.date, r.userName]);
+  const header = ["Тенант", "ИНН тенанта", "Направление", "Код курса", "Курс", "Дата списания", "ФИО обучающегося"];
+  const data = rows.map((r) => [r.tenantName, r.tenantInn, r.direction, r.courseCode, r.course, r.date, r.userName]);
   const csv = [header, ...data].map((r) => r.map((c) => `"${c}"`).join(";")).join("\n");
   const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
