@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 import Tip from "@/components/ui/tip";
 import GroupMemberRow from "./GroupMemberRow";
+import AddMemberToGroupModal from "./AddMemberToGroupModal";
 import UserAvatar from "@/components/admin/shared/UserAvatar";
 import ProgressBar from "@/components/admin/shared/ProgressBar";
 import { User, Group, gradients } from "@/components/admin/types";
@@ -35,6 +36,8 @@ interface GroupTableRowProps {
   onIssueCertificate: (userId: number, courseId: number, groupId?: number) => void;
   onToggleAssignment: (userId: number, courseId: number, groupId?: number) => void;
   onEnrollToGroup: (user: User) => void;
+  allUsers: User[];
+  onAddMember: (userId: number, groupId: number) => void;
 }
 
 export default function GroupTableRow({
@@ -58,8 +61,11 @@ export default function GroupTableRow({
   onIssueCertificate,
   onToggleAssignment,
   onEnrollToGroup,
+  allUsers,
+  onAddMember,
 }: GroupTableRowProps) {
   const [editOpen, setEditOpen] = useState(false);
+  const [addMemberOpen, setAddMemberOpen] = useState(false);
   const [editName, setEditName] = useState(group.name);
   const [editOrg, setEditOrg] = useState(organization);
   const [editInn, setEditInn] = useState(inn);
@@ -202,9 +208,27 @@ export default function GroupTableRow({
                 <Icon name="BookPlus" size={16} />
               </button>
             </Tip>
+            <Tip text="Добавить слушателя в группу">
+              <button
+                className="p-2 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors text-emerald-600 dark:text-emerald-400"
+                onClick={() => { setAddMemberOpen(true); if (!isExpanded) onToggleGroup(group.name); }}
+              >
+                <Icon name="UserPlus" size={16} />
+              </button>
+            </Tip>
           </div>
         </td>
       </tr>
+
+      {addMemberOpen && (
+        <AddMemberToGroupModal
+          groupId={group.id}
+          groupName={group.name}
+          allUsers={allUsers}
+          onClose={() => setAddMemberOpen(false)}
+          onAdd={(userId) => onAddMember(userId, group.id)}
+        />
+      )}
 
       {/* Раскрытая строка — участники группы */}
       {isExpanded && (
@@ -224,6 +248,15 @@ export default function GroupTableRow({
                       <Icon name="BarChart2" size={13} />
                     </button>
                   </Tip>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="rounded-xl gap-1.5 text-xs h-7 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+                    onClick={() => setAddMemberOpen(true)}
+                  >
+                    <Icon name="UserPlus" size={12} />
+                    Добавить слушателя
+                  </Button>
                   <Button
                     size="sm"
                     className="gradient-primary text-white rounded-xl gap-1.5 text-xs h-7"

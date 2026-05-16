@@ -51,6 +51,7 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
     localUsers,
     addCoursesToMember,
     addCoursesToGroup,
+    addMemberToGroup,
     activateCourse,
     extendCourse,
     issueCertificate,
@@ -254,6 +255,11 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
           onIssueCertificate={issueCertificate}
           onToggleAssignment={toggleAssignment}
           onEnrollToGroup={(u) => setEnrollUser(localUsers.find((lu) => lu.id === u.id) ?? u)}
+          onAddMember={(userId, groupId) => {
+            const g = GROUPS_DATA.find((grp) => grp.id === groupId);
+            if (!g) return;
+            addMemberToGroup(userId, groupId, g.name);
+          }}
         />
       )}
 

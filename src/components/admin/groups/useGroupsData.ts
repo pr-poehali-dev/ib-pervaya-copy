@@ -110,6 +110,14 @@ export function useGroupsData(initialUsers: User[]) {
     }));
   };
 
+  const addMemberToGroup = (userId: number, groupId: number, groupName: string) => {
+    setLocalUsers((prev) => prev.map((u) => {
+      if (u.id !== userId) return u;
+      if (u.enrollments.some((e) => e.groupId === groupId)) return u;
+      return { ...u, enrollments: [...u.enrollments, { groupId, groupName, assignments: [] }] };
+    }));
+  };
+
   const handleActivateAll = (groupId: number, members: User[]) => {
     const date = today();
     members.forEach((u) => {
@@ -125,6 +133,7 @@ export function useGroupsData(initialUsers: User[]) {
     localUsers,
     addCoursesToMember,
     addCoursesToGroup,
+    addMemberToGroup,
     activateCourse,
     extendCourse,
     issueCertificate,
