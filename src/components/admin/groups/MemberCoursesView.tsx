@@ -11,11 +11,12 @@ import { CourseAssignment } from "@/types/admin";
 interface MemberCoursesViewProps {
   member: User;
   memberIndex: number;
+  groupId: number;
   onAddCourse: (userId: number) => void;
-  onActivateCourse: (userId: number, courseId: number, date: string) => void;
-  onExtendCourse: (userId: number, courseId: number) => void;
-  onIssueCertificate: (userId: number, courseId: number) => void;
-  onToggleAssignment: (userId: number, courseId: number) => void;
+  onActivateCourse: (userId: number, courseId: number, date: string, groupId?: number) => void;
+  onExtendCourse: (userId: number, courseId: number, groupId?: number) => void;
+  onIssueCertificate: (userId: number, courseId: number, groupId?: number) => void;
+  onToggleAssignment: (userId: number, courseId: number, groupId?: number) => void;
 }
 
 function CourseStatusBadge({ status }: { status: CourseStatus }) {
@@ -41,6 +42,7 @@ const GRADIENTS = [
 export default function MemberCoursesView({
   member,
   memberIndex,
+  groupId,
   onAddCourse,
   onActivateCourse,
   onExtendCourse,
@@ -53,8 +55,9 @@ export default function MemberCoursesView({
   const [pwdCopied, setPwdCopied] = useState(false);
   const [statsTarget, setStatsTarget] = useState<{ assignment: CourseAssignment; courseTitle: string } | null>(null);
 
-  const activeAssignments = member.assignments.filter((a) => a.active);
-  const completedCount = member.assignments.filter((a) => a.progress === 100).length;
+  const assignments = member.enrollments.find((e) => e.groupId === groupId)?.assignments ?? [];
+  const activeAssignments = assignments.filter((a) => a.active);
+  const completedCount = assignments.filter((a) => a.progress === 100).length;
   const avgProgress = activeAssignments.length > 0
     ? Math.round(activeAssignments.reduce((s, a) => s + a.progress, 0) / activeAssignments.length)
     : 0;
@@ -93,7 +96,7 @@ export default function MemberCoursesView({
             </Tip>
           </div>
           <div className="flex items-center gap-2 mt-1">
-            <span className="text-xs bg-muted px-2 py-0.5 rounded-md text-muted-foreground">{member.group}</span>
+            <span className="text-xs bg-muted px-2 py-0.5 rounded-md text-muted-foreground">{member.enrollments.find((e) => e.groupId === groupId)?.groupName ?? ""}</span>
             <span className="text-xs bg-muted px-2 py-0.5 rounded-md text-muted-foreground">{member.role}</span>
           </div>
         </div>
@@ -137,10 +140,10 @@ export default function MemberCoursesView({
       <div className="bg-card rounded-2xl border border-border overflow-hidden">
         <div className="px-5 py-3.5 border-b border-border flex items-center justify-between">
           <h3 className="font-semibold text-sm">Назначенные курсы</h3>
-          <span className="text-xs text-muted-foreground">{member.assignments.length} курс{member.assignments.length === 1 ? "" : member.assignments.length < 5 ? "а" : "ов"}</span>
+          <span className="text-xs text-muted-foreground">{assignments.length} курс{assignments.length === 1 ? "" : assignments.length < 5 ? "а" : "ов"}</span>
         </div>
 
-        {member.assignments.length === 0 ? (
+        {assignments.length === 0 ? (
           <div className="p-10 text-center">
             <Icon name="BookOpen" size={32} className="text-muted-foreground mx-auto mb-3" />
             <p className="font-medium">Курсы не назначены</p>
@@ -161,7 +164,7 @@ export default function MemberCoursesView({
                 </tr>
               </thead>
               <tbody>
-                {member.assignments.map((a, ai) => {
+                {assignments.map((a, ai) => {
                   const course = allCourses.find((c) => c.id === a.courseId)
                     ?? courseDirections.flatMap((d) => d.courses).find((c) => c.id === a.courseId);
                   if (!course) return null;
@@ -184,7 +187,7 @@ export default function MemberCoursesView({
                       {/* Дата назначения / Активировать */}
                       <td className="px-4 py-3 text-sm text-muted-foreground">
                         {!a.activatedAt ? (
-                          <ActivateMenu onActivate={(date) => onActivateCourse(member.id, a.courseId, date)} />
+                          <ActivateMenu onActivate={(date) => onActivateCourse(member.id, a.courseId, date, groupId)} />
                         ) : (
                           a.assignedAt
                         )}
@@ -232,7 +235,7 @@ export default function MemberCoursesView({
                           <Tip text={a.active ? "Отключить курс" : "Включить курс"}>
                             <button
                               className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-destructive"
-                              onClick={() => onToggleAssignment(member.id, a.courseId)}
+                              onClick={() => onToggleAssignment(member.id, a.courseId, groupId)}
                             >
                               <Icon name={a.active ? "ToggleRight" : "ToggleLeft"} size={16} />
                             </button>
@@ -240,7 +243,7 @@ export default function MemberCoursesView({
                           <Tip text="Продлить курс">
                             <button
                               className="p-1.5 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors text-muted-foreground hover:text-blue-600"
-                              onClick={() => onExtendCourse(member.id, a.courseId)}
+                              onClick={() => onExtendCourse(member.id, a.courseId, groupId)}
                             >
                               <Icon name="RefreshCw" size={15} />
                             </button>
@@ -254,7 +257,7 @@ export default function MemberCoursesView({
                                     ? "text-violet-400 cursor-default"
                                     : "text-muted-foreground hover:bg-violet-100 dark:hover:bg-violet-900/30 hover:text-violet-600"
                                 }`}
-                                onClick={() => a.status !== "certified" && onIssueCertificate(member.id, a.courseId)}
+                                onClick={() => a.status !== "certified" && onIssueCertificate(member.id, a.courseId, groupId)}
                               >
                                 <Icon name="Award" size={15} />
                               </button>

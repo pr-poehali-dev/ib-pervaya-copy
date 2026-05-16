@@ -36,6 +36,7 @@ function ProgressRing({ value, size = 64 }: { value: number; size?: number }) {
 interface GroupStatsMembersTabProps {
   members: User[];
   stats: GroupStats;
+  groupName: string | null;
   selectedUser: User | null;
   onSelectUser: (user: User | null) => void;
   onUserStats?: (user: User) => void;
@@ -44,6 +45,7 @@ interface GroupStatsMembersTabProps {
 export default function GroupStatsMembersTab({
   members,
   stats,
+  groupName,
   selectedUser,
   onSelectUser,
   onUserStats,
@@ -110,10 +112,11 @@ export default function GroupStatsMembersTab({
     );
   }
 
-  const active = selectedUser.assignments.filter((a) => a.active);
+  const selectedAssignments = selectedUser.enrollments.find((e) => e.groupName === groupName)?.assignments ?? [];
+  const active = selectedAssignments.filter((a) => a.active);
   const avgP = active.length > 0 ? Math.round(active.reduce((s, a) => s + a.progress, 0) / active.length) : 0;
-  const completedC = selectedUser.assignments.filter((a) => a.status === "completed" || a.status === "certified").length;
-  const certifiedC = selectedUser.assignments.filter((a) => a.status === "certified").length;
+  const completedC = selectedAssignments.filter((a) => a.status === "completed" || a.status === "certified").length;
+  const certifiedC = selectedAssignments.filter((a) => a.status === "certified").length;
 
   return (
     <div className="space-y-4">
@@ -146,7 +149,7 @@ export default function GroupStatsMembersTab({
 
       <div className="grid grid-cols-4 gap-3">
         {[
-          { label: "Всего курсов",  value: selectedUser.assignments.length, icon: "BookOpen",    color: "text-violet-500",  bg: "icon-bg-violet" },
+          { label: "Всего курсов",  value: selectedAssignments.length, icon: "BookOpen",    color: "text-violet-500",  bg: "icon-bg-violet" },
           { label: "Активных",      value: active.length,                   icon: "Play",        color: "text-emerald-500", bg: "icon-bg-emerald" },
           { label: "Завершено",     value: completedC,                      icon: "CheckCircle", color: "text-blue-500",    bg: "icon-bg-blue" },
           { label: "Удостоверений", value: certifiedC,                      icon: "Award",       color: "text-amber-500",   bg: "icon-bg-amber" },
@@ -182,13 +185,13 @@ export default function GroupStatsMembersTab({
           <Icon name="ListChecks" size={14} className="text-muted-foreground" />
           Детализация по курсам
         </h3>
-        {selectedUser.assignments.length === 0 ? (
+        {selectedAssignments.length === 0 ? (
           <div className="bg-card rounded-xl border border-border p-8 text-center text-muted-foreground text-sm">
             Курсы не назначены
           </div>
         ) : (
           <div className="space-y-2.5">
-            {selectedUser.assignments.map((a) => {
+            {selectedAssignments.map((a) => {
               const info = getCourseInfo(a.courseId);
               const s = STATUS_MAP[a.status];
               return (

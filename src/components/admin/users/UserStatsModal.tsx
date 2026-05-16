@@ -45,6 +45,10 @@ function exportUserPDF(user: User, avgProgress: number, completedCount: number, 
     </tr>`;
   }).join("");
 
+  const groupsLabel = user.enrollments.length > 0
+    ? user.enrollments.map((e) => e.groupName).join(", ")
+    : "Без группы";
+
   const html = `<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8">
 <title>Карточка слушателя — ${user.name}</title>
 <style>
@@ -63,7 +67,7 @@ function exportUserPDF(user: User, avgProgress: number, completedCount: number, 
   @media print { body { padding: 16px; } }
 </style></head><body>
 <h1>${user.name}</h1>
-<div class="sub">${user.role} · Группа ${user.group} · ${user.email} · Сформирован: ${date}</div>
+<div class="sub">${user.role} · ${groupsLabel} · ${user.email} · Сформирован: ${date}</div>
 <div class="metrics">
   <div class="metric"><div class="val">${user.assignments.length}</div><div class="lbl">Всего курсов</div></div>
   <div class="metric"><div class="val">${user.assignments.filter(a => a.active).length}</div><div class="lbl">Активных</div></div>
@@ -135,7 +139,7 @@ export default function UserStatsModal({ user, onClose }: UserStatsModalProps) {
                 <p className="text-[10px] text-muted-foreground">{user.organization}</p>
               )}
               <h2 className="font-bold text-base leading-tight">{user.name}</h2>
-              <p className="text-xs text-muted-foreground">{user.role} · {user.group}</p>
+              <p className="text-xs text-muted-foreground">{user.role}{user.enrollments.length > 0 ? ` · ${user.enrollments.map((e) => e.groupName).join(", ")}` : ""}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">

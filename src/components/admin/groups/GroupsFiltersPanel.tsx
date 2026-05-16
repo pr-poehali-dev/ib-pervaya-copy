@@ -78,9 +78,10 @@ export default function GroupsFiltersPanel({
     let idx = 1;
 
     [...selectedGroups].forEach((groupName) => {
-      const members = allUsers.filter((u) => u.group === groupName);
+      const members = allUsers.filter((u) => u.enrollments.some((e) => e.groupName === groupName));
       members.forEach((u) => {
-        u.assignments.forEach((a) => {
+        const assignments = u.enrollments.find((e) => e.groupName === groupName)?.assignments ?? [];
+        assignments.forEach((a) => {
           const info = getCourseInfo(a.courseId);
           rows.push([
             String(idx++),

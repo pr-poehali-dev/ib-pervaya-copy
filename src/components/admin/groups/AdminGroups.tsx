@@ -7,7 +7,8 @@ import GroupsBreadcrumbs from "./GroupsBreadcrumbs";
 import GroupsFiltersPanel from "./GroupsFiltersPanel";
 import GroupsTableView from "./GroupsTableView";
 import GroupsCardsView from "./GroupsCardsView";
-import { User, allCourses, groups } from "@/components/admin/types";
+import { User, Group, allCourses } from "@/components/admin/types";
+import { GROUPS_DATA } from "@/data/mockData";
 import { useRole } from "@/contexts/RoleContext";
 import { getGroupStatus, getAvgProgress } from "./groupsUtils";
 import { useGroupsData } from "./useGroupsData";
@@ -27,7 +28,7 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
   // ─── Вид и навигация ────────────────────────────────────────────────────────
   const [viewMode, setViewMode] = useState<ViewMode>("table");
   const [navLevel, setNavLevel] = useState<NavLevel>("groups");
-  const [activeGroup, setActiveGroup] = useState<string | null>(null);
+  const [activeGroup, setActiveGroup] = useState<Group | null>(null);
   const [activeMember, setActiveMember] = useState<User | null>(null);
 
   // ─── Фильтры ─────────────────────────────────────────────────────────────────
@@ -38,8 +39,8 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
   const [filterCourse, setFilterCourse] = useState("");
 
   // ─── Модалки ─────────────────────────────────────────────────────────────────
-  const [addCourseForGroup, setAddCourseForGroup] = useState<string | null>(null);
-  const [addCourseForMember, setAddCourseForMember] = useState<number | null>(null);
+  const [addCourseForGroup, setAddCourseForGroup] = useState<number | null>(null);
+  const [addCourseForMember, setAddCourseForMember] = useState<{ userId: number; groupId: number } | null>(null);
   const [statsUser, setStatsUser] = useState<User | null>(null);
   const [groupStatsFor, setGroupStatsFor] = useState<string | null>(null);
 
@@ -55,17 +56,19 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
     handleActivateAll,
   } = useGroupsData(users);
 
-  const filteredGroups = useMemo(() => {
-    return groups.filter((group) => {
-      const members = localUsers.filter((u) => u.group === group);
-      const status = getGroupStatus(members);
+  const filteredGroups = useMemo((): Group[] => {
+    return GROUPS_DATA.filter((g) => {
+      const members = localUsers.filter((u) => u.enrollments.some((e) => e.groupId === g.id));
+      const status = getGroupStatus(members, g.id);
       if (filterStatus !== "Все" && status !== filterStatus) return false;
       if (filterOrgs.length > 0 && !members.some((u) => filterOrgs.includes(u.organization))) return false;
-      if (filterGroups.length > 0 && !filterGroups.includes(group)) return false;
+      if (filterGroups.length > 0 && !filterGroups.includes(g.name)) return false;
       if (filterFio.length > 0 && !members.some((u) => filterFio.includes(u.name))) return false;
       if (filterCourse) {
         const course = allCourses.find((c) => c.title === filterCourse);
-        if (course && !members.some((u) => u.assignments.some((a) => a.courseId === course.id && a.active))) return false;
+        if (course && !members.some((u) =>
+          u.enrollments.some((e) => e.groupId === g.id && e.assignments.some((a) => a.courseId === course.id && a.active))
+        )) return false;
       }
       return true;
     });
@@ -90,7 +93,7 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
 
   // ─── Вспомогательные данные ───────────────────────────────────────────────────
   const orgOptions = useMemo(() => [...new Set(localUsers.map((u) => u.organization).filter(Boolean))], [localUsers]);
-  const groupOptions = useMemo(() => [...new Set(localUsers.map((u) => u.group))], [localUsers]);
+  const groupOptions = useMemo(() => GROUPS_DATA.map((g) => g.name), []);
   const fioOptions = useMemo(() => localUsers.map((u) => u.name), [localUsers]);
   const courseOptions = useMemo(() => allCourses.map((c) => c.title), []);
 
@@ -102,7 +105,7 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
     setFilterCourse("");
   };
 
-  function openGroup(group: string) {
+  function openGroup(group: Group) {
     setActiveGroup(group);
     setNavLevel("members");
   }
@@ -113,11 +116,16 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
   }
 
   const addCourseMemberUser = addCourseForMember !== null
-    ? localUsers.find((u) => u.id === addCourseForMember)
+    ? localUsers.find((u) => u.id === addCourseForMember.userId)
     : null;
 
+  // Собираем alreadyAssigned из всех enrollment'ов пользователя
+  const addCourseMemberAlreadyAssigned = addCourseMemberUser
+    ? addCourseMemberUser.enrollments.flatMap((e) => e.assignments.map((a) => a.courseId))
+    : [];
+
   const activeGroupMembers = activeGroup
-    ? localUsers.filter((u) => u.group === activeGroup)
+    ? localUsers.filter((u) => u.enrollments.some((e) => e.groupId === activeGroup.id))
     : [];
 
   return (
@@ -125,7 +133,7 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
       {/* Модалки */}
       {addCourseForGroup !== null && (
         <GroupAddCourseModal
-          title={`Назначить курс группе ${addCourseForGroup}`}
+          title={`Назначить курс группе ${GROUPS_DATA.find((g) => g.id === addCourseForGroup)?.name ?? ""}`}
           onClose={() => setAddCourseForGroup(null)}
           onAdd={(ids) => addCoursesToGroup(addCourseForGroup, ids)}
         />
@@ -134,8 +142,8 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
         <GroupAddCourseModal
           title={`Добавить курс — ${addCourseMemberUser.name}`}
           onClose={() => setAddCourseForMember(null)}
-          onAdd={(ids) => addCoursesToMember(addCourseForMember, ids)}
-          alreadyAssigned={addCourseMemberUser.assignments.map((a) => a.courseId)}
+          onAdd={(ids) => addCoursesToMember(addCourseForMember.userId, ids, addCourseForMember.groupId)}
+          alreadyAssigned={addCourseMemberAlreadyAssigned}
         />
       )}
       <UserStatsModal user={statsUser} onClose={() => setStatsUser(null)} />
@@ -159,7 +167,7 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
       {viewMode === "cards" && (
         <GroupsBreadcrumbs
           navLevel={navLevel}
-          activeGroup={activeGroup}
+          activeGroup={activeGroup?.name ?? null}
           activeMember={activeMember}
           activeGroupMembers={activeGroupMembers}
           onGoGroups={() => { setNavLevel("groups"); setActiveGroup(null); setActiveMember(null); }}
@@ -203,7 +211,7 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
       {viewMode === "table" && (
         <GroupsTableView
           filteredGroups={filteredGroups}
-          totalGroups={groups.length}
+          totalGroups={GROUPS_DATA.length}
           localUsers={localUsers}
           expandedGroups={expandedGroups}
           expandedMembers={expandedMembers}
@@ -214,10 +222,10 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
           onToggleGroup={toggleGroup}
           onToggleSelect={toggleSelectOne}
           onToggleMember={toggleMember}
-          onOpenGroupStats={(g) => setGroupStatsFor(g)}
+          onOpenGroupStats={(groupName) => setGroupStatsFor(groupName)}
           onOpenUserStats={(u) => setStatsUser(localUsers.find((lu) => lu.id === u.id) ?? u)}
-          onAddCourseForGroup={(g) => setAddCourseForGroup(g)}
-          onAddCourseForMember={(userId) => setAddCourseForMember(userId)}
+          onAddCourseForGroup={(groupId) => setAddCourseForGroup(groupId)}
+          onAddCourseForMember={(userId, groupId) => setAddCourseForMember({ userId, groupId })}
           onActivateCourse={activateCourse}
           onExtendCourse={extendCourse}
           onIssueCertificate={issueCertificate}
@@ -230,7 +238,7 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
         <GroupsCardsView
           navLevel={navLevel}
           filteredGroups={filteredGroups}
-          totalGroups={groups.length}
+          totalGroups={GROUPS_DATA.length}
           localUsers={localUsers}
           activeGroup={activeGroup}
           activeMember={activeMember}
@@ -240,8 +248,8 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
           onOpenGroup={openGroup}
           onOpenMember={openMember}
           onSetGroupStatsFor={(g) => setGroupStatsFor(g)}
-          onSetAddCourseForGroup={(g) => setAddCourseForGroup(g)}
-          onSetAddCourseForMember={(userId) => setAddCourseForMember(userId)}
+          onSetAddCourseForGroup={(groupId) => setAddCourseForGroup(groupId)}
+          onSetAddCourseForMember={(userId, groupId) => setAddCourseForMember({ userId, groupId })}
           onSetStatsUser={(u) => setStatsUser(u)}
           onActivateAll={handleActivateAll}
           onAddCourse={addCoursesToMember}

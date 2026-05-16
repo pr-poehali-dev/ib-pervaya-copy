@@ -5,6 +5,7 @@ import { User } from "@/components/admin/types";
 
 interface GroupCardProps {
   group: string;
+  groupId: number;
   members: User[];
   status: string;
   avgProgress: number;
@@ -35,12 +36,13 @@ function getGradient(group: string) {
   return GRADIENTS[Math.abs(hash) % GRADIENTS.length];
 }
 
-export default function GroupCard({ group, members, status, avgProgress, onOpen, onStats, onAddCourse, onActivateAll }: GroupCardProps) {
+export default function GroupCard({ group, groupId, members, status, avgProgress, onOpen, onStats, onAddCourse, onActivateAll }: GroupCardProps) {
   const gradient = getGradient(group);
   const organization = members[0]?.organization ?? "";
-  const completed = members.filter((u) => u.assignments.some((a) => a.progress === 100)).length;
-  const active = members.filter((u) => u.assignments.some((a) => a.active && a.progress > 0 && a.progress < 100)).length;
-  const totalAssignments = members.reduce((s, u) => s + u.assignments.filter((a) => a.active).length, 0);
+  const getAssignments = (u: User) => u.enrollments.find((e) => e.groupId === groupId)?.assignments ?? [];
+  const completed = members.filter((u) => getAssignments(u).some((a) => a.progress === 100)).length;
+  const active = members.filter((u) => getAssignments(u).some((a) => a.active && a.progress > 0 && a.progress < 100)).length;
+  const totalAssignments = members.reduce((s, u) => s + getAssignments(u).filter((a) => a.active).length, 0);
 
   const [sendCopied, setSendCopied] = useState(false);
 

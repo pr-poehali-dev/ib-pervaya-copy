@@ -20,22 +20,25 @@ export default function GroupStatsModal({ groupName, users, onClose, onUserStats
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   const members = useMemo(
-    () => users.filter((u) => u.group === groupName),
+    () => users.filter((u) => u.enrollments.some((e) => e.groupName === groupName)),
     [users, groupName]
   );
 
   const stats: GroupStats = useMemo(() => {
-    const totalAssignments = members.reduce((s, u) => s + u.assignments.filter((a) => a.active).length, 0);
-    const completed = members.reduce((s, u) => s + u.assignments.filter((a) => a.progress === 100).length, 0);
-    const certified = members.reduce((s, u) => s + u.assignments.filter((a) => a.status === "certified").length, 0);
-    const inProgress = members.reduce((s, u) => s + u.assignments.filter((a) => a.active && a.progress > 0 && a.progress < 100).length, 0);
+    const getAssignments = (u: (typeof members)[number]) =>
+      u.enrollments.find((e) => e.groupName === groupName)?.assignments ?? [];
+
+    const totalAssignments = members.reduce((s, u) => s + getAssignments(u).filter((a) => a.active).length, 0);
+    const completed = members.reduce((s, u) => s + getAssignments(u).filter((a) => a.progress === 100).length, 0);
+    const certified = members.reduce((s, u) => s + getAssignments(u).filter((a) => a.status === "certified").length, 0);
+    const inProgress = members.reduce((s, u) => s + getAssignments(u).filter((a) => a.active && a.progress > 0 && a.progress < 100).length, 0);
     const avgProgress = totalAssignments > 0
-      ? Math.round(members.reduce((s, u) => s + u.assignments.filter((a) => a.active).reduce((ss, a) => ss + a.progress, 0), 0) / totalAssignments)
+      ? Math.round(members.reduce((s, u) => s + getAssignments(u).filter((a) => a.active).reduce((ss, a) => ss + a.progress, 0), 0) / totalAssignments)
       : 0;
 
     const courseMap = new Map<number, { enrolled: number; completed: number; sumProgress: number }>();
     members.forEach((u) => {
-      u.assignments.forEach((a) => {
+      getAssignments(u).forEach((a) => {
         const prev = courseMap.get(a.courseId) ?? { enrolled: 0, completed: 0, sumProgress: 0 };
         courseMap.set(a.courseId, {
           enrolled: prev.enrolled + (a.active ? 1 : 0),
@@ -57,18 +60,19 @@ export default function GroupStatsModal({ groupName, users, onClose, onUserStats
     }).sort((a, b) => b.enrolled - a.enrolled);
 
     const memberStats = members.map((u) => {
-      const active = u.assignments.filter((a) => a.active);
+      const assignments = getAssignments(u);
+      const active = assignments.filter((a) => a.active);
       const avg = active.length > 0 ? Math.round(active.reduce((s, a) => s + a.progress, 0) / active.length) : 0;
       return {
         ...u,
         avgProgress: avg,
-        completedCount: u.assignments.filter((a) => a.progress === 100).length,
+        completedCount: assignments.filter((a) => a.progress === 100).length,
         activeCount: active.length,
       };
     }).sort((a, b) => b.avgProgress - a.avgProgress);
 
     return { totalAssignments, completed, certified, inProgress, avgProgress, courseStats, memberStats };
-  }, [members]);
+  }, [members, groupName]);
 
   if (!groupName) return null;
 
@@ -153,6 +157,7 @@ export default function GroupStatsModal({ groupName, users, onClose, onUserStats
             <GroupStatsMembersTab
               members={members}
               stats={stats}
+              groupName={groupName}
               selectedUser={selectedUser}
               onSelectUser={setSelectedUser}
               onUserStats={onUserStats}

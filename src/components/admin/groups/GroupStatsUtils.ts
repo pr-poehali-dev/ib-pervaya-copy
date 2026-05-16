@@ -49,10 +49,11 @@ export function exportCSV(groupName: string, members: User[]) {
   const rows: string[][] = [];
   let idx = 1;
   members.forEach((u) => {
-    if (u.assignments.length === 0) {
+    const assignments = u.enrollments.find((e) => e.groupName === groupName)?.assignments ?? [];
+    if (assignments.length === 0) {
       rows.push([String(idx++), u.organization, groupName, u.name, "—", "—", "—", "—", "—", "0"]);
     } else {
-      u.assignments.forEach((a) => {
+      assignments.forEach((a) => {
         const info = getCourseInfo(a.courseId);
         rows.push([
           String(idx++),
@@ -89,14 +90,15 @@ export function exportPDF(groupName: string, members: User[], stats: GroupStats)
     <tr><td>${c.title}</td><td>${c.enrolled}</td><td>${c.completed}</td><td><b>${c.avgProgress}%</b></td></tr>`).join("");
 
   let detailIdx = 1;
-  const detailRows = members.flatMap((u) =>
-    u.assignments.length === 0
+  const detailRows = members.flatMap((u) => {
+    const assignments = u.enrollments.find((e) => e.groupName === groupName)?.assignments ?? [];
+    return assignments.length === 0
       ? [`<tr><td>${detailIdx++}</td><td>${u.organization}</td><td>${groupName}</td><td>${u.name}</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>0</td></tr>`]
-      : u.assignments.map((a) => {
+      : assignments.map((a) => {
           const info = getCourseInfo(a.courseId);
           return `<tr><td>${detailIdx++}</td><td>${u.organization}</td><td>${groupName}</td><td>${u.name}</td><td>${info.title}</td><td>${a.activatedAt ?? "—"}</td><td>${a.completedAt ?? "—"}</td><td>${a.testPassedAt ?? "—"}</td><td>${a.testScore != null ? a.testScore + "%" : "—"}</td><td>${a.testScore != null ? 1 : 0}</td></tr>`;
-        })
-  ).join("");
+        });
+  }).join("");
 
   const html = `<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8">
 <title>Статистика группы ${groupName}</title>

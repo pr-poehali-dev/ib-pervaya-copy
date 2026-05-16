@@ -6,13 +6,6 @@ import { fmt, daysAgo, monthsAgo } from "@/data/dateUtils";
 
 export const ROLES: string[] = ["Студент", "Преподаватель", "Наблюдатель"];
 
-// ─── Группы (legacy, строковые) ───────────────────────────────────────────────
-
-export const GROUPS: string[] = [
-  "ПБ-2024/01", "ОТ-2024/02", "ЭНБ-2024/01", "ПБ-2024/02",
-  "ЭПБ-2026/01", "ОТ-2025/03", "ПБ-2025/03", "ЭНБ-2025/02",
-];
-
 // ─── Группы обучения ──────────────────────────────────────────────────────────
 // API: GET /api/groups → Group[]
 
@@ -27,6 +20,9 @@ export const GROUPS_DATA: Group[] = [
   { id: 8, name: "ЭНБ-2025/02",  tenantId: 1, clientOrganizationId: 3, clientOrganizationName: "ГУП «Энергосеть»",      inn: "7703456789", status: "active",   createdAt: daysAgo(20),   userIds: [20, 21],            courseIds: [201, 202] },
 ];
 
+// Вспомогательный массив для быстрого доступа к имени группы по id
+export const GROUPS: string[] = GROUPS_DATA.map((g) => g.name);
+
 // ─── Слушатели ────────────────────────────────────────────────────────────────
 // API: GET /api/users → User[]
 
@@ -36,14 +32,19 @@ export const INITIAL_USERS: User[] = [
     name: "Алина Иванова",
     email: "alina.ivanova@company.ru",
     initials: "АИ",
-    group: "ПБ-2024/01",
-    groupId: 1,
     organization: "ООО «ТехноПром»",
     clientOrganizationId: 1,
     role: "Студент",
-    assignments: [
-      { courseId: 101, active: true,  progress: 65,  assignedAt: daysAgo(5),   activatedAt: daysAgo(3),  status: "active",    dpoRequired: true  },
-      { courseId: 102, active: false, progress: 0,   assignedAt: daysAgo(10),                            status: "pending",   dpoRequired: true  },
+    assignments: [],
+    enrollments: [
+      {
+        groupId: 1,
+        groupName: "ПБ-2024/01",
+        assignments: [
+          { courseId: 101, active: true,  progress: 65,  assignedAt: daysAgo(5),   activatedAt: daysAgo(3),  status: "active",    dpoRequired: true  },
+          { courseId: 102, active: false, progress: 0,   assignedAt: daysAgo(10),                            status: "pending",   dpoRequired: true  },
+        ],
+      },
     ],
   },
   {
@@ -51,14 +52,19 @@ export const INITIAL_USERS: User[] = [
     name: "Дмитрий Смирнов",
     email: "d.smirnov@company.ru",
     initials: "ДС",
-    group: "ПБ-2024/01",
-    groupId: 1,
     organization: "ООО «ТехноПром»",
     clientOrganizationId: 1,
     role: "Студент",
-    assignments: [
-      { courseId: 101, active: true,  progress: 100, assignedAt: monthsAgo(2), activatedAt: monthsAgo(2), completedAt: monthsAgo(1), status: "certified", testScore: 92, testPassedAt: monthsAgo(1), dpoRequired: true },
-      { courseId: 102, active: false, progress: 0,   assignedAt: daysAgo(8),                              status: "pending",   dpoRequired: true  },
+    assignments: [],
+    enrollments: [
+      {
+        groupId: 1,
+        groupName: "ПБ-2024/01",
+        assignments: [
+          { courseId: 101, active: true,  progress: 100, assignedAt: monthsAgo(2), activatedAt: monthsAgo(2), completedAt: monthsAgo(1), status: "certified", testScore: 92, testPassedAt: monthsAgo(1), dpoRequired: true },
+          { courseId: 102, active: false, progress: 0,   assignedAt: daysAgo(8),                              status: "pending",   dpoRequired: true  },
+        ],
+      },
     ],
   },
   {
@@ -66,14 +72,18 @@ export const INITIAL_USERS: User[] = [
     name: "Мария Козлова",
     email: "m.kozlova@company.ru",
     initials: "МК",
-    group: "ОТ-2024/02",
-    groupId: 2,
     organization: "АО «СтройГрупп»",
     clientOrganizationId: 2,
     role: "Студент",
-    assignments: [
-      { courseId: 301, active: true,  progress: 45,  assignedAt: daysAgo(15),  activatedAt: daysAgo(14), status: "active",    dpoRequired: false },
-      { courseId: 101, active: false, progress: 0,   assignedAt: daysAgo(3),                             status: "pending",   dpoRequired: true  },
+    assignments: [],
+    enrollments: [
+      {
+        groupId: 2,
+        groupName: "ОТ-2024/02",
+        assignments: [
+          { courseId: 301, active: true,  progress: 45,  assignedAt: daysAgo(15),  activatedAt: daysAgo(14), status: "active",    dpoRequired: false },
+        ],
+      },
     ],
   },
   {
@@ -81,14 +91,25 @@ export const INITIAL_USERS: User[] = [
     name: "Иван Петров",
     email: "i.petrov@company.ru",
     initials: "ИП",
-    group: "ОТ-2024/02",
-    groupId: 2,
     organization: "АО «СтройГрупп»",
     clientOrganizationId: 2,
     role: "Студент",
-    assignments: [
-      { courseId: 201, active: true,  progress: 80,  assignedAt: daysAgo(20),  activatedAt: daysAgo(18), status: "active",    dpoRequired: true  },
-      { courseId: 301, active: true,  progress: 100, assignedAt: monthsAgo(1), activatedAt: monthsAgo(1), completedAt: daysAgo(5), status: "completed", testScore: 88, testPassedAt: daysAgo(5), dpoRequired: false },
+    assignments: [],
+    enrollments: [
+      {
+        groupId: 2,
+        groupName: "ОТ-2024/02",
+        assignments: [
+          { courseId: 301, active: true,  progress: 100, assignedAt: monthsAgo(1), activatedAt: monthsAgo(1), completedAt: daysAgo(5), status: "completed", testScore: 88, testPassedAt: daysAgo(5), dpoRequired: false },
+        ],
+      },
+      {
+        groupId: 3,
+        groupName: "ЭНБ-2024/01",
+        assignments: [
+          { courseId: 201, active: true,  progress: 80,  assignedAt: daysAgo(20),  activatedAt: daysAgo(18), status: "active",    dpoRequired: true  },
+        ],
+      },
     ],
   },
   {
@@ -96,14 +117,19 @@ export const INITIAL_USERS: User[] = [
     name: "Сергей Николаев",
     email: "s.nikolaev@company.ru",
     initials: "СН",
-    group: "ЭНБ-2024/01",
-    groupId: 3,
     organization: "ГУП «Энергосеть»",
     clientOrganizationId: 3,
     role: "Студент",
-    assignments: [
-      { courseId: 201, active: true,  progress: 55,  assignedAt: daysAgo(7),   activatedAt: daysAgo(6),  status: "active",    dpoRequired: true  },
-      { courseId: 202, active: false, progress: 0,   assignedAt: daysAgo(2),                             status: "pending",   dpoRequired: true  },
+    assignments: [],
+    enrollments: [
+      {
+        groupId: 3,
+        groupName: "ЭНБ-2024/01",
+        assignments: [
+          { courseId: 201, active: true,  progress: 55,  assignedAt: daysAgo(7),   activatedAt: daysAgo(6),  status: "active",    dpoRequired: true  },
+          { courseId: 202, active: false, progress: 0,   assignedAt: daysAgo(2),                             status: "pending",   dpoRequired: true  },
+        ],
+      },
     ],
   },
   {
@@ -111,14 +137,19 @@ export const INITIAL_USERS: User[] = [
     name: "Елена Соколова",
     email: "e.sokolova@company.ru",
     initials: "ЕС",
-    group: "ЭНБ-2024/01",
-    groupId: 3,
     organization: "ГУП «Энергосеть»",
     clientOrganizationId: 3,
     role: "Преподаватель",
-    assignments: [
-      { courseId: 201, active: true,  progress: 90,  assignedAt: monthsAgo(1), activatedAt: monthsAgo(1), status: "active",    dpoRequired: true  },
-      { courseId: 202, active: true,  progress: 100, assignedAt: monthsAgo(2), activatedAt: monthsAgo(2), completedAt: daysAgo(12), status: "certified", testScore: 96, testPassedAt: daysAgo(12), dpoRequired: true },
+    assignments: [],
+    enrollments: [
+      {
+        groupId: 3,
+        groupName: "ЭНБ-2024/01",
+        assignments: [
+          { courseId: 201, active: true,  progress: 90,  assignedAt: monthsAgo(1), activatedAt: monthsAgo(1), status: "active",    dpoRequired: true  },
+          { courseId: 202, active: true,  progress: 100, assignedAt: monthsAgo(2), activatedAt: monthsAgo(2), completedAt: daysAgo(12), status: "certified", testScore: 96, testPassedAt: daysAgo(12), dpoRequired: true },
+        ],
+      },
     ],
   },
   {
@@ -126,13 +157,18 @@ export const INITIAL_USERS: User[] = [
     name: "Андрей Лебедев",
     email: "a.lebedev@company.ru",
     initials: "АЛ",
-    group: "ПБ-2024/02",
-    groupId: 4,
     organization: "ПАО «МеталлСервис»",
     clientOrganizationId: 4,
     role: "Студент",
-    assignments: [
-      { courseId: 101, active: false, progress: 0, assignedAt: daysAgo(1), status: "pending", dpoRequired: true },
+    assignments: [],
+    enrollments: [
+      {
+        groupId: 4,
+        groupName: "ПБ-2024/02",
+        assignments: [
+          { courseId: 101, active: false, progress: 0, assignedAt: daysAgo(1), status: "pending", dpoRequired: true },
+        ],
+      },
     ],
   },
   {
@@ -140,14 +176,19 @@ export const INITIAL_USERS: User[] = [
     name: "Ольга Михайлова",
     email: "o.mikhailova@company.ru",
     initials: "ОМ",
-    group: "ПБ-2024/02",
-    groupId: 4,
     organization: "ПАО «МеталлСервис»",
     clientOrganizationId: 4,
     role: "Студент",
-    assignments: [
-      { courseId: 101, active: false, progress: 0, assignedAt: daysAgo(1), status: "pending", dpoRequired: true },
-      { courseId: 102, active: false, progress: 0, assignedAt: daysAgo(1), status: "pending", dpoRequired: true },
+    assignments: [],
+    enrollments: [
+      {
+        groupId: 4,
+        groupName: "ПБ-2024/02",
+        assignments: [
+          { courseId: 101, active: false, progress: 0, assignedAt: daysAgo(1), status: "pending", dpoRequired: true },
+          { courseId: 102, active: false, progress: 0, assignedAt: daysAgo(1), status: "pending", dpoRequired: true },
+        ],
+      },
     ],
   },
   {
@@ -155,14 +196,19 @@ export const INITIAL_USERS: User[] = [
     name: "Роман Зайцев",
     email: "r.zaitsev@himresurs.ru",
     initials: "РЗ",
-    group: "ЭПБ-2026/01",
-    groupId: 5,
     organization: "АО «ХимРесурс»",
     clientOrganizationId: 5,
     role: "Студент",
-    assignments: [
-      { courseId: 401, active: true,  progress: 78,  assignedAt: monthsAgo(3), activatedAt: monthsAgo(3), status: "active", dpoRequired: true },
-      { courseId: 402, active: true,  progress: 55,  assignedAt: monthsAgo(2), activatedAt: monthsAgo(2), status: "active", dpoRequired: true },
+    assignments: [],
+    enrollments: [
+      {
+        groupId: 5,
+        groupName: "ЭПБ-2026/01",
+        assignments: [
+          { courseId: 401, active: true,  progress: 78,  assignedAt: monthsAgo(3), activatedAt: monthsAgo(3), status: "active", dpoRequired: true },
+          { courseId: 402, active: true,  progress: 55,  assignedAt: monthsAgo(2), activatedAt: monthsAgo(2), status: "active", dpoRequired: true },
+        ],
+      },
     ],
   },
   {
@@ -170,14 +216,19 @@ export const INITIAL_USERS: User[] = [
     name: "Наталья Орлова",
     email: "n.orlova@himresurs.ru",
     initials: "НО",
-    group: "ЭПБ-2026/01",
-    groupId: 5,
     organization: "АО «ХимРесурс»",
     clientOrganizationId: 5,
     role: "Студент",
-    assignments: [
-      { courseId: 401, active: true,  progress: 100, assignedAt: monthsAgo(3), activatedAt: monthsAgo(3), completedAt: monthsAgo(1), status: "certified", testScore: 89, testPassedAt: monthsAgo(1), dpoRequired: true },
-      { courseId: 402, active: true,  progress: 40,  assignedAt: monthsAgo(2), activatedAt: monthsAgo(2), status: "active", dpoRequired: true },
+    assignments: [],
+    enrollments: [
+      {
+        groupId: 5,
+        groupName: "ЭПБ-2026/01",
+        assignments: [
+          { courseId: 401, active: true,  progress: 100, assignedAt: monthsAgo(3), activatedAt: monthsAgo(3), completedAt: monthsAgo(1), status: "certified", testScore: 89, testPassedAt: monthsAgo(1), dpoRequired: true },
+          { courseId: 402, active: true,  progress: 40,  assignedAt: monthsAgo(2), activatedAt: monthsAgo(2), status: "active", dpoRequired: true },
+        ],
+      },
     ],
   },
   {
@@ -185,14 +236,19 @@ export const INITIAL_USERS: User[] = [
     name: "Виктор Кузнецов",
     email: "v.kuznetsov@himresurs.ru",
     initials: "ВК",
-    group: "ЭПБ-2026/01",
-    groupId: 5,
     organization: "АО «ХимРесурс»",
     clientOrganizationId: 5,
     role: "Студент",
-    assignments: [
-      { courseId: 401, active: true,  progress: 100, assignedAt: monthsAgo(3), activatedAt: monthsAgo(3), completedAt: monthsAgo(1), status: "certified", testScore: 94, testPassedAt: monthsAgo(1), dpoRequired: true },
-      { courseId: 402, active: true,  progress: 100, assignedAt: monthsAgo(2), activatedAt: monthsAgo(2), completedAt: daysAgo(7),   status: "certified", testScore: 91, testPassedAt: daysAgo(7),   dpoRequired: true },
+    assignments: [],
+    enrollments: [
+      {
+        groupId: 5,
+        groupName: "ЭПБ-2026/01",
+        assignments: [
+          { courseId: 401, active: true,  progress: 100, assignedAt: monthsAgo(3), activatedAt: monthsAgo(3), completedAt: monthsAgo(1), status: "certified", testScore: 94, testPassedAt: monthsAgo(1), dpoRequired: true },
+          { courseId: 402, active: true,  progress: 100, assignedAt: monthsAgo(2), activatedAt: monthsAgo(2), completedAt: daysAgo(7),   status: "certified", testScore: 91, testPassedAt: daysAgo(7),   dpoRequired: true },
+        ],
+      },
     ],
   },
   {
@@ -200,14 +256,19 @@ export const INITIAL_USERS: User[] = [
     name: "Татьяна Белова",
     email: "t.belova@himresurs.ru",
     initials: "ТБ",
-    group: "ЭПБ-2026/01",
-    groupId: 5,
     organization: "АО «ХимРесурс»",
     clientOrganizationId: 5,
     role: "Студент",
-    assignments: [
-      { courseId: 401, active: false, progress: 30, assignedAt: monthsAgo(3), activatedAt: monthsAgo(2), status: "active",  dpoRequired: true },
-      { courseId: 402, active: false, progress: 0,  assignedAt: monthsAgo(1),                            status: "pending", dpoRequired: true },
+    assignments: [],
+    enrollments: [
+      {
+        groupId: 5,
+        groupName: "ЭПБ-2026/01",
+        assignments: [
+          { courseId: 401, active: false, progress: 30, assignedAt: monthsAgo(3), activatedAt: monthsAgo(2), status: "active",  dpoRequired: true },
+          { courseId: 402, active: false, progress: 0,  assignedAt: monthsAgo(1),                            status: "pending", dpoRequired: true },
+        ],
+      },
     ],
   },
   {
@@ -215,14 +276,19 @@ export const INITIAL_USERS: User[] = [
     name: "Алексей Морозов",
     email: "a.morozov@stroigrupp.ru",
     initials: "АМ",
-    group: "ОТ-2025/03",
-    groupId: 6,
     organization: "АО «СтройГрупп»",
     clientOrganizationId: 2,
     role: "Студент",
-    assignments: [
-      { courseId: 301, active: true,  progress: 60, assignedAt: monthsAgo(1), activatedAt: monthsAgo(1), status: "active",  dpoRequired: false },
-      { courseId: 302, active: false, progress: 0,  assignedAt: daysAgo(5),                              status: "pending", dpoRequired: false },
+    assignments: [],
+    enrollments: [
+      {
+        groupId: 6,
+        groupName: "ОТ-2025/03",
+        assignments: [
+          { courseId: 301, active: true,  progress: 60, assignedAt: monthsAgo(1), activatedAt: monthsAgo(1), status: "active",  dpoRequired: false },
+          { courseId: 302, active: false, progress: 0,  assignedAt: daysAgo(5),                              status: "pending", dpoRequired: false },
+        ],
+      },
     ],
   },
   {
@@ -230,14 +296,19 @@ export const INITIAL_USERS: User[] = [
     name: "Светлана Попова",
     email: "s.popova@stroigrupp.ru",
     initials: "СП",
-    group: "ОТ-2025/03",
-    groupId: 6,
     organization: "АО «СтройГрупп»",
     clientOrganizationId: 2,
     role: "Студент",
-    assignments: [
-      { courseId: 301, active: true,  progress: 100, assignedAt: monthsAgo(1), activatedAt: monthsAgo(1), completedAt: daysAgo(3), status: "completed", testScore: 85, testPassedAt: daysAgo(3), dpoRequired: false },
-      { courseId: 302, active: true,  progress: 70,  assignedAt: daysAgo(5),   activatedAt: daysAgo(4),   status: "active", dpoRequired: false },
+    assignments: [],
+    enrollments: [
+      {
+        groupId: 6,
+        groupName: "ОТ-2025/03",
+        assignments: [
+          { courseId: 301, active: true,  progress: 100, assignedAt: monthsAgo(1), activatedAt: monthsAgo(1), completedAt: daysAgo(3), status: "completed", testScore: 85, testPassedAt: daysAgo(3), dpoRequired: false },
+          { courseId: 302, active: true,  progress: 70,  assignedAt: daysAgo(5),   activatedAt: daysAgo(4),   status: "active", dpoRequired: false },
+        ],
+      },
     ],
   },
   {
@@ -245,14 +316,19 @@ export const INITIAL_USERS: User[] = [
     name: "Дмитрий Волков",
     email: "d.volkov@stroigrupp.ru",
     initials: "ДВ",
-    group: "ОТ-2025/03",
-    groupId: 6,
     organization: "АО «СтройГрупп»",
     clientOrganizationId: 2,
     role: "Студент",
-    assignments: [
-      { courseId: 301, active: true,  progress: 25, assignedAt: monthsAgo(1), activatedAt: daysAgo(10), status: "active",  dpoRequired: false },
-      { courseId: 302, active: false, progress: 0,  assignedAt: daysAgo(5),                             status: "pending", dpoRequired: false },
+    assignments: [],
+    enrollments: [
+      {
+        groupId: 6,
+        groupName: "ОТ-2025/03",
+        assignments: [
+          { courseId: 301, active: true,  progress: 25, assignedAt: monthsAgo(1), activatedAt: daysAgo(10), status: "active",  dpoRequired: false },
+          { courseId: 302, active: false, progress: 0,  assignedAt: daysAgo(5),                             status: "pending", dpoRequired: false },
+        ],
+      },
     ],
   },
   {
@@ -260,14 +336,19 @@ export const INITIAL_USERS: User[] = [
     name: "Игорь Федоров",
     email: "i.fedorov@gazpromservis.ru",
     initials: "ИФ",
-    group: "ПБ-2025/03",
-    groupId: 7,
     organization: "ООО «ГазПромСервис»",
     clientOrganizationId: 6,
     role: "Студент",
-    assignments: [
-      { courseId: 101, active: true,  progress: 100, assignedAt: monthsAgo(2), activatedAt: monthsAgo(2), completedAt: monthsAgo(1), status: "certified", testScore: 97, testPassedAt: monthsAgo(1), dpoRequired: true },
-      { courseId: 103, active: true,  progress: 85,  assignedAt: monthsAgo(1), activatedAt: monthsAgo(1), status: "active", dpoRequired: true },
+    assignments: [],
+    enrollments: [
+      {
+        groupId: 7,
+        groupName: "ПБ-2025/03",
+        assignments: [
+          { courseId: 101, active: true,  progress: 100, assignedAt: monthsAgo(2), activatedAt: monthsAgo(2), completedAt: monthsAgo(1), status: "certified", testScore: 97, testPassedAt: monthsAgo(1), dpoRequired: true },
+          { courseId: 103, active: true,  progress: 85,  assignedAt: monthsAgo(1), activatedAt: monthsAgo(1), status: "active", dpoRequired: true },
+        ],
+      },
     ],
   },
   {
@@ -275,14 +356,19 @@ export const INITIAL_USERS: User[] = [
     name: "Юлия Новикова",
     email: "yu.novikova@gazpromservis.ru",
     initials: "ЮН",
-    group: "ПБ-2025/03",
-    groupId: 7,
     organization: "ООО «ГазПромСервис»",
     clientOrganizationId: 6,
     role: "Студент",
-    assignments: [
-      { courseId: 101, active: true,  progress: 72, assignedAt: monthsAgo(2), activatedAt: monthsAgo(2), status: "active",  dpoRequired: true },
-      { courseId: 103, active: false, progress: 0,  assignedAt: monthsAgo(1),                            status: "pending", dpoRequired: true },
+    assignments: [],
+    enrollments: [
+      {
+        groupId: 7,
+        groupName: "ПБ-2025/03",
+        assignments: [
+          { courseId: 101, active: true,  progress: 72, assignedAt: monthsAgo(2), activatedAt: monthsAgo(2), status: "active",  dpoRequired: true },
+          { courseId: 103, active: false, progress: 0,  assignedAt: monthsAgo(1),                            status: "pending", dpoRequired: true },
+        ],
+      },
     ],
   },
   {
@@ -290,14 +376,19 @@ export const INITIAL_USERS: User[] = [
     name: "Павел Семёнов",
     email: "p.semenov@gazpromservis.ru",
     initials: "ПС",
-    group: "ПБ-2025/03",
-    groupId: 7,
     organization: "ООО «ГазПромСервис»",
     clientOrganizationId: 6,
     role: "Студент",
-    assignments: [
-      { courseId: 101, active: true,  progress: 100, assignedAt: monthsAgo(2), activatedAt: monthsAgo(2), completedAt: monthsAgo(1), status: "certified", testScore: 82, testPassedAt: monthsAgo(1), dpoRequired: true },
-      { courseId: 103, active: true,  progress: 50,  assignedAt: monthsAgo(1), activatedAt: monthsAgo(1), status: "active", dpoRequired: true },
+    assignments: [],
+    enrollments: [
+      {
+        groupId: 7,
+        groupName: "ПБ-2025/03",
+        assignments: [
+          { courseId: 101, active: true,  progress: 100, assignedAt: monthsAgo(2), activatedAt: monthsAgo(2), completedAt: monthsAgo(1), status: "certified", testScore: 82, testPassedAt: monthsAgo(1), dpoRequired: true },
+          { courseId: 103, active: true,  progress: 50,  assignedAt: monthsAgo(1), activatedAt: monthsAgo(1), status: "active", dpoRequired: true },
+        ],
+      },
     ],
   },
   {
@@ -305,14 +396,19 @@ export const INITIAL_USERS: User[] = [
     name: "Марина Титова",
     email: "m.titova@gazpromservis.ru",
     initials: "МТ",
-    group: "ПБ-2025/03",
-    groupId: 7,
     organization: "ООО «ГазПромСервис»",
     clientOrganizationId: 6,
     role: "Студент",
-    assignments: [
-      { courseId: 101, active: false, progress: 0, assignedAt: monthsAgo(2), status: "pending", dpoRequired: true },
-      { courseId: 103, active: false, progress: 0, assignedAt: monthsAgo(1), status: "pending", dpoRequired: true },
+    assignments: [],
+    enrollments: [
+      {
+        groupId: 7,
+        groupName: "ПБ-2025/03",
+        assignments: [
+          { courseId: 101, active: false, progress: 0, assignedAt: monthsAgo(2), status: "pending", dpoRequired: true },
+          { courseId: 103, active: false, progress: 0, assignedAt: monthsAgo(1), status: "pending", dpoRequired: true },
+        ],
+      },
     ],
   },
   {
@@ -320,14 +416,19 @@ export const INITIAL_USERS: User[] = [
     name: "Константин Жуков",
     email: "k.zhukov@energoset.ru",
     initials: "КЖ",
-    group: "ЭНБ-2025/02",
-    groupId: 8,
     organization: "ГУП «Энергосеть»",
     clientOrganizationId: 3,
     role: "Студент",
-    assignments: [
-      { courseId: 201, active: true,  progress: 40, assignedAt: daysAgo(20), activatedAt: daysAgo(18), status: "active",  dpoRequired: true },
-      { courseId: 202, active: false, progress: 0,  assignedAt: daysAgo(5),                            status: "pending", dpoRequired: true },
+    assignments: [],
+    enrollments: [
+      {
+        groupId: 8,
+        groupName: "ЭНБ-2025/02",
+        assignments: [
+          { courseId: 201, active: true,  progress: 40, assignedAt: daysAgo(20), activatedAt: daysAgo(18), status: "active",  dpoRequired: true },
+          { courseId: 202, active: false, progress: 0,  assignedAt: daysAgo(5),                            status: "pending", dpoRequired: true },
+        ],
+      },
     ],
   },
   {
@@ -335,14 +436,19 @@ export const INITIAL_USERS: User[] = [
     name: "Анастасия Громова",
     email: "a.gromova@energoset.ru",
     initials: "АГ",
-    group: "ЭНБ-2025/02",
-    groupId: 8,
     organization: "ГУП «Энергосеть»",
     clientOrganizationId: 3,
     role: "Студент",
-    assignments: [
-      { courseId: 201, active: true,  progress: 65, assignedAt: daysAgo(20), activatedAt: daysAgo(19), status: "active", dpoRequired: true },
-      { courseId: 202, active: true,  progress: 20, assignedAt: daysAgo(5),  activatedAt: daysAgo(4),  status: "active", dpoRequired: true },
+    assignments: [],
+    enrollments: [
+      {
+        groupId: 8,
+        groupName: "ЭНБ-2025/02",
+        assignments: [
+          { courseId: 201, active: true,  progress: 65, assignedAt: daysAgo(20), activatedAt: daysAgo(19), status: "active", dpoRequired: true },
+          { courseId: 202, active: true,  progress: 20, assignedAt: daysAgo(5),  activatedAt: daysAgo(4),  status: "active", dpoRequired: true },
+        ],
+      },
     ],
   },
   {
@@ -350,14 +456,19 @@ export const INITIAL_USERS: User[] = [
     name: "Сергей Эксперт",
     email: "s.expert@expertpb.ru",
     initials: "СЭ",
-    group: "ЭПБ-2026/01",
-    groupId: 5,
     organization: "ООО «ЭкспертПБ»",
     clientOrganizationId: 5,
     role: "Студент",
-    assignments: [
-      { courseId: 401, active: true,  progress: 20, assignedAt: daysAgo(10), activatedAt: daysAgo(8), status: "active",  dpoRequired: false },
-      { courseId: 402, active: false, progress: 0,  assignedAt: daysAgo(3),                           status: "pending", dpoRequired: false },
+    assignments: [],
+    enrollments: [
+      {
+        groupId: 5,
+        groupName: "ЭПБ-2026/01",
+        assignments: [
+          { courseId: 401, active: true,  progress: 20, assignedAt: daysAgo(10), activatedAt: daysAgo(8), status: "active",  dpoRequired: false },
+          { courseId: 402, active: false, progress: 0,  assignedAt: daysAgo(3),                           status: "pending", dpoRequired: false },
+        ],
+      },
     ],
   },
 ];

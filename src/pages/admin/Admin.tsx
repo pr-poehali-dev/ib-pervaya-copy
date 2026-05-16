@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import { useStats } from "@/contexts/StatsContext";
 import { useRole } from "@/contexts/RoleContext";
 import { useAdminData } from "@/hooks/useAdminData";
-import { CERTIFICATES, TENANTS } from "@/data/mockData";
+import { CERTIFICATES, TENANTS, GROUPS_DATA } from "@/data/mockData";
 import Layout from "@/components/layout/Layout";
 import DeadlineAlerts from "@/components/shared/DeadlineAlerts";
 import AdminHeader from "@/components/admin/AdminHeader";
@@ -14,7 +14,6 @@ import AdminTabContent from "@/components/admin/AdminTabContent";
 export default function Admin() {
   const {
     users,
-    groups,
     search,
     setSearch,
     filteredUsers,
@@ -53,7 +52,7 @@ export default function Admin() {
   const [newOrg, setNewOrg] = useState("");
   const [newInn, setNewInn] = useState("");
   const [newEmail, setNewEmail] = useState("");
-  const [newGroup, setNewGroup] = useState(groups[0] ?? "");
+  const [newGroupId, setNewGroupId] = useState<number | null>(GROUPS_DATA[0]?.id ?? null);
   const [newRole, setNewRole] = useState("Студент");
   const [selectedCourses, setSelectedCourses] = useState<number[]>([]);
   const [showCoursesPicker, setShowCoursesPicker] = useState(false);
@@ -61,7 +60,7 @@ export default function Admin() {
   const [showGroupDropdown, setShowGroupDropdown] = useState(false);
   const [selectedListenerGroup, setSelectedListenerGroup] = useState("");
   const [newGroupForListener, setNewGroupForListener] = useState("");
-  const [availableGroups, setAvailableGroups] = useState<string[]>([...groups]);
+  const [availableGroups, setAvailableGroups] = useState<string[]>(GROUPS_DATA.map((g) => g.name));
   const [nameError, setNameError] = useState("");
   const [emailError, setEmailError] = useState("");
 
@@ -77,12 +76,14 @@ export default function Admin() {
     else setEmailError("");
     if (!valid) return;
 
+    const selectedGroup = newGroupId !== null ? GROUPS_DATA.find((g) => g.id === newGroupId) : null;
     addUser({
       lastName: newLastName,
       firstName: newFirstName,
       middleName: newMiddleName,
       email: newEmail,
-      group: newGroup,
+      groupId: selectedGroup?.id,
+      groupName: selectedGroup?.name,
       role: newRole,
       organization: newOrg,
       courseIds: selectedCourses,
@@ -91,15 +92,19 @@ export default function Admin() {
     setShowAddUser(false);
     setNewLastName(""); setNewFirstName(""); setNewMiddleName("");
     setNewOrg(""); setNewEmail(""); setNewInn("");
-    setNewGroup(groups[0] ?? ""); setNewRole("Студент");
+    setNewGroupId(GROUPS_DATA[0]?.id ?? null); setNewRole("Студент");
     setSelectedCourses([]); setSelectedListenerGroup(""); setShowGroupDropdown(false);
   };
 
   // ─── Синхронизация со StatsContext ───────────────────────────────────────
   const { setStats } = useStats();
   useEffect(() => {
-    const inProgress = users.filter((u) => u.assignments.some((a) => a.active && a.progress > 0 && a.progress < 100)).length;
-    const pending = users.filter((u) => u.assignments.some((a) => a.active && a.status === "pending")).length;
+    const allUserAssignments = (u: (typeof users)[number]) => [
+      ...u.assignments,
+      ...u.enrollments.flatMap((e) => e.assignments),
+    ];
+    const inProgress = users.filter((u) => allUserAssignments(u).some((a) => a.active && a.progress > 0 && a.progress < 100)).length;
+    const pending = users.filter((u) => allUserAssignments(u).some((a) => a.active && a.status === "pending")).length;
     setStats({
       subscriptionsLeft: 100,
       subscriptionsUsed: totalAssignments,
@@ -178,7 +183,10 @@ export default function Admin() {
           selectedListenerGroup={selectedListenerGroup} setSelectedListenerGroup={setSelectedListenerGroup}
           newGroupForListener={newGroupForListener} setNewGroupForListener={setNewGroupForListener}
           availableGroups={availableGroups} setAvailableGroups={setAvailableGroups}
-          setNewGroup={setNewGroup}
+          setNewGroup={(name) => {
+            const found = GROUPS_DATA.find((g) => g.name === name);
+            setNewGroupId(found?.id ?? null);
+          }}
           onSave={handleAddUser}
         />
 

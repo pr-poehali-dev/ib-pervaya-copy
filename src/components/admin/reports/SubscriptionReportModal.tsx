@@ -41,29 +41,53 @@ export default function SubscriptionReportModal({ open, onClose, users }: Subscr
   const orgOptions = useMemo(() => ["Все", ...Array.from(new Set(users.map((u) => u.organization ?? "").filter(Boolean))).sort()], [users]);
   const groupOptions = useMemo(() => {
     const base = filterOrg === "Все" ? users : users.filter((u) => (u.organization ?? "") === filterOrg);
-    return ["Все", ...Array.from(new Set(base.map((u) => u.group))).sort()];
+    const names = base.flatMap((u) => u.enrollments.map((e) => e.groupName));
+    return ["Все", ...Array.from(new Set(names)).sort()];
   }, [users, filterOrg]);
 
   const lineItems = useMemo<LineItem[]>(() => {
     const items: LineItem[] = [];
     users.forEach((u) => {
       if (filterOrg !== "Все" && (u.organization ?? "") !== filterOrg) return;
-      if (filterGroup !== "Все" && u.group !== filterGroup) return;
-      u.assignments.forEach((a) => {
-        if (inPeriod(a.assignedAt, from, to)) {
-          items.push({
-            userId: u.id,
-            initials: u.initials,
-            name: u.name,
-            organization: u.organization ?? "",
-            group: u.group,
-            email: u.email,
-            courseId: a.courseId,
-            courseTitle: getCourseTitle(a.courseId),
-            assignedAt: a.assignedAt,
-          });
-        }
+      const enrollmentsToProcess = filterGroup !== "Все"
+        ? u.enrollments.filter((e) => e.groupName === filterGroup)
+        : u.enrollments;
+      // Group assignments
+      enrollmentsToProcess.forEach((e) => {
+        e.assignments.forEach((a) => {
+          if (inPeriod(a.assignedAt, from, to)) {
+            items.push({
+              userId: u.id,
+              initials: u.initials,
+              name: u.name,
+              organization: u.organization ?? "",
+              group: e.groupName,
+              email: u.email,
+              courseId: a.courseId,
+              courseTitle: getCourseTitle(a.courseId),
+              assignedAt: a.assignedAt,
+            });
+          }
+        });
       });
+      // Individual assignments (only when not filtering by specific group)
+      if (filterGroup === "Все") {
+        u.assignments.forEach((a) => {
+          if (inPeriod(a.assignedAt, from, to)) {
+            items.push({
+              userId: u.id,
+              initials: u.initials,
+              name: u.name,
+              organization: u.organization ?? "",
+              group: "—",
+              email: u.email,
+              courseId: a.courseId,
+              courseTitle: getCourseTitle(a.courseId),
+              assignedAt: a.assignedAt,
+            });
+          }
+        });
+      }
     });
     return items;
   }, [users, from, to, filterOrg, filterGroup]);

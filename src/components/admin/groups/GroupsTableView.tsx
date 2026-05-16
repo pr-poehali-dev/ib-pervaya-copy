@@ -1,10 +1,9 @@
 import Icon from "@/components/ui/icon";
 import GroupTableRow from "./GroupTableRow";
-import { User } from "@/components/admin/types";
-import { GROUPS_DATA } from "@/data/mockData";
+import { User, Group } from "@/components/admin/types";
 
 interface GroupsTableViewProps {
-  filteredGroups: string[];
+  filteredGroups: Group[];
   totalGroups: number;
   localUsers: User[];
   expandedGroups: Set<string>;
@@ -16,14 +15,14 @@ interface GroupsTableViewProps {
   onToggleGroup: (group: string) => void;
   onToggleSelect: (group: string) => void;
   onToggleMember: (userId: number) => void;
-  onOpenGroupStats: (group: string) => void;
+  onOpenGroupStats: (groupName: string) => void;
   onOpenUserStats: (u: User) => void;
-  onAddCourseForGroup: (group: string) => void;
-  onAddCourseForMember: (userId: number) => void;
-  onActivateCourse: (userId: number, courseId: number, date?: string) => void;
-  onExtendCourse: (userId: number, courseId: number) => void;
-  onIssueCertificate: (userId: number, courseId: number) => void;
-  onToggleAssignment: (userId: number, courseId: number) => void;
+  onAddCourseForGroup: (groupId: number) => void;
+  onAddCourseForMember: (userId: number, groupId: number) => void;
+  onActivateCourse: (userId: number, courseId: number, date?: string, groupId?: number) => void;
+  onExtendCourse: (userId: number, courseId: number, groupId?: number) => void;
+  onIssueCertificate: (userId: number, courseId: number, groupId?: number) => void;
+  onToggleAssignment: (userId: number, courseId: number, groupId?: number) => void;
 }
 
 export default function GroupsTableView({
@@ -82,28 +81,25 @@ export default function GroupsTableView({
             </thead>
             <tbody>
               {filteredGroups.map((group, idx) => {
-                const members = localUsers.filter((u) => u.group === group);
-                const organization = members[0]?.organization ?? "";
-                const groupData = GROUPS_DATA.find((g) => g.name === group);
-                const inn = groupData?.inn ?? "";
+                const members = localUsers.filter((u) => u.enrollments.some((e) => e.groupId === group.id));
                 return (
                   <GroupTableRow
-                    key={group}
+                    key={group.id}
                     group={group}
                     idx={idx}
-                    organization={organization}
-                    inn={inn}
+                    organization={group.clientOrganizationName ?? members[0]?.organization ?? ""}
+                    inn={group.inn ?? ""}
                     members={members}
-                    isExpanded={expandedGroups.has(group)}
-                    isSelected={selectedGroups.has(group)}
+                    isExpanded={expandedGroups.has(group.name)}
+                    isSelected={selectedGroups.has(group.name)}
                     expandedMembers={expandedMembers}
                     onToggleGroup={onToggleGroup}
                     onToggleSelect={onToggleSelect}
                     onToggleMember={onToggleMember}
-                    onOpenGroupStats={(g) => onOpenGroupStats(g)}
+                    onOpenGroupStats={(name) => onOpenGroupStats(name)}
                     onOpenUserStats={(u) => onOpenUserStats(localUsers.find((lu) => lu.id === u.id) ?? u)}
-                    onAddCourseForGroup={(g) => onAddCourseForGroup(g)}
-                    onAddCourseForMember={(userId) => onAddCourseForMember(userId)}
+                    onAddCourseForGroup={(groupId) => onAddCourseForGroup(groupId)}
+                    onAddCourseForMember={(userId, groupId) => onAddCourseForMember(userId, groupId)}
                     onActivateCourse={onActivateCourse}
                     onExtendCourse={onExtendCourse}
                     onIssueCertificate={onIssueCertificate}

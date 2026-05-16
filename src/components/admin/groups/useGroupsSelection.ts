@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { Group } from "@/types/admin";
 
-export function useGroupsSelection(filteredGroups: string[]) {
+export function useGroupsSelection(filteredGroups: Group[]) {
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [expandedMembers, setExpandedMembers] = useState<Set<number>>(new Set());
   const [selectedGroups, setSelectedGroups] = useState<Set<string>>(new Set());
@@ -33,14 +34,14 @@ export function useGroupsSelection(filteredGroups: string[]) {
     return () => document.removeEventListener("mousedown", handler);
   }, [actionsOpen]);
 
-  const allChecked = filteredGroups.length > 0 && filteredGroups.every((g) => selectedGroups.has(g));
-  const someChecked = filteredGroups.some((g) => selectedGroups.has(g));
+  const allChecked = filteredGroups.length > 0 && filteredGroups.every((g) => selectedGroups.has(g.name));
+  const someChecked = filteredGroups.some((g) => selectedGroups.has(g.name));
 
   const toggleSelectAll = () => {
     if (allChecked) {
-      setSelectedGroups((prev) => { const next = new Set(prev); filteredGroups.forEach((g) => next.delete(g)); return next; });
+      setSelectedGroups((prev) => { const next = new Set(prev); filteredGroups.forEach((g) => next.delete(g.name)); return next; });
     } else {
-      setSelectedGroups((prev) => { const next = new Set(prev); filteredGroups.forEach((g) => next.add(g)); return next; });
+      setSelectedGroups((prev) => { const next = new Set(prev); filteredGroups.forEach((g) => next.add(g.name)); return next; });
     }
   };
 

@@ -5,67 +5,118 @@ import { today } from "./groupsUtils";
 export function useGroupsData(initialUsers: User[]) {
   const [localUsers, setLocalUsers] = useState<User[]>(initialUsers);
 
-  const addCoursesToMember = (userId: number, courseIds: number[]) => {
+  const addCoursesToMember = (userId: number, courseIds: number[], groupId: number) => {
     setLocalUsers((prev) => prev.map((u) => {
       if (u.id !== userId) return u;
+      const enrollment = u.enrollments.find((e) => e.groupId === groupId);
+      if (!enrollment) return u;
       const newAssignments: CourseAssignment[] = courseIds
-        .filter((id) => !u.assignments.some((a) => a.courseId === id))
+        .filter((id) => !enrollment.assignments.some((a) => a.courseId === id))
         .map((id) => ({ courseId: id, active: true, progress: 0, assignedAt: today(), status: "pending" as CourseStatus }));
-      return { ...u, assignments: [...u.assignments, ...newAssignments] };
+      return {
+        ...u,
+        enrollments: u.enrollments.map((e) =>
+          e.groupId !== groupId ? e : { ...e, assignments: [...e.assignments, ...newAssignments] }
+        ),
+      };
     }));
   };
 
-  const addCoursesToGroup = (group: string, courseIds: number[]) => {
+  const addCoursesToGroup = (groupId: number, courseIds: number[]) => {
     setLocalUsers((prev) => prev.map((u) => {
-      if (u.group !== group) return u;
+      const enrollment = u.enrollments.find((e) => e.groupId === groupId);
+      if (!enrollment) return u;
       const newAssignments: CourseAssignment[] = courseIds
-        .filter((id) => !u.assignments.some((a) => a.courseId === id))
+        .filter((id) => !enrollment.assignments.some((a) => a.courseId === id))
         .map((id) => ({ courseId: id, active: true, progress: 0, assignedAt: today(), status: "pending" as CourseStatus }));
-      return { ...u, assignments: [...u.assignments, ...newAssignments] };
+      return {
+        ...u,
+        enrollments: u.enrollments.map((e) =>
+          e.groupId !== groupId ? e : { ...e, assignments: [...e.assignments, ...newAssignments] }
+        ),
+      };
     }));
   };
 
-  const activateCourse = (userId: number, courseId: number, date?: string) => {
+  const activateCourse = (userId: number, courseId: number, date?: string, groupId?: number) => {
     setLocalUsers((prev) => prev.map((u) => {
       if (u.id !== userId) return u;
-      return { ...u, assignments: u.assignments.map((a) =>
-        a.courseId !== courseId ? a : { ...a, activatedAt: date ?? today(), active: true, status: "active" as CourseStatus, progress: 0 }
-      )};
+      return {
+        ...u,
+        enrollments: u.enrollments.map((e) => {
+          if (groupId !== undefined && e.groupId !== groupId) return e;
+          return {
+            ...e,
+            assignments: e.assignments.map((a) =>
+              a.courseId !== courseId ? a : { ...a, activatedAt: date ?? today(), active: true, status: "active" as CourseStatus, progress: 0 }
+            ),
+          };
+        }),
+      };
     }));
   };
 
-  const extendCourse = (userId: number, courseId: number) => {
+  const extendCourse = (userId: number, courseId: number, groupId?: number) => {
     setLocalUsers((prev) => prev.map((u) => {
       if (u.id !== userId) return u;
-      return { ...u, assignments: u.assignments.map((a) =>
-        a.courseId !== courseId ? a : { ...a, status: "active" as CourseStatus }
-      )};
+      return {
+        ...u,
+        enrollments: u.enrollments.map((e) => {
+          if (groupId !== undefined && e.groupId !== groupId) return e;
+          return {
+            ...e,
+            assignments: e.assignments.map((a) =>
+              a.courseId !== courseId ? a : { ...a, status: "active" as CourseStatus }
+            ),
+          };
+        }),
+      };
     }));
   };
 
-  const issueCertificate = (userId: number, courseId: number) => {
+  const issueCertificate = (userId: number, courseId: number, groupId?: number) => {
     setLocalUsers((prev) => prev.map((u) => {
       if (u.id !== userId) return u;
-      return { ...u, assignments: u.assignments.map((a) =>
-        a.courseId !== courseId ? a : { ...a, status: "certified" as CourseStatus, progress: 100, completedAt: a.completedAt ?? today() }
-      )};
+      return {
+        ...u,
+        enrollments: u.enrollments.map((e) => {
+          if (groupId !== undefined && e.groupId !== groupId) return e;
+          return {
+            ...e,
+            assignments: e.assignments.map((a) =>
+              a.courseId !== courseId ? a : { ...a, status: "certified" as CourseStatus, progress: 100, completedAt: a.completedAt ?? today() }
+            ),
+          };
+        }),
+      };
     }));
   };
 
-  const toggleAssignment = (userId: number, courseId: number) => {
+  const toggleAssignment = (userId: number, courseId: number, groupId?: number) => {
     setLocalUsers((prev) => prev.map((u) => {
       if (u.id !== userId) return u;
-      return { ...u, assignments: u.assignments.map((a) =>
-        a.courseId !== courseId ? a : { ...a, active: !a.active }
-      )};
+      return {
+        ...u,
+        enrollments: u.enrollments.map((e) => {
+          if (groupId !== undefined && e.groupId !== groupId) return e;
+          return {
+            ...e,
+            assignments: e.assignments.map((a) =>
+              a.courseId !== courseId ? a : { ...a, active: !a.active }
+            ),
+          };
+        }),
+      };
     }));
   };
 
-  const handleActivateAll = (_group: string, members: User[]) => {
+  const handleActivateAll = (groupId: number, members: User[]) => {
     const date = today();
     members.forEach((u) => {
-      u.assignments.filter((a) => !a.activatedAt).forEach((a) => {
-        activateCourse(u.id, a.courseId, date);
+      const enrollment = u.enrollments.find((e) => e.groupId === groupId);
+      if (!enrollment) return;
+      enrollment.assignments.filter((a) => !a.activatedAt).forEach((a) => {
+        activateCourse(u.id, a.courseId, date, groupId);
       });
     });
   };

@@ -124,13 +124,15 @@ export default function CertRegistryModal({ open, onClose, users }: CertRegistry
   const orgOptions = useMemo(() => ["Все", ...Array.from(new Set(users.map((u) => u.organization ?? "").filter(Boolean))).sort()], [users]);
   const groupOptions = useMemo(() => {
     const base = filterOrg === "Все" ? users : users.filter((u) => (u.organization ?? "") === filterOrg);
-    return ["Все", ...Array.from(new Set(base.map((u) => u.group))).sort()];
+    const names = base.flatMap((u) => u.enrollments.map((e) => e.groupName));
+    return ["Все", ...Array.from(new Set(names)).sort()];
   }, [users, filterOrg]);
 
   const allEntries = useMemo<CertEntry[]>(() => {
     const entries: CertEntry[] = [];
     let num = 1;
     users.forEach((u) => {
+      // Individual certified assignments
       u.assignments
         .filter((a) => a.status === "certified")
         .forEach((a) => {
@@ -141,7 +143,7 @@ export default function CertRegistryModal({ open, onClose, users }: CertRegistry
             name: u.name,
             email: u.email,
             organization: u.organization ?? "",
-            group: u.group,
+            group: "—",
             role: u.role,
             courseId: a.courseId,
             courseTitle: getCourseTitle(a.courseId),
@@ -149,6 +151,27 @@ export default function CertRegistryModal({ open, onClose, users }: CertRegistry
             assignedAt: a.assignedAt,
           });
         });
+      // Group certified assignments
+      u.enrollments.forEach((e) => {
+        e.assignments
+          .filter((a) => a.status === "certified")
+          .forEach((a) => {
+            entries.push({
+              num: num++,
+              userId: u.id,
+              initials: u.initials,
+              name: u.name,
+              email: u.email,
+              organization: u.organization ?? "",
+              group: e.groupName,
+              role: u.role,
+              courseId: a.courseId,
+              courseTitle: getCourseTitle(a.courseId),
+              issuedAt: a.completedAt ?? a.assignedAt,
+              assignedAt: a.assignedAt,
+            });
+          });
+      });
     });
     return entries;
   }, [users]);

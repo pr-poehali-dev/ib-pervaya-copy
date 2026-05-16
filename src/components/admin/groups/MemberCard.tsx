@@ -4,6 +4,7 @@ import { ALL_COURSES } from "@/data/mockData";
 
 interface MemberCardProps {
   user: User;
+  groupId?: number;
   onOpen: () => void;
   onStats: () => void;
   onAddCourse: () => void;
@@ -22,10 +23,13 @@ function getGradient(id: number) {
   return GRADIENTS[id % GRADIENTS.length];
 }
 
-export default function MemberCard({ user, onOpen, onStats, onAddCourse }: MemberCardProps) {
+export default function MemberCard({ user, groupId, onOpen, onStats, onAddCourse }: MemberCardProps) {
   const gradient = getGradient(user.id);
-  const activeAssignments = user.assignments.filter((a) => a.active);
-  const completedCount = user.assignments.filter((a) => a.progress === 100).length;
+  const allAssignments = groupId !== undefined
+    ? (user.enrollments.find((e) => e.groupId === groupId)?.assignments ?? [])
+    : user.enrollments.flatMap((e) => e.assignments);
+  const activeAssignments = allAssignments.filter((a) => a.active);
+  const completedCount = allAssignments.filter((a) => a.progress === 100).length;
   const avgProgress = activeAssignments.length > 0
     ? Math.round(activeAssignments.reduce((s, a) => s + a.progress, 0) / activeAssignments.length)
     : 0;

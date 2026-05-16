@@ -5,15 +5,8 @@ import Tip from "@/components/ui/tip";
 import GroupMemberRow from "./GroupMemberRow";
 import UserAvatar from "@/components/admin/shared/UserAvatar";
 import ProgressBar from "@/components/admin/shared/ProgressBar";
-import { User, gradients } from "@/components/admin/types";
-
-function getGroupStatus(members: User[]): string {
-  if (members.length === 0) return "Не начато";
-  const completed = members.filter((u) => u.assignments.some((a) => a.progress === 100));
-  if (completed.length === members.length && members.length > 0) return "Завершено";
-  if (members.some((u) => u.assignments.some((a) => a.active))) return "Обучается";
-  return "Не начато";
-}
+import { User, Group, gradients } from "@/components/admin/types";
+import { getGroupStatus, getMemberAssignments } from "./groupsUtils";
 
 function statusBadgeClass(status: string) {
   if (status === "Обучается") return "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300";
@@ -22,7 +15,7 @@ function statusBadgeClass(status: string) {
 }
 
 interface GroupTableRowProps {
-  group: string;
+  group: Group;
   idx: number;
   organization: string;
   inn: string;
@@ -30,17 +23,17 @@ interface GroupTableRowProps {
   isExpanded: boolean;
   isSelected: boolean;
   expandedMembers: Set<number>;
-  onToggleGroup: (group: string) => void;
-  onToggleSelect: (group: string) => void;
+  onToggleGroup: (groupName: string) => void;
+  onToggleSelect: (groupName: string) => void;
   onToggleMember: (userId: number) => void;
-  onOpenGroupStats: (group: string) => void;
+  onOpenGroupStats: (groupName: string) => void;
   onOpenUserStats: (user: User) => void;
-  onAddCourseForGroup: (group: string) => void;
-  onAddCourseForMember: (userId: number) => void;
-  onActivateCourse: (userId: number, courseId: number, date: string) => void;
-  onExtendCourse: (userId: number, courseId: number) => void;
-  onIssueCertificate: (userId: number, courseId: number) => void;
-  onToggleAssignment: (userId: number, courseId: number) => void;
+  onAddCourseForGroup: (groupId: number) => void;
+  onAddCourseForMember: (userId: number, groupId: number) => void;
+  onActivateCourse: (userId: number, courseId: number, date?: string, groupId?: number) => void;
+  onExtendCourse: (userId: number, courseId: number, groupId?: number) => void;
+  onIssueCertificate: (userId: number, courseId: number, groupId?: number) => void;
+  onToggleAssignment: (userId: number, courseId: number, groupId?: number) => void;
 }
 
 export default function GroupTableRow({
@@ -65,16 +58,26 @@ export default function GroupTableRow({
   onToggleAssignment,
 }: GroupTableRowProps) {
   const [editOpen, setEditOpen] = useState(false);
-  const [editName, setEditName] = useState(group);
+  const [editName, setEditName] = useState(group.name);
   const [editOrg, setEditOrg] = useState(organization);
   const [editInn, setEditInn] = useState(inn);
 
-  const activeAssignments = members.reduce((sum, u) => sum + u.assignments.filter((a) => a.active).length, 0);
-  const completedCount = members.filter((u) => u.assignments.some((a) => a.progress === 100)).length;
+  const activeAssignments = members.reduce(
+    (sum, u) => sum + getMemberAssignments(u, group.id).filter((a) => a.active).length,
+    0
+  );
+  const completedCount = members.filter((u) =>
+    getMemberAssignments(u, group.id).some((a) => a.progress === 100)
+  ).length;
   const avgGroupProgress = activeAssignments > 0
-    ? Math.round(members.reduce((s, u) => s + u.assignments.filter((a) => a.active).reduce((ss, a) => ss + a.progress, 0), 0) / activeAssignments)
+    ? Math.round(
+        members.reduce(
+          (s, u) => s + getMemberAssignments(u, group.id).filter((a) => a.active).reduce((ss, a) => ss + a.progress, 0),
+          0
+        ) / activeAssignments
+      )
     : 0;
-  const status = getGroupStatus(members);
+  const status = getGroupStatus(members, group.id);
 
   return (
     <>
@@ -90,7 +93,7 @@ export default function GroupTableRow({
                     </div>
                     <div>
                       <h2 className="font-bold text-sm">Редактировать группу</h2>
-                      <p className="text-xs text-muted-foreground">{group}</p>
+                      <p className="text-xs text-muted-foreground">{group.name}</p>
                     </div>
                   </div>
                   <button onClick={() => setEditOpen(false)} className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground">
@@ -131,13 +134,13 @@ export default function GroupTableRow({
       )}
       <tr
         className={`border-b border-border transition-colors cursor-pointer hover:bg-muted/20 ${isExpanded ? "bg-violet-50/50 dark:bg-violet-900/10" : ""} ${isSelected ? "bg-violet-50/30 dark:bg-violet-900/10" : ""}`}
-        onClick={() => onToggleGroup(group)}
+        onClick={() => onToggleGroup(group.name)}
       >
         <td className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
           <input
             type="checkbox"
             checked={isSelected}
-            onChange={() => onToggleSelect(group)}
+            onChange={() => onToggleSelect(group.name)}
             className="rounded border-border cursor-pointer accent-violet-600"
           />
         </td>
@@ -150,7 +153,7 @@ export default function GroupTableRow({
         <td className="px-4 py-3">
           <div className="flex items-center gap-2.5">
             <UserAvatar gradient={gradients[idx % gradients.length]} icon="UsersRound" />
-            <span className="font-medium">{group}</span>
+            <span className="font-medium">{group.name}</span>
           </div>
         </td>
         <td className="px-4 py-3 text-muted-foreground">{members.length} чел.</td>
@@ -167,7 +170,7 @@ export default function GroupTableRow({
             <Tip text="Статистика группы" side="top">
               <button
                 className="p-1 rounded-md hover:bg-cyan-100 dark:hover:bg-cyan-900/30 transition-colors text-muted-foreground hover:text-cyan-600 dark:hover:text-cyan-400 flex-shrink-0"
-                onClick={(e) => { e.stopPropagation(); onOpenGroupStats(group); }}
+                onClick={(e) => { e.stopPropagation(); onOpenGroupStats(group.name); }}
               >
                 <Icon name="BarChart2" size={13} />
               </button>
@@ -179,7 +182,7 @@ export default function GroupTableRow({
         <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center gap-1">
             <Tip text="Редактировать группу">
-              <button onClick={() => { setEditName(group); setEditOrg(organization); setEditInn(inn); setEditOpen(true); }} className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
+              <button onClick={() => { setEditName(group.name); setEditOrg(organization); setEditInn(inn); setEditOpen(true); }} className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
                 <Icon name="Pencil" size={16} />
               </button>
             </Tip>
@@ -192,7 +195,7 @@ export default function GroupTableRow({
               <button
                 className="p-2 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors text-violet-600 dark:text-violet-400"
                 disabled={members.length === 0}
-                onClick={() => { onAddCourseForGroup(group); if (!isExpanded) onToggleGroup(group); }}
+                onClick={() => { onAddCourseForGroup(group.id); if (!isExpanded) onToggleGroup(group.name); }}
               >
                 <Icon name="BookPlus" size={16} />
               </button>
@@ -203,18 +206,18 @@ export default function GroupTableRow({
 
       {/* Раскрытая строка — участники группы */}
       {isExpanded && (
-        <tr key={`${group}-expanded`} className="border-b border-border bg-violet-50/30 dark:bg-violet-900/5">
+        <tr key={`${group.name}-expanded`} className="border-b border-border bg-violet-50/30 dark:bg-violet-900/5">
           <td colSpan={10} className="px-8 py-4">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                  Участники группы {group}
+                  Участники группы {group.name}
                 </p>
                 <div className="flex items-center gap-2">
                   <Tip text="Статистика группы">
                     <button
                       className="p-1 rounded-md hover:bg-cyan-100 dark:hover:bg-cyan-900/30 transition-colors text-muted-foreground hover:text-cyan-600 dark:hover:text-cyan-400 flex-shrink-0"
-                      onClick={() => onOpenGroupStats(group)}
+                      onClick={() => onOpenGroupStats(group.name)}
                     >
                       <Icon name="BarChart2" size={13} />
                     </button>
@@ -222,7 +225,7 @@ export default function GroupTableRow({
                   <Button
                     size="sm"
                     className="gradient-primary text-white rounded-xl gap-1.5 text-xs h-7"
-                    onClick={() => onAddCourseForGroup(group)}
+                    onClick={() => onAddCourseForGroup(group.id)}
                   >
                     <Icon name="BookPlus" size={12} />
                     Назначить курс всей группе
@@ -252,10 +255,11 @@ export default function GroupTableRow({
                           key={member.id}
                           member={member}
                           mi={mi}
+                          groupId={group.id}
                           isExpanded={expandedMembers.has(member.id)}
                           onToggle={onToggleMember}
                           onOpenStats={onOpenUserStats}
-                          onAddCourse={onAddCourseForMember}
+                          onAddCourse={(userId) => onAddCourseForMember(userId, group.id)}
                           onActivateCourse={onActivateCourse}
                           onExtendCourse={onExtendCourse}
                           onIssueCertificate={onIssueCertificate}

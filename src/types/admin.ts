@@ -182,6 +182,12 @@ export type Group = {
 
 // ─── Пользователи ─────────────────────────────────────────────────────────────
 
+export type GroupEnrollment = {
+  groupId: number;
+  groupName: string;
+  assignments: CourseAssignment[];
+};
+
 export type User = {
   id: number;
   name: string;
@@ -192,12 +198,11 @@ export type User = {
   position?: string;
   email: string;
   initials: string;
-  group: string;
-  groupId?: number;
+  enrollments: GroupEnrollment[];
+  assignments: CourseAssignment[];
   organization: string;
   clientOrganizationId?: number;
   role: string;
-  assignments: CourseAssignment[];
 };
 
 // ─── Удостоверения ДПО ────────────────────────────────────────────────────────

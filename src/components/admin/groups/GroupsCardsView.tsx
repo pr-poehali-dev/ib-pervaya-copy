@@ -3,32 +3,32 @@ import Icon from "@/components/ui/icon";
 import GroupCard from "./GroupCard";
 import MemberCard from "./MemberCard";
 import MemberCoursesView from "./MemberCoursesView";
-import { User } from "@/components/admin/types";
+import { User, Group } from "@/components/admin/types";
 
 type NavLevel = "groups" | "members" | "member";
 
 interface GroupsCardsViewProps {
   navLevel: NavLevel;
-  filteredGroups: string[];
+  filteredGroups: Group[];
   totalGroups: number;
   localUsers: User[];
-  activeGroup: string | null;
+  activeGroup: Group | null;
   activeMember: User | null;
   activeGroupMembers: User[];
-  getGroupStatus: (members: User[]) => string;
-  getAvgProgress: (members: User[]) => number;
-  onOpenGroup: (group: string) => void;
+  getGroupStatus: (members: User[], groupId: number) => string;
+  getAvgProgress: (members: User[], groupId: number) => number;
+  onOpenGroup: (group: Group) => void;
   onOpenMember: (member: User) => void;
-  onSetGroupStatsFor: (group: string) => void;
-  onSetAddCourseForGroup: (group: string) => void;
-  onSetAddCourseForMember: (userId: number) => void;
+  onSetGroupStatsFor: (groupName: string) => void;
+  onSetAddCourseForGroup: (groupId: number) => void;
+  onSetAddCourseForMember: (userId: number, groupId: number) => void;
   onSetStatsUser: (user: User) => void;
-  onActivateAll: (group: string, members: User[]) => void;
-  onAddCourse: (userId: number, courseIds: number[]) => void;
-  onActivateCourse: (userId: number, courseId: number, date?: string) => void;
-  onExtendCourse: (userId: number, courseId: number) => void;
-  onIssueCertificate: (userId: number, courseId: number) => void;
-  onToggleAssignment: (userId: number, courseId: number) => void;
+  onActivateAll: (groupId: number, members: User[]) => void;
+  onAddCourse: (userId: number, courseIds: number[], groupId: number) => void;
+  onActivateCourse: (userId: number, courseId: number, date?: string, groupId?: number) => void;
+  onExtendCourse: (userId: number, courseId: number, groupId?: number) => void;
+  onIssueCertificate: (userId: number, courseId: number, groupId?: number) => void;
+  onToggleAssignment: (userId: number, courseId: number, groupId?: number) => void;
 }
 
 export default function GroupsCardsView({
@@ -68,20 +68,21 @@ export default function GroupsCardsView({
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {filteredGroups.map((group) => {
-                const members = localUsers.filter((u) => u.group === group);
-                const status = getGroupStatus(members);
-                const avgProgress = getAvgProgress(members);
+                const members = localUsers.filter((u) => u.enrollments.some((e) => e.groupId === group.id));
+                const status = getGroupStatus(members, group.id);
+                const avgProgress = getAvgProgress(members, group.id);
                 return (
                   <GroupCard
-                    key={group}
-                    group={group}
+                    key={group.id}
+                    group={group.name}
+                    groupId={group.id}
                     members={members}
                     status={status}
                     avgProgress={avgProgress}
                     onOpen={() => onOpenGroup(group)}
-                    onStats={() => onSetGroupStatsFor(group)}
-                    onAddCourse={() => onSetAddCourseForGroup(group)}
-                    onActivateAll={() => onActivateAll(group, members)}
+                    onStats={() => onSetGroupStatsFor(group.name)}
+                    onAddCourse={() => onSetAddCourseForGroup(group.id)}
+                    onActivateAll={() => onActivateAll(group.id, members)}
                   />
                 );
               })}
@@ -98,7 +99,7 @@ export default function GroupsCardsView({
               variant="outline"
               size="sm"
               className="rounded-xl gap-2"
-              onClick={() => onSetGroupStatsFor(activeGroup)}
+              onClick={() => onSetGroupStatsFor(activeGroup.name)}
             >
               <Icon name="BarChart2" size={15} />
               Статистика группы
@@ -107,7 +108,7 @@ export default function GroupsCardsView({
               variant="outline"
               size="sm"
               className="rounded-xl gap-2"
-              onClick={() => onSetAddCourseForGroup(activeGroup)}
+              onClick={() => onSetAddCourseForGroup(activeGroup.id)}
             >
               <Icon name="BookPlus" size={15} />
               Назначить курс всей группе
@@ -128,9 +129,10 @@ export default function GroupsCardsView({
                 <MemberCard
                   key={member.id}
                   user={member}
+                  groupId={activeGroup.id}
                   onOpen={() => onOpenMember(member)}
                   onStats={() => onSetStatsUser(member)}
-                  onAddCourse={() => onSetAddCourseForMember(member.id)}
+                  onAddCourse={() => onSetAddCourseForMember(member.id, activeGroup.id)}
                 />
               ))}
             </div>
@@ -139,11 +141,12 @@ export default function GroupsCardsView({
       )}
 
       {/* Уровень слушателя (курсы) */}
-      {navLevel === "member" && activeMember && (
+      {navLevel === "member" && activeMember && activeGroup && (
         <MemberCoursesView
           member={localUsers.find((u) => u.id === activeMember.id) ?? activeMember}
           memberIndex={activeGroupMembers.findIndex((u) => u.id === activeMember.id)}
-          onAddCourse={(userId) => onSetAddCourseForMember(userId)}
+          groupId={activeGroup.id}
+          onAddCourse={(userId) => onSetAddCourseForMember(userId, activeGroup.id)}
           onActivateCourse={onActivateCourse}
           onExtendCourse={onExtendCourse}
           onIssueCertificate={onIssueCertificate}

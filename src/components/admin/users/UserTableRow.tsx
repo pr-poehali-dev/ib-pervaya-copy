@@ -97,7 +97,15 @@ export default function UserTableRow({
 
         {/* Группа */}
         <td className="px-4 py-3">
-          <Badge variant="secondary" className="text-xs">{user.group}</Badge>
+          {user.enrollments.length > 0 ? (
+            <div className="flex flex-col gap-0.5">
+              {user.enrollments.map((e) => (
+                <Badge key={e.groupId} variant="secondary" className="text-xs w-fit">{e.groupName}</Badge>
+              ))}
+            </div>
+          ) : (
+            <span className="text-xs text-muted-foreground">—</span>
+          )}
         </td>
 
         {/* Курсы */}

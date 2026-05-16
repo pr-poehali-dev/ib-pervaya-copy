@@ -10,23 +10,26 @@ import { User, allCourses, userColors, courseDirections } from "@/components/adm
 import { useRole } from "@/contexts/RoleContext";
 import MemberStatsModal from "@/components/admin/groups/MemberStatsModal";
 import { CourseAssignment } from "@/types/admin";
+import { getMemberAssignments } from "./groupsUtils";
 
 interface GroupMemberRowProps {
   member: User;
   mi: number;
+  groupId: number;
   isExpanded: boolean;
   onToggle: (id: number) => void;
   onOpenStats: (user: User) => void;
   onAddCourse: (userId: number) => void;
-  onActivateCourse: (userId: number, courseId: number, date: string) => void;
-  onExtendCourse: (userId: number, courseId: number) => void;
-  onIssueCertificate: (userId: number, courseId: number) => void;
-  onToggleAssignment: (userId: number, courseId: number) => void;
+  onActivateCourse: (userId: number, courseId: number, date: string, groupId: number) => void;
+  onExtendCourse: (userId: number, courseId: number, groupId: number) => void;
+  onIssueCertificate: (userId: number, courseId: number, groupId: number) => void;
+  onToggleAssignment: (userId: number, courseId: number, groupId: number) => void;
 }
 
 export default function GroupMemberRow({
   member,
   mi,
+  groupId,
   isExpanded,
   onToggle,
   onOpenStats,
@@ -40,10 +43,12 @@ export default function GroupMemberRow({
   const [statsTarget, setStatsTarget] = useState<{ assignment: CourseAssignment; courseTitle: string } | null>(null);
   const { tenantType } = useRole();
   const canIssueCert = tenantType === "training_center";
-  const activeCnt = member.assignments.filter((a) => a.active).length;
-  const completedCnt = member.assignments.filter((a) => a.progress === 100).length;
+
+  const assignments = getMemberAssignments(member, groupId);
+  const activeCnt = assignments.filter((a) => a.active).length;
+  const completedCnt = assignments.filter((a) => a.progress === 100).length;
   const avgProgress = activeCnt > 0
-    ? Math.round(member.assignments.filter((a) => a.active).reduce((s, a) => s + a.progress, 0) / activeCnt)
+    ? Math.round(assignments.filter((a) => a.active).reduce((s, a) => s + a.progress, 0) / activeCnt)
     : 0;
 
   return (
@@ -77,7 +82,7 @@ export default function GroupMemberRow({
         {/* Действия участника */}
         <td className="px-4 py-2.5" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center gap-1">
-            {member.assignments.length > 0 && (
+            {assignments.length > 0 && (
               <Tip text="Статистика слушателя">
                 <button
                   className="p-1.5 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors text-muted-foreground hover:text-violet-600"
@@ -103,7 +108,7 @@ export default function GroupMemberRow({
       {isExpanded && (
         <tr key={`${member.id}-courses`} className="border-t border-border/60 bg-muted/10">
           <td colSpan={7} className="px-10 py-3">
-            {member.assignments.length === 0 ? (
+            {assignments.length === 0 ? (
               <p className="text-xs text-muted-foreground">Курсы не назначены</p>
             ) : (
               <div className="rounded-xl border border-border overflow-hidden">
@@ -120,7 +125,7 @@ export default function GroupMemberRow({
                     </tr>
                   </thead>
                   <tbody>
-                    {member.assignments.map((a, ai) => {
+                    {assignments.map((a, ai) => {
                       const course = allCourses.find((c) => c.id === a.courseId)
                         ?? courseDirections.flatMap((d) => d.courses).find((c) => c.id === a.courseId);
                       if (!course) return null;
@@ -138,7 +143,7 @@ export default function GroupMemberRow({
                           {/* Дата назначения / Активировать */}
                           <td className="px-3 py-2">
                             {!a.activatedAt ? (
-                              <ActivateMenu onActivate={(date) => onActivateCourse(member.id, a.courseId, date)} />
+                              <ActivateMenu onActivate={(date) => onActivateCourse(member.id, a.courseId, date, groupId)} />
                             ) : (
                               <span className="text-muted-foreground text-xs">{a.assignedAt}</span>
                             )}
@@ -186,7 +191,7 @@ export default function GroupMemberRow({
                               <Tip text={a.active ? "Отключить курс" : "Включить курс"}>
                                 <button
                                   className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-destructive"
-                                  onClick={() => onToggleAssignment(member.id, a.courseId)}
+                                  onClick={() => onToggleAssignment(member.id, a.courseId, groupId)}
                                 >
                                   <Icon name={a.active ? "ToggleRight" : "ToggleLeft"} size={15} />
                                 </button>
@@ -194,7 +199,7 @@ export default function GroupMemberRow({
                               <Tip text="Продлить курс">
                                 <button
                                   className="p-1.5 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400"
-                                  onClick={() => onExtendCourse(member.id, a.courseId)}
+                                  onClick={() => onExtendCourse(member.id, a.courseId, groupId)}
                                 >
                                   <Icon name="RefreshCw" size={14} />
                                 </button>
@@ -203,7 +208,7 @@ export default function GroupMemberRow({
                                 <Tip text={a.status === "certified" ? "Удостоверение уже выдано" : "Выдать удостоверение"}>
                                   <button
                                     className={`p-1.5 rounded-lg transition-colors ${a.status === "certified" ? "text-violet-400 cursor-default" : "text-muted-foreground hover:bg-violet-100 dark:hover:bg-violet-900/30 hover:text-violet-600 dark:hover:text-violet-400"}`}
-                                    onClick={() => a.status !== "certified" && onIssueCertificate(member.id, a.courseId)}
+                                    onClick={() => a.status !== "certified" && onIssueCertificate(member.id, a.courseId, groupId)}
                                   >
                                     <Icon name="Award" size={15} />
                                   </button>

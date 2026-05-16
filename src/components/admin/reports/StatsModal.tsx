@@ -19,13 +19,18 @@ function exportAllCSV(users: User[], stats: {
   const statusLabels: Record<string, string> = { pending: "Ожидает активации", active: "Идёт обучение", completed: "Завершено", certified: "Удостоверение выдано" };
   const userRows: string[][] = [];
   users.forEach((u) => {
-    if (u.assignments.length === 0) {
-      userRows.push([u.name, u.email, u.role, u.organization ?? "", u.group, "—", "—", "—", "—", "—", "—"]);
+    const groupLabel = u.enrollments.map((e) => e.groupName).join(", ") || "—";
+    const uAssignments = [
+      ...u.assignments,
+      ...u.enrollments.flatMap((e) => e.assignments),
+    ];
+    if (uAssignments.length === 0) {
+      userRows.push([u.name, u.email, u.role, u.organization ?? "", groupLabel, "—", "—", "—", "—", "—", "—"]);
     } else {
-      u.assignments.forEach((a) => {
+      uAssignments.forEach((a) => {
         const course = allCourses.find((c) => c.id === a.courseId);
         const title = course ? course.title : `Курс #${a.courseId}`;
-        userRows.push([u.name, u.email, u.role, u.organization ?? "", u.group, title, statusLabels[a.status] ?? a.status, `${a.progress}%`, a.assignedAt, a.activatedAt ?? "—", a.completedAt ?? "—"]);
+        userRows.push([u.name, u.email, u.role, u.organization ?? "", groupLabel, title, statusLabels[a.status] ?? a.status, `${a.progress}%`, a.assignedAt, a.activatedAt ?? "—", a.completedAt ?? "—"]);
       });
     }
   });
@@ -75,10 +80,15 @@ function exportAllPDF(users: User[], stats: {
   const courseRows = stats.courseStats.map((c) => `<tr><td>${c.title}</td><td>${c.enrolled}</td><td>${c.completed}</td><td><b>${c.avgProgress}%</b></td></tr>`).join("");
   const topRows = stats.topUsers.map((u, i) => `<tr><td>${i + 1}</td><td>${u.name}</td><td>${u.group}</td><td>${u.completedCount}</td><td><b>${u.avgProgress}%</b></td></tr>`).join("");
   const userRows = users.map((u) => {
-    return u.assignments.map((a) => {
+    const groupLabel = u.enrollments.map((e) => e.groupName).join(", ") || "—";
+    const uAssignments = [
+      ...u.assignments,
+      ...u.enrollments.flatMap((e) => e.assignments),
+    ];
+    return uAssignments.map((a) => {
       const course = allCourses.find((c) => c.id === a.courseId);
-      return `<tr><td>${u.name}</td><td>${u.organization ?? ""}</td><td>${u.group}</td><td>${course?.title ?? `Курс #${a.courseId}`}</td><td>${statusLabels[a.status] ?? a.status}</td><td><b>${a.progress}%</b></td><td>${a.assignedAt}</td><td>${a.completedAt ?? "—"}</td></tr>`;
-    }).join("") || `<tr><td>${u.name}</td><td>${u.organization ?? ""}</td><td>${u.group}</td><td colspan="5" style="color:#999">Курсы не назначены</td></tr>`;
+      return `<tr><td>${u.name}</td><td>${u.organization ?? ""}</td><td>${groupLabel}</td><td>${course?.title ?? `Курс #${a.courseId}`}</td><td>${statusLabels[a.status] ?? a.status}</td><td><b>${a.progress}%</b></td><td>${a.assignedAt}</td><td>${a.completedAt ?? "—"}</td></tr>`;
+    }).join("") || `<tr><td>${u.name}</td><td>${u.organization ?? ""}</td><td>${groupLabel}</td><td colspan="5" style="color:#999">Курсы не назначены</td></tr>`;
   }).join("");
 
   const html = `<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8">
@@ -148,27 +158,34 @@ export default function StatsModal({ open, onClose, users }: StatsModalProps) {
   const orgOptions = useMemo(() => ["Все", ...Array.from(new Set(users.map((u) => u.organization ?? "").filter(Boolean))).sort()], [users]);
   const groupOptions = useMemo(() => {
     const base = filterOrg === "Все" ? users : users.filter((u) => (u.organization ?? "") === filterOrg);
-    return ["Все", ...Array.from(new Set(base.map((u) => u.group))).sort()];
+    const names = base.flatMap((u) => u.enrollments.map((e) => e.groupName));
+    return ["Все", ...Array.from(new Set(names)).sort()];
   }, [users, filterOrg]);
+
+  // Helper: all assignments for a user (both individual and group-based)
+  const allAssignments = (u: User) => [
+    ...u.assignments,
+    ...u.enrollments.flatMap((e) => e.assignments),
+  ];
 
   const filteredUsers = useMemo(() => users.filter((u) => {
     if (filterOrg !== "Все" && (u.organization ?? "") !== filterOrg) return false;
-    if (filterGroup !== "Все" && u.group !== filterGroup) return false;
-    return u.assignments.some((a) => inPeriod(a.assignedAt, from, to));
+    if (filterGroup !== "Все" && !u.enrollments.some((e) => e.groupName === filterGroup)) return false;
+    return allAssignments(u).some((a) => inPeriod(a.assignedAt, from, to));
   }), [users, filterOrg, filterGroup, from, to]);
 
   const stats = useMemo(() => {
     const totalAssignments = filteredUsers.reduce(
-      (sum, u) => sum + u.assignments.filter((a) => a.active).length,
+      (sum, u) => sum + allAssignments(u).filter((a) => a.active).length,
       0
     );
     const totalCompleted = filteredUsers.reduce(
-      (sum, u) => sum + u.assignments.filter((a) => a.progress === 100).length,
+      (sum, u) => sum + allAssignments(u).filter((a) => a.progress === 100).length,
       0
     );
     const totalInProgress = filteredUsers.reduce(
       (sum, u) =>
-        sum + u.assignments.filter((a) => a.active && a.progress > 0 && a.progress < 100).length,
+        sum + allAssignments(u).filter((a) => a.active && a.progress > 0 && a.progress < 100).length,
       0
     );
     const avgProgress =
@@ -176,7 +193,7 @@ export default function StatsModal({ open, onClose, users }: StatsModalProps) {
         ? Math.round(
             filteredUsers.reduce(
               (sum, u) =>
-                sum + u.assignments.filter((a) => a.active).reduce((s, a) => s + a.progress, 0),
+                sum + allAssignments(u).filter((a) => a.active).reduce((s, a) => s + a.progress, 0),
               0
             ) / totalAssignments
           )
@@ -185,7 +202,7 @@ export default function StatsModal({ open, onClose, users }: StatsModalProps) {
     // Статистика по курсам
     const courseStats = allCourses.map((course) => {
       const assignments = filteredUsers.flatMap((u) =>
-        u.assignments.filter((a) => a.courseId === course.id && a.active)
+        allAssignments(u).filter((a) => a.courseId === course.id && a.active)
       );
       const completed = assignments.filter((a) => a.progress === 100).length;
       const avgP =
@@ -200,11 +217,14 @@ export default function StatsModal({ open, onClose, users }: StatsModalProps) {
       };
     });
 
-    // Статистика по группам
-    const groupNames = [...new Set(filteredUsers.map((u) => u.group))];
+    // Статистика по группам (из enrollments)
+    const groupNames = [...new Set(filteredUsers.flatMap((u) => u.enrollments.map((e) => e.groupName)))];
     const groupStats = groupNames.map((group) => {
-      const groupUsers = filteredUsers.filter((u) => u.group === group);
-      const gAssignments = groupUsers.flatMap((u) => u.assignments.filter((a) => a.active));
+      const groupUsers = filteredUsers.filter((u) => u.enrollments.some((e) => e.groupName === group));
+      const gAssignments = groupUsers.flatMap((u) => {
+        const enrollment = u.enrollments.find((e) => e.groupName === group);
+        return (enrollment?.assignments ?? []).filter((a) => a.active);
+      });
       const gCompleted = gAssignments.filter((a) => a.progress === 100).length;
       const gAvg =
         gAssignments.length > 0
@@ -222,12 +242,13 @@ export default function StatsModal({ open, onClose, users }: StatsModalProps) {
     // Топ слушателей по прогрессу
     const topUsers = [...filteredUsers]
       .map((u) => {
-        const active = u.assignments.filter((a) => a.active);
+        const active = allAssignments(u).filter((a) => a.active);
         const avg =
           active.length > 0
             ? Math.round(active.reduce((s, a) => s + a.progress, 0) / active.length)
             : 0;
-        return { ...u, avgProgress: avg, completedCount: active.filter((a) => a.progress === 100).length };
+        const firstGroup = u.enrollments[0]?.groupName ?? "";
+        return { ...u, avgProgress: avg, completedCount: active.filter((a) => a.progress === 100).length, group: firstGroup };
       })
       .sort((a, b) => b.avgProgress - a.avgProgress)
       .slice(0, 5);
