@@ -121,6 +121,7 @@ export default function CustomReportPanel() {
 
   const [selectedTenants, setSelectedTenants] = useState<number[]>(allTenants.map((t) => t.id));
   const [tenantSearch, setTenantSearch] = useState("");
+  const [tenantsOpen, setTenantsOpen] = useState(false);
   const [periodMode, setPeriodMode] = useState<CustomPeriodMode>("month");
   const [month, setMonth] = useState(curMonth);
   const [quarter, setQuarter] = useState(Math.floor(curMonth / 3));
@@ -193,62 +194,74 @@ export default function CustomReportPanel() {
         </div>
 
         {/* Выбор тенантов */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Тенанты
-              <span className="ml-2 text-foreground font-semibold">{selectedTenants.length}</span>
-              <span className="text-muted-foreground"> / {allTenants.length}</span>
-            </p>
-            <button onClick={toggleAll} className="text-xs text-blue-600 hover:text-blue-700 font-medium">
-              {filteredTenants.every((t) => selectedTenants.includes(t.id)) ? "Снять отображаемые" : "Выбрать отображаемые"}
-            </button>
-          </div>
+        <div className="border border-border rounded-xl overflow-hidden">
+          {/* Заголовок-кнопка */}
+          <button
+            onClick={() => setTenantsOpen((v) => !v)}
+            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/20 transition-colors text-left"
+          >
+            <Icon name="Building2" size={15} className="text-muted-foreground flex-shrink-0" />
+            <span className="text-sm font-medium flex-1">Тенанты</span>
+            <span className="text-xs text-muted-foreground">
+              выбрано <span className="font-semibold text-foreground">{selectedTenants.length}</span> / {allTenants.length}
+            </span>
+            <Icon name={tenantsOpen ? "ChevronUp" : "ChevronDown"} size={15} className="text-muted-foreground flex-shrink-0" />
+          </button>
 
-          {/* Поиск */}
-          <div className="relative mb-2">
-            <Icon name="Search" size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <input
-              value={tenantSearch}
-              onChange={(e) => setTenantSearch(e.target.value)}
-              placeholder="Поиск по названию или ИНН..."
-              className="w-full pl-8 pr-3 h-9 rounded-xl border border-border bg-background text-sm focus:outline-none focus:border-blue-400"
-            />
-            {tenantSearch && (
-              <button
-                onClick={() => setTenantSearch("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                <Icon name="X" size={12} />
-              </button>
-            )}
-          </div>
+          {/* Раскрывающаяся часть */}
+          {tenantsOpen && (
+            <div className="border-t border-border p-3 space-y-2">
+              {/* Строка поиска + кнопка выбрать все */}
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Icon name="Search" size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <input
+                    value={tenantSearch}
+                    onChange={(e) => setTenantSearch(e.target.value)}
+                    placeholder="Поиск по названию или ИНН..."
+                    className="w-full pl-8 pr-8 h-9 rounded-xl border border-border bg-background text-sm focus:outline-none focus:border-blue-400"
+                  />
+                  {tenantSearch && (
+                    <button
+                      onClick={() => setTenantSearch("")}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      <Icon name="X" size={12} />
+                    </button>
+                  )}
+                </div>
+                <button onClick={toggleAll} className="px-3 h-9 rounded-xl border border-border text-xs font-medium text-muted-foreground hover:text-foreground hover:border-blue-400 transition-colors flex-shrink-0">
+                  {filteredTenants.every((t) => selectedTenants.includes(t.id)) ? "Снять все" : "Выбрать все"}
+                </button>
+              </div>
 
-          {/* Список с чекбоксами */}
-          <div className="border border-border rounded-xl overflow-hidden max-h-52 overflow-y-auto">
-            {filteredTenants.length === 0 ? (
-              <p className="text-xs text-muted-foreground text-center py-4">Ничего не найдено</p>
-            ) : (
-              filteredTenants.map((t, idx) => {
-                const active = selectedTenants.includes(t.id);
-                return (
-                  <label
-                    key={t.id}
-                    className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-colors hover:bg-muted/20 ${idx !== 0 ? "border-t border-border" : ""} ${active ? "bg-blue-50 dark:bg-blue-900/10" : ""}`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={active}
-                      onChange={() => toggleTenant(t.id)}
-                      className="w-4 h-4 rounded accent-blue-600 flex-shrink-0"
-                    />
-                    <span className="text-sm font-medium flex-1 min-w-0 truncate">{t.name}</span>
-                    <span className="text-xs text-muted-foreground font-mono flex-shrink-0">{t.inn}</span>
-                  </label>
-                );
-              })
-            )}
-          </div>
+              {/* Список */}
+              <div className="border border-border rounded-xl overflow-hidden max-h-52 overflow-y-auto">
+                {filteredTenants.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-4">Ничего не найдено</p>
+                ) : (
+                  filteredTenants.map((t, idx) => {
+                    const active = selectedTenants.includes(t.id);
+                    return (
+                      <label
+                        key={t.id}
+                        className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-colors hover:bg-muted/20 ${idx !== 0 ? "border-t border-border" : ""} ${active ? "bg-blue-50 dark:bg-blue-900/10" : ""}`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={active}
+                          onChange={() => toggleTenant(t.id)}
+                          className="w-4 h-4 rounded accent-blue-600 flex-shrink-0"
+                        />
+                        <span className="text-sm font-medium flex-1 min-w-0 truncate">{t.name}</span>
+                        <span className="text-xs text-muted-foreground font-mono flex-shrink-0">{t.inn}</span>
+                      </label>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Переключатель периода */}
