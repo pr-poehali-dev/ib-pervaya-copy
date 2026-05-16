@@ -172,7 +172,7 @@ export default function Profile() {
               onClick={() => setEditOpen(true)}
             >
               <Icon name="User" size={15} />
-              <span className="hidden sm:inline">Мои дан��ые</span>
+              <span className="hidden sm:inline">Мои данные</span>
             </Button>
           </div>
         </div>
