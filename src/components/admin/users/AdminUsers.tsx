@@ -5,16 +5,19 @@ import Icon from "@/components/ui/icon";
 import UserStatsModal from "./UserStatsModal";
 import UserAddCourseModal from "./UserAddCourseModal";
 import UserEditModal from "./UserEditModal";
+import EnrollToGroupModal from "./EnrollToGroupModal";
 import UserTableRow from "./UserTableRow";
 import { User, CourseAssignment, CourseStatus, allCourses } from "@/components/admin/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { MultiSelect, SearchSelect, FilterTags } from "@/components/admin/shared/FilterControls";
 import { useRole } from "@/contexts/RoleContext";
+import { GROUPS_DATA } from "@/data/mockData";
 
 interface AdminUsersProps {
   users: User[];
   filteredUsers: User[];
   toggleCourse: (userId: number, courseId: number) => void;
+  enrollUserToGroup?: (userId: number, groupId: number) => void;
 }
 
 function today(): string {
@@ -26,6 +29,7 @@ export default function AdminUsers({
   users,
   filteredUsers,
   toggleCourse,
+  enrollUserToGroup,
 }: AdminUsersProps) {
   const { tenantType } = useRole();
   const { user: authUser } = useAuth();
@@ -44,6 +48,7 @@ export default function AdminUsers({
   const [localUsers, setLocalUsers] = useState<User[]>(users);
   const [statsUser, setStatsUser] = useState<User | null>(null);
   const [editUser, setEditUser] = useState<User | null>(null);
+  const [enrollUser, setEnrollUser] = useState<User | null>(null);
 
   const actionsButtonRef = useRef<HTMLButtonElement>(null);
   const actionsMenuRef = useRef<HTMLDivElement>(null);
@@ -221,6 +226,22 @@ export default function AdminUsers({
           onClose={() => setEditUser(null)}
         />
       )}
+      {enrollUser && (
+        <EnrollToGroupModal
+          user={enrollUser}
+          onClose={() => setEnrollUser(null)}
+          onEnroll={(userId, groupId) => {
+            enrollUserToGroup?.(userId, groupId);
+            const g = GROUPS_DATA.find((grp) => grp.id === groupId);
+            if (!g) return;
+            setLocalUsers((prev) => prev.map((u) => {
+              if (u.id !== userId) return u;
+              if (u.enrollments.some((e) => e.groupId === groupId)) return u;
+              return { ...u, enrollments: [...u.enrollments, { groupId, groupName: g.name, assignments: [] }] };
+            }));
+          }}
+        />
+      )}
 
       {/* Фильтры + кнопка действий */}
       <div className="flex items-start gap-3">
@@ -341,6 +362,7 @@ export default function AdminUsers({
                   onExtendCourse={extendCourse}
                   onIssueCertificate={issueCertificate}
                   onToggleCourse={handleToggleCourse}
+                  onEnrollToGroup={(u) => setEnrollUser(localUsers.find((lu) => lu.id === u.id) ?? u)}
                 />
               ))}
             </tbody>

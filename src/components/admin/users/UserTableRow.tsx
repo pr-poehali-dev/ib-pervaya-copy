@@ -28,6 +28,7 @@ interface UserTableRowProps {
   onExtendCourse: (userId: number, courseId: number) => void;
   onIssueCertificate: (userId: number, courseId: number) => void;
   onToggleCourse: (userId: number, courseId: number) => void;
+  onEnrollToGroup: (user: User) => void;
 }
 
 export default function UserTableRow({
@@ -46,6 +47,7 @@ export default function UserTableRow({
   onExtendCourse,
   onIssueCertificate,
   onToggleCourse,
+  onEnrollToGroup,
 }: UserTableRowProps) {
   const [statsTarget, setStatsTarget] = useState<{ assignment: CourseAssignment; courseTitle: string } | null>(null);
   const [historyTarget, setHistoryTarget] = useState<CourseAssignment | null>(null);
@@ -156,6 +158,14 @@ export default function UserTableRow({
                 onClick={() => { onAddCourse(user.id); if (!isExpanded) onToggleRow(user.id); }}
               >
                 <Icon name="BookPlus" size={16} />
+              </button>
+            </Tip>
+            <Tip text="Добавить в группу">
+              <button
+                className="p-2 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors text-emerald-600 dark:text-emerald-400"
+                onClick={() => onEnrollToGroup(user)}
+              >
+                <Icon name="UserPlus" size={16} />
               </button>
             </Tip>
           </div>

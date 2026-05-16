@@ -23,6 +23,7 @@ export default function Admin() {
     error,
     addUser,
     toggleCourse,
+    enrollUserToGroup,
   } = useAdminData();
 
   const { role } = useRole();
@@ -199,6 +200,7 @@ export default function Admin() {
           users={users}
           filteredUsers={filteredUsers}
           toggleCourse={toggleCourse}
+          enrollUserToGroup={enrollUserToGroup}
         />
       </div>
     </Layout>
