@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Icon from "@/components/ui/icon";
 
 const TEST_ACCOUNTS = [
@@ -32,17 +33,19 @@ export default function LoginForm({
   error, loading,
   onSubmit,
 }: LoginFormProps) {
+  const [testOpen, setTestOpen] = useState(false);
+
   return (
-    <div className="bg-white rounded-2xl shadow-xl shadow-gray-200/60 p-8 border border-gray-100">
+    <div className="bg-white rounded-2xl shadow-xl shadow-gray-200/60 p-4 sm:p-8 border border-gray-100">
       {/* Заголовок формы */}
-      <div className="flex items-center gap-3 mb-8">
+      <div className="flex items-center gap-3 mb-4 sm:mb-8">
         <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center">
           <Icon name="BookOpen" size={20} className="text-emerald-600" />
         </div>
         <h2 className="text-xl font-bold text-gray-900">Вход в систему</h2>
       </div>
 
-      <form onSubmit={onSubmit} className="space-y-5">
+      <form onSubmit={onSubmit} className="space-y-3 sm:space-y-5">
         {/* Email */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1.5">
@@ -55,7 +58,7 @@ export default function LoginForm({
               onChange={(e) => setEmail(e.target.value)}
               placeholder="admin@isp.ru"
               required
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 transition-all placeholder:text-gray-400"
+              className="w-full px-4 py-2.5 sm:py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 transition-all placeholder:text-gray-400"
             />
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
               <Icon name="Key" size={16} className="text-gray-400" />
@@ -77,7 +80,7 @@ export default function LoginForm({
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••••"
-              className="w-full px-4 py-3 pr-12 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 transition-all placeholder:text-gray-400"
+              className="w-full px-4 py-2.5 sm:py-3 pr-12 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 transition-all placeholder:text-gray-400"
             />
             <button
               type="button"
@@ -121,7 +124,7 @@ export default function LoginForm({
         <button
           type="submit"
           disabled={loading}
-          className="w-full flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-60 text-white font-semibold py-3.5 rounded-xl transition-all shadow-md shadow-emerald-200 hover:shadow-emerald-300 text-sm"
+          className="w-full flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-60 text-white font-semibold py-2.5 sm:py-3.5 rounded-xl transition-all shadow-md shadow-emerald-200 hover:shadow-emerald-300 text-sm"
         >
           {loading ? (
             <Icon name="Loader2" size={18} className="animate-spin" />
@@ -132,35 +135,44 @@ export default function LoginForm({
         </button>
 
         {/* Тестовые аккаунты */}
-        <div className="pt-2">
-          <p className="text-xs text-gray-400 text-center mb-2">Быстрый вход для тестирования</p>
-          <div className="grid grid-cols-2 gap-1.5">
-            {TEST_ACCOUNTS.map((acc) => (
-              <button
-                key={acc.email}
-                type="button"
-                onClick={() => { setEmail(acc.email); setPassword(acc.password); }}
-                className="text-left px-3 py-2 rounded-lg border border-gray-100 bg-gray-50 hover:bg-emerald-50 hover:border-emerald-200 transition-all group"
-              >
-                <p className="text-xs font-medium text-gray-700 group-hover:text-emerald-700">{acc.label}</p>
-                <p className="text-[10px] text-gray-400 truncate">{acc.email}</p>
-              </button>
-            ))}
-          </div>
-
-          {/* Сброс согласия для тестирования */}
+        <div className="pt-1">
           <button
             type="button"
-            onClick={() => {
-              TEST_ACCOUNTS.forEach((acc) => {
-                localStorage.removeItem(`consent_accepted_${acc.email}`);
-              });
-              alert("Согласие сброшено — модалка появится при следующем входе");
-            }}
-            className="mt-2 w-full py-1.5 rounded-lg border border-dashed border-orange-200 bg-orange-50 text-[10px] text-orange-500 hover:bg-orange-100 transition-all"
+            onClick={() => setTestOpen((v) => !v)}
+            className="w-full flex items-center justify-between text-xs text-gray-400 hover:text-gray-600 transition-colors py-1"
           >
-            🔄 Сбросить согласие (для тестирования)
+            <span>Быстрый вход для тестирования</span>
+            <Icon name={testOpen ? "ChevronUp" : "ChevronDown"} size={13} />
           </button>
+          {testOpen && (
+            <>
+              <div className="grid grid-cols-2 gap-1.5 mt-2">
+                {TEST_ACCOUNTS.map((acc) => (
+                  <button
+                    key={acc.email}
+                    type="button"
+                    onClick={() => { setEmail(acc.email); setPassword(acc.password); setTestOpen(false); }}
+                    className="text-left px-3 py-2 rounded-lg border border-gray-100 bg-gray-50 hover:bg-emerald-50 hover:border-emerald-200 transition-all group"
+                  >
+                    <p className="text-xs font-medium text-gray-700 group-hover:text-emerald-700">{acc.label}</p>
+                    <p className="text-[10px] text-gray-400 truncate">{acc.email}</p>
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  TEST_ACCOUNTS.forEach((acc) => {
+                    localStorage.removeItem(`consent_accepted_${acc.email}`);
+                  });
+                  alert("Согласие сброшено — модалка появится при следующем входе");
+                }}
+                className="mt-2 w-full py-1.5 rounded-lg border border-dashed border-orange-200 bg-orange-50 text-[10px] text-orange-500 hover:bg-orange-100 transition-all"
+              >
+                🔄 Сбросить согласие (для тестирования)
+              </button>
+            </>
+          )}
         </div>
       </form>
     </div>
