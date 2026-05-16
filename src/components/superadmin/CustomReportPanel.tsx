@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { TENANTS } from "@/data/tenants";
 import { INITIAL_USERS } from "@/data/users";
-import { ALL_COURSES } from "@/data/courses";
+import { ALL_COURSES, COURSE_DIRECTIONS } from "@/data/courses";
 import type { Tenant } from "@/types/admin";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,8 @@ import type { PeriodMode } from "./ReportsPeriodSelector";
 interface WriteoffRow {
   tenantName: string;
   tenantInn: string;
+  direction: string;
+  courseCode: string;
   course: string;
   date: string;
   userName: string;
@@ -31,13 +33,18 @@ function generateRows(tenants: Tenant[], months: number[], year: number): Writeo
     tenant.subscriptions.forEach((sub) => {
       if (sub.total === 0) return;
 
+      const direction = COURSE_DIRECTIONS.find((d) => d.subscriptionType === sub.type);
+      const dirCourses = direction?.courses ?? [];
+
       months.forEach((month) => {
         const seed = (tenant.id * 17 + month * 7 + year + sub.type.length) % 100;
         const writeoff = Math.max(0, Math.round((seed / 100) * sub.used));
 
         for (let i = 0; i < writeoff; i++) {
           const user = tenantUsers[i % Math.max(tenantUsers.length, 1)];
-          const course = courses.find(
+
+          const dirCourse = dirCourses.length > 0 ? dirCourses[i % dirCourses.length] : null;
+          const fallbackCourse = courses.find(
             (c) => c.direction === sub.type || i % courses.length === courses.indexOf(c)
           ) ?? courses[i % courses.length];
 
@@ -47,7 +54,9 @@ function generateRows(tenants: Tenant[], months: number[], year: number): Writeo
           rows.push({
             tenantName: tenant.name,
             tenantInn: tenant.inn ?? "—",
-            course: course?.title ?? sub.label,
+            direction: direction?.title ?? sub.label,
+            courseCode: dirCourse?.code ?? "—",
+            course: dirCourse?.title ?? fallbackCourse?.title ?? sub.label,
             date: dateStr,
             userName: user
               ? `${user.lastName ?? ""} ${user.firstName ?? ""} ${user.middleName ?? ""}`.trim()
@@ -394,6 +403,8 @@ export default function CustomReportPanel() {
                   <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground w-8">№</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Тенант</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">ИНН тенанта</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Направление</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Код курса</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Курс</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Дата списания</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">ФИО обучающегося</th>
@@ -408,6 +419,8 @@ export default function CustomReportPanel() {
                     <td className="px-4 py-2.5 text-xs text-muted-foreground">{idx + 1}</td>
                     <td className="px-4 py-2.5 font-medium text-sm">{row.tenantName}</td>
                     <td className="px-4 py-2.5 text-sm font-mono text-muted-foreground">{row.tenantInn}</td>
+                    <td className="px-4 py-2.5 text-sm text-muted-foreground">{row.direction}</td>
+                    <td className="px-4 py-2.5 text-sm font-mono text-muted-foreground">{row.courseCode}</td>
                     <td className="px-4 py-2.5 text-sm">{row.course}</td>
                     <td className="px-4 py-2.5 text-sm text-muted-foreground">{row.date}</td>
                     <td className="px-4 py-2.5 text-sm">{row.userName}</td>
