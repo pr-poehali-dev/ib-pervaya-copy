@@ -1,6 +1,44 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
 
+const CONSENT_TEXT = `СОГЛАСИЕ НА ОБРАБОТКУ ПЕРСОНАЛЬНЫХ ДАННЫХ
+
+Я, субъект персональных данных, в соответствии с Федеральным законом от 27.07.2006 № 152-ФЗ «О персональных данных», даю своё согласие оператору на обработку следующих персональных данных:
+
+— фамилия, имя, отчество;
+— адрес электронной почты;
+— должность и место работы;
+— сведения о прохождении обучения и тестирования;
+— результаты аттестации и проверки знаний.
+
+ЦЕЛИ ОБРАБОТКИ
+
+Персональные данные обрабатываются исключительно в целях:
+— организации процесса дистанционного обучения;
+— формирования учётной записи и личного кабинета;
+— выдачи удостоверений о повышении квалификации;
+— формирования отчётности для контролирующих органов.
+
+ДЕЙСТВИЯ С ПЕРСОНАЛЬНЫМИ ДАННЫМИ
+
+Оператор вправе осуществлять следующие действия с персональными данными:
+— сбор, запись, систематизация, накопление;
+— хранение, уточнение (обновление, изменение);
+— извлечение, использование, передача уполномоченным лицам;
+— блокирование, удаление, уничтожение.
+
+СРОК ДЕЙСТВИЯ СОГЛАСИЯ
+
+Настоящее согласие действует с момента его предоставления и до истечения сроков хранения персональных данных, установленных законодательством Российской Федерации.
+
+ОТЗЫВ СОГЛАСИЯ
+
+Настоящее согласие может быть отозвано в любой момент путём направления письменного заявления администратору системы. Отзыв согласия влечёт прекращение доступа к системе дистанционного обучения.
+
+ПОДТВЕРЖДЕНИЕ
+
+Настоящим подтверждаю, что данное согласие является свободным, конкретным, информированным и сознательным.`;
+
 const POLICY_TEXT = `ПОЛИТИКА ОБРАБОТКИ ПЕРСОНАЛЬНЫХ ДАННЫХ
 
 1. ОБЩИЕ ПОЛОЖЕНИЯ
@@ -50,18 +88,18 @@ const POLICY_TEXT = `ПОЛИТИКА ОБРАБОТКИ ПЕРСОНАЛЬНЫ�
 
 По вопросам, связанным с обработкой персональных данных, обращайтесь к администратору системы.`;
 
-function PolicyDocModal({ onClose }: { onClose: () => void }) {
+function PolicyDocModal({ title, text, onClose }: { title: string; text: string; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col max-h-[calc(100vh-2rem)]">
         <div className="flex items-center justify-between p-4 border-b border-gray-100 flex-shrink-0">
-          <h3 className="font-bold text-gray-900 text-sm">Политика обработки персональных данных</h3>
+          <h3 className="font-bold text-gray-900 text-sm">{title}</h3>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
             <Icon name="X" size={16} />
           </button>
         </div>
         <div className="flex-1 overflow-y-auto p-4 sm:p-5">
-          <pre className="text-xs text-gray-700 leading-relaxed whitespace-pre-wrap font-sans">{POLICY_TEXT}</pre>
+          <pre className="text-xs text-gray-700 leading-relaxed whitespace-pre-wrap font-sans">{text}</pre>
         </div>
         <div className="p-4 border-t border-gray-100 flex-shrink-0">
           <button
@@ -86,6 +124,7 @@ export default function ConsentModal({ open, onAccept, onDecline }: ConsentModal
   const [checkPolicy,  setCheckPolicy]  = useState(false);
   const [checkConsent, setCheckConsent] = useState(false);
   const [policyOpen,   setPolicyOpen]   = useState(false);
+  const [consentDocOpen, setConsentDocOpen] = useState(false);
 
   if (!open) return null;
 
@@ -93,7 +132,8 @@ export default function ConsentModal({ open, onAccept, onDecline }: ConsentModal
 
   return (
     <>
-    {policyOpen && <PolicyDocModal onClose={() => setPolicyOpen(false)} />}
+    {policyOpen && <PolicyDocModal title="Политика обработки персональных данных" text={POLICY_TEXT} onClose={() => setPolicyOpen(false)} />}
+    {consentDocOpen && <PolicyDocModal title="Согласие на обработку персональных данных" text={CONSENT_TEXT} onClose={() => setConsentDocOpen(false)} />}
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-4 sm:p-6 space-y-4 sm:space-y-5 max-h-[calc(100vh-2rem)] overflow-y-auto">
 
@@ -145,9 +185,9 @@ export default function ConsentModal({ open, onAccept, onDecline }: ConsentModal
             </div>
             <span className="text-sm text-gray-700 leading-snug">
               Даю своё согласие на{" "}
-              <a href="#" className="text-blue-600 underline hover:text-blue-700" onClick={(e) => e.stopPropagation()}>
+              <button type="button" className="text-blue-600 underline hover:text-blue-700 font-medium" onClick={(e) => { e.stopPropagation(); e.preventDefault(); setConsentDocOpen(true); }}>
                 обработку
-              </a>{" "}
+              </button>{" "}
               персональных данных
             </span>
           </label>
