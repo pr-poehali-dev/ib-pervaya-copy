@@ -36,17 +36,18 @@ export function FinalTest({
   const TOTAL_SECONDS = 30 * 60;
   const [timeLeft, setTimeLeft] = useState(TOTAL_SECONDS);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const onFinishRef = useRef(onFinish);
+  useEffect(() => { onFinishRef.current = onFinish; }, [onFinish]);
 
   useEffect(() => {
     if (!isFinal) return;
     intervalRef.current = setInterval(() => {
       setTimeLeft((t) => {
-        if (t <= 1) { clearInterval(intervalRef.current!); onFinishFinal(); return 0; }
+        if (t <= 1) { clearInterval(intervalRef.current!); onFinishRef.current([]); return 0; }
         return t - 1;
       });
     }, 1000);
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isFinal]);
 
   const minutes = Math.floor(timeLeft / 60);

@@ -86,8 +86,8 @@ export default function Profile() {
   const { user } = useAuth();
   const [editOpen, setEditOpen] = useState(false);
 
-  const studentUser = INITIAL_USERS[0];
-  const assignments = studentUser.assignments;
+  const studentUser = INITIAL_USERS[0] ?? null;
+  const assignments = studentUser?.assignments ?? [];
 
   const completedAssignments = assignments.filter((a) => a.status === "completed" || a.status === "certified");
   const activeAssignments    = assignments.filter((a) => a.status === "active");

@@ -35,8 +35,8 @@ export default function CoursePage() {
   const dir      = COURSE_DIRECTIONS.find((d) => d.courses.some((c) => c.id === courseId));
   const course   = dir?.courses.find((c) => c.id === courseId);
 
-  const user   = INITIAL_USERS.find((u) => u.assignments.some((a) => a.courseId === courseId)) ?? INITIAL_USERS[0];
-  const assign = user.assignments.find((a) => a.courseId === courseId);
+  const user   = INITIAL_USERS.find((u) => u.assignments.some((a) => a.courseId === courseId)) ?? INITIAL_USERS[0] ?? null;
+  const assign = user?.assignments.find((a) => a.courseId === courseId);
 
   const questions   = getQuestionsForCourse(courseId);
   const isExpertPb  = dir?.subscriptionType === "expert_pb" || dir?.subscriptionType === "expert_gts";

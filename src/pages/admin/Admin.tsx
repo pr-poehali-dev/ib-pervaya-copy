@@ -98,7 +98,7 @@ export default function Admin() {
   const { setStats } = useStats();
   useEffect(() => {
     const inProgress = users.filter((u) => u.assignments.some((a) => a.active && a.progress > 0 && a.progress < 100)).length;
-    const pending = users.filter((u) => u.assignments.some((a) => a.status === "pending")).length;
+    const pending = users.filter((u) => u.assignments.some((a) => a.active && a.status === "pending")).length;
     setStats({
       subscriptionsLeft: 100,
       subscriptionsUsed: totalAssignments,

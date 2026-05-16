@@ -33,8 +33,8 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const studentUser = INITIAL_USERS[0];
-  const assignments = studentUser.assignments;
+  const studentUser = INITIAL_USERS[0] ?? null;
+  const assignments = studentUser?.assignments ?? [];
 
   const activeAssignments = assignments.filter((a) => a.status === "active");
   const completedAssignments = assignments.filter((a) => a.status === "completed" || a.status === "certified");

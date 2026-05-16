@@ -7,7 +7,7 @@ export function today(): string {
 
 export function getGroupStatus(members: User[]): string {
   if (members.length === 0) return "Не начато";
-  const completed = members.filter((u) => u.assignments.some((a) => a.progress === 100));
+  const completed = members.filter((u) => u.assignments.length > 0 && u.assignments.every((a) => a.progress === 100));
   if (completed.length === members.length && members.length > 0) return "Завершено";
   if (members.some((u) => u.assignments.some((a) => a.active))) return "Обучается";
   return "Не начато";

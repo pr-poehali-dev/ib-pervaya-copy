@@ -83,7 +83,7 @@ export function useAdminData() {
     [users]
   );
   const totalCompleted = useMemo(
-    () => users.reduce((s, u) => s + u.assignments.filter((a) => a.progress === 100).length, 0),
+    () => users.reduce((s, u) => s + u.assignments.filter((a) => a.active && a.progress === 100).length, 0),
     [users]
   );
 
@@ -167,7 +167,7 @@ export function useAdminData() {
           assignments: u.assignments.map((a) =>
             a.courseId !== courseId
               ? a
-              : { ...a, activatedAt: date, status: "active" as CourseStatus }
+              : { ...a, activatedAt: date, status: "active" as CourseStatus, progress: 0 }
           ),
         };
       })
@@ -187,6 +187,7 @@ export function useAdminData() {
               : {
                   ...a,
                   status: "certified" as CourseStatus,
+                  progress: 100,
                   completedAt: a.completedAt ?? todayRu(),
                 }
           ),

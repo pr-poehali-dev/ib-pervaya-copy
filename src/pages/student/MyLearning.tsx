@@ -39,9 +39,9 @@ export default function MyLearning() {
   const { user } = useAuth();
   const [filter, setFilter] = useState<FilterKey>("all");
 
-  const ME = INITIAL_USERS.find((u) => u.email === user?.email) ?? INITIAL_USERS[0];
+  const ME = INITIAL_USERS.find((u) => u.email === user?.email) ?? INITIAL_USERS[0] ?? null;
 
-  const assignments = ME.assignments.map((a) => {
+  const assignments = (ME?.assignments ?? []).map((a) => {
     const course =
       ALL_COURSES.find((c) => c.id === a.courseId) ??
       COURSE_DIRECTIONS.flatMap((d) => d.courses).find((c) => c.id === a.courseId);

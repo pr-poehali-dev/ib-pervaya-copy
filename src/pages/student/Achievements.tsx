@@ -169,8 +169,8 @@ const XP_LEVELS = [
 export default function Achievements() {
   const navigate = useNavigate();
 
-  const user = INITIAL_USERS[0];
-  const assignments = user.assignments;
+  const user = INITIAL_USERS[0] ?? null;
+  const assignments = user?.assignments ?? [];
 
   const stats: UserStats = {
     completed:  assignments.filter((a) => a.status === "completed" || a.status === "certified").length,

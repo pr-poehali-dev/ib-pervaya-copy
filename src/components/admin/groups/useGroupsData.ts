@@ -29,7 +29,7 @@ export function useGroupsData(initialUsers: User[]) {
     setLocalUsers((prev) => prev.map((u) => {
       if (u.id !== userId) return u;
       return { ...u, assignments: u.assignments.map((a) =>
-        a.courseId !== courseId ? a : { ...a, activatedAt: date ?? today(), active: true, status: "active" as CourseStatus }
+        a.courseId !== courseId ? a : { ...a, activatedAt: date ?? today(), active: true, status: "active" as CourseStatus, progress: 0 }
       )};
     }));
   };
@@ -47,7 +47,7 @@ export function useGroupsData(initialUsers: User[]) {
     setLocalUsers((prev) => prev.map((u) => {
       if (u.id !== userId) return u;
       return { ...u, assignments: u.assignments.map((a) =>
-        a.courseId !== courseId ? a : { ...a, status: "certified" as CourseStatus, completedAt: a.completedAt ?? today() }
+        a.courseId !== courseId ? a : { ...a, status: "certified" as CourseStatus, progress: 100, completedAt: a.completedAt ?? today() }
       )};
     }));
   };

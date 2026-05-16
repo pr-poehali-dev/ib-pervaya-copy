@@ -124,7 +124,7 @@ export default function AdminUsers({
       return {
         ...u,
         assignments: u.assignments.map((a) =>
-          a.courseId !== courseId ? a : { ...a, activatedAt: date ?? today(), status: "active" as CourseStatus }
+          a.courseId !== courseId ? a : { ...a, activatedAt: date ?? today(), status: "active" as CourseStatus, progress: 0 }
         ),
       };
     }));
@@ -136,7 +136,7 @@ export default function AdminUsers({
       return {
         ...u,
         assignments: u.assignments.map((a) =>
-          a.courseId !== courseId ? a : { ...a, status: "active" as CourseStatus, progress: Math.max(0, a.progress - 0) }
+          a.courseId !== courseId ? a : { ...a, status: "active" as CourseStatus, progress: a.progress }
         ),
       };
     }));
@@ -148,7 +148,7 @@ export default function AdminUsers({
       return {
         ...u,
         assignments: u.assignments.map((a) =>
-          a.courseId !== courseId ? a : { ...a, status: "certified" as CourseStatus, completedAt: a.completedAt ?? today() }
+          a.courseId !== courseId ? a : { ...a, status: "certified" as CourseStatus, progress: 100, completedAt: a.completedAt ?? today() }
         ),
       };
     }));

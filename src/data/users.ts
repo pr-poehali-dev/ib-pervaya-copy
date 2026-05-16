@@ -353,7 +353,7 @@ export const INITIAL_USERS: User[] = [
     group: "ЭПБ-2026/01",
     groupId: 5,
     organization: "ООО «ЭкспертПБ»",
-    clientOrganizationId: 2,
+    clientOrganizationId: 5,
     role: "Студент",
     assignments: [
       { courseId: 401, active: true,  progress: 20, assignedAt: daysAgo(10), activatedAt: daysAgo(8), status: "active",  dpoRequired: false },
