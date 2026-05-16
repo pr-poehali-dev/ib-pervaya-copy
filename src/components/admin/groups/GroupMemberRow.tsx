@@ -24,6 +24,7 @@ interface GroupMemberRowProps {
   onExtendCourse: (userId: number, courseId: number, groupId: number) => void;
   onIssueCertificate: (userId: number, courseId: number, groupId: number) => void;
   onToggleAssignment: (userId: number, courseId: number, groupId: number) => void;
+  onEnrollToGroup: (user: User) => void;
 }
 
 export default function GroupMemberRow({
@@ -38,6 +39,7 @@ export default function GroupMemberRow({
   onExtendCourse,
   onIssueCertificate,
   onToggleAssignment,
+  onEnrollToGroup,
 }: GroupMemberRowProps) {
   const [loginCopied, setLoginCopied] = useState(false);
   const [statsTarget, setStatsTarget] = useState<{ assignment: CourseAssignment; courseTitle: string } | null>(null);
@@ -98,6 +100,14 @@ export default function GroupMemberRow({
                 onClick={() => { onAddCourse(member.id); if (!isExpanded) onToggle(member.id); }}
               >
                 <Icon name="BookPlus" size={15} />
+              </button>
+            </Tip>
+            <Tip text="Добавить в другую группу">
+              <button
+                className="p-1.5 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors text-emerald-600 dark:text-emerald-400"
+                onClick={() => onEnrollToGroup(member)}
+              >
+                <Icon name="UserPlus" size={15} />
               </button>
             </Tip>
           </div>

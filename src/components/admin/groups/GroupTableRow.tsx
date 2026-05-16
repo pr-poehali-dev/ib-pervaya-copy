@@ -34,6 +34,7 @@ interface GroupTableRowProps {
   onExtendCourse: (userId: number, courseId: number, groupId?: number) => void;
   onIssueCertificate: (userId: number, courseId: number, groupId?: number) => void;
   onToggleAssignment: (userId: number, courseId: number, groupId?: number) => void;
+  onEnrollToGroup: (user: User) => void;
 }
 
 export default function GroupTableRow({
@@ -56,6 +57,7 @@ export default function GroupTableRow({
   onExtendCourse,
   onIssueCertificate,
   onToggleAssignment,
+  onEnrollToGroup,
 }: GroupTableRowProps) {
   const [editOpen, setEditOpen] = useState(false);
   const [editName, setEditName] = useState(group.name);
@@ -264,6 +266,7 @@ export default function GroupTableRow({
                           onExtendCourse={onExtendCourse}
                           onIssueCertificate={onIssueCertificate}
                           onToggleAssignment={onToggleAssignment}
+                          onEnrollToGroup={onEnrollToGroup}
                         />
                       ))}
                     </tbody>

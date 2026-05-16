@@ -23,6 +23,7 @@ interface GroupsTableViewProps {
   onExtendCourse: (userId: number, courseId: number, groupId?: number) => void;
   onIssueCertificate: (userId: number, courseId: number, groupId?: number) => void;
   onToggleAssignment: (userId: number, courseId: number, groupId?: number) => void;
+  onEnrollToGroup: (user: User) => void;
 }
 
 export default function GroupsTableView({
@@ -46,6 +47,7 @@ export default function GroupsTableView({
   onExtendCourse,
   onIssueCertificate,
   onToggleAssignment,
+  onEnrollToGroup,
 }: GroupsTableViewProps) {
   return (
     <>
@@ -104,6 +106,7 @@ export default function GroupsTableView({
                     onExtendCourse={onExtendCourse}
                     onIssueCertificate={onIssueCertificate}
                     onToggleAssignment={onToggleAssignment}
+                    onEnrollToGroup={onEnrollToGroup}
                   />
                 );
               })}

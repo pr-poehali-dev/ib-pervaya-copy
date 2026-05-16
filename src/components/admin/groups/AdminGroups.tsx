@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import Icon from "@/components/ui/icon";
 import UserStatsModal from "@/components/admin/users/UserStatsModal";
+import EnrollToGroupModal from "@/components/admin/users/EnrollToGroupModal";
 import GroupStatsModal from "./GroupStatsModal";
 import GroupAddCourseModal from "./GroupAddCourseModal";
 import GroupsBreadcrumbs from "./GroupsBreadcrumbs";
@@ -43,6 +44,7 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
   const [addCourseForMember, setAddCourseForMember] = useState<{ userId: number; groupId: number } | null>(null);
   const [statsUser, setStatsUser] = useState<User | null>(null);
   const [groupStatsFor, setGroupStatsFor] = useState<string | null>(null);
+  const [enrollUser, setEnrollUser] = useState<User | null>(null);
 
   // ─── Хуки ────────────────────────────────────────────────────────────────────
   const {
@@ -153,6 +155,27 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
         onClose={() => setGroupStatsFor(null)}
         onUserStats={(u) => { setGroupStatsFor(null); setStatsUser(u); }}
       />
+      {enrollUser && (
+        <EnrollToGroupModal
+          user={enrollUser}
+          onClose={() => setEnrollUser(null)}
+          onEnroll={(userId, groupId) => {
+            const g = GROUPS_DATA.find((grp) => grp.id === groupId);
+            if (!g) return;
+            setEnrollUser((prev) => {
+              if (!prev || prev.id !== userId) return prev;
+              if (prev.enrollments.some((e) => e.groupId === groupId)) return prev;
+              return { ...prev, enrollments: [...prev.enrollments, { groupId, groupName: g.name, assignments: [] }] };
+            });
+          }}
+          onUnenroll={(userId, groupId) => {
+            setEnrollUser((prev) => {
+              if (!prev || prev.id !== userId) return prev;
+              return { ...prev, enrollments: prev.enrollments.filter((e) => e.groupId !== groupId) };
+            });
+          }}
+        />
+      )}
 
       {!canIssueCert && (
         <div className="flex items-start gap-3 px-4 py-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-2xl">
@@ -230,6 +253,7 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
           onExtendCourse={extendCourse}
           onIssueCertificate={issueCertificate}
           onToggleAssignment={toggleAssignment}
+          onEnrollToGroup={(u) => setEnrollUser(localUsers.find((lu) => lu.id === u.id) ?? u)}
         />
       )}
 
