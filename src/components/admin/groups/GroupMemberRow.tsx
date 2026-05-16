@@ -102,14 +102,7 @@ export default function GroupMemberRow({
                 <Icon name="BookPlus" size={15} />
               </button>
             </Tip>
-            <Tip text="Добавить в другую группу">
-              <button
-                className="p-1.5 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors text-emerald-600 dark:text-emerald-400"
-                onClick={() => onEnrollToGroup(member)}
-              >
-                <Icon name="UserPlus" size={15} />
-              </button>
-            </Tip>
+
           </div>
         </td>
       </tr>
