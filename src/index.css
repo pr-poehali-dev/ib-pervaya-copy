@@ -158,52 +158,53 @@
   .sidebar-gradient {
     background: linear-gradient(180deg, hsl(220 38% 12%), hsl(225 35% 15%));
   }
+}
 
-  /* Режим высокого контраста */
-  .a11y-contrast {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 0%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 0%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 0%;
-    --border: 0 0% 0%;
-    --input: 0 0% 0%;
-    --ring: 217 100% 35%;
-    --muted: 0 0% 90%;
-    --muted-foreground: 0 0% 20%;
-    --primary: 217 100% 35%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 20%;
-    --secondary-foreground: 0 0% 100%;
-    --accent: 217 100% 35%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 100% 35%;
-    --destructive-foreground: 0 0% 100%;
-    --gradient-from: 217 100% 35%;
-    --gradient-to: 217 100% 25%;
-  }
-  .dark.a11y-contrast {
-    --background: 0 0% 0%;
-    --foreground: 0 0% 100%;
-    --card: 0 0% 10%;
-    --card-foreground: 0 0% 100%;
-    --popover: 0 0% 10%;
-    --popover-foreground: 0 0% 100%;
-    --border: 0 0% 100%;
-    --input: 0 0% 100%;
-    --ring: 210 100% 70%;
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 80%;
-    --primary: 210 100% 70%;
-    --primary-foreground: 0 0% 0%;
-    --secondary: 0 0% 85%;
-    --secondary-foreground: 0 0% 0%;
-    --accent: 210 100% 70%;
-    --accent-foreground: 0 0% 0%;
-    --destructive: 0 100% 65%;
-    --destructive-foreground: 0 0% 0%;
-    --gradient-from: 210 100% 70%;
-    --gradient-to: 210 100% 55%;
-  }
+/* Режим высокого контраста — вне @layer для приоритета над :root */
+html.a11y-contrast {
+  --background: 0 0% 100% !important;
+  --foreground: 0 0% 0% !important;
+  --card: 0 0% 100% !important;
+  --card-foreground: 0 0% 0% !important;
+  --popover: 0 0% 100% !important;
+  --popover-foreground: 0 0% 0% !important;
+  --border: 0 0% 0% !important;
+  --input: 0 0% 0% !important;
+  --ring: 217 100% 35% !important;
+  --muted: 0 0% 90% !important;
+  --muted-foreground: 0 0% 20% !important;
+  --primary: 217 100% 35% !important;
+  --primary-foreground: 0 0% 100% !important;
+  --secondary: 0 0% 20% !important;
+  --secondary-foreground: 0 0% 100% !important;
+  --accent: 217 100% 35% !important;
+  --accent-foreground: 0 0% 100% !important;
+  --destructive: 0 100% 35% !important;
+  --destructive-foreground: 0 0% 100% !important;
+  --gradient-from: 217 100% 35% !important;
+  --gradient-to: 217 100% 25% !important;
+}
+
+html.dark.a11y-contrast {
+  --background: 0 0% 0% !important;
+  --foreground: 0 0% 100% !important;
+  --card: 0 0% 10% !important;
+  --card-foreground: 0 0% 100% !important;
+  --popover: 0 0% 10% !important;
+  --popover-foreground: 0 0% 100% !important;
+  --border: 0 0% 100% !important;
+  --input: 0 0% 100% !important;
+  --ring: 210 100% 70% !important;
+  --muted: 0 0% 15% !important;
+  --muted-foreground: 0 0% 80% !important;
+  --primary: 210 100% 70% !important;
+  --primary-foreground: 0 0% 0% !important;
+  --secondary: 0 0% 85% !important;
+  --secondary-foreground: 0 0% 0% !important;
+  --accent: 210 100% 70% !important;
+  --accent-foreground: 0 0% 0% !important;
+  --destructive: 0 100% 65% !important;
+  --destructive-foreground: 0 0% 0% !important;
+  --gradient-from: 210 100% 70% !important;
+  --gradient-to: 210 100% 55% !important;
 }
