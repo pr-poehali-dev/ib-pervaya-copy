@@ -25,6 +25,7 @@ interface GroupTableRowProps {
   group: string;
   idx: number;
   organization: string;
+  inn: string;
   members: User[];
   isExpanded: boolean;
   isSelected: boolean;
@@ -46,6 +47,7 @@ export default function GroupTableRow({
   group,
   idx,
   organization,
+  inn,
   members,
   isExpanded,
   isSelected,
@@ -65,6 +67,7 @@ export default function GroupTableRow({
   const [editOpen, setEditOpen] = useState(false);
   const [editName, setEditName] = useState(group);
   const [editOrg, setEditOrg] = useState(organization);
+  const [editInn, setEditInn] = useState(inn);
 
   const activeAssignments = members.reduce((sum, u) => sum + u.assignments.filter((a) => a.active).length, 0);
   const completedCount = members.filter((u) => u.assignments.some((a) => a.progress === 100)).length;
@@ -99,9 +102,15 @@ export default function GroupTableRow({
                     <label className="text-xs text-muted-foreground">Название группы</label>
                     <input value={editName} onChange={(e) => setEditName(e.target.value)} className="w-full h-9 px-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30" placeholder="ПБ-2024/01" />
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-xs text-muted-foreground">Организация</label>
-                    <input value={editOrg} onChange={(e) => setEditOrg(e.target.value)} className="w-full h-9 px-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30" placeholder='ООО «Название»' />
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <label className="text-xs text-muted-foreground">Организация</label>
+                      <input value={editOrg} onChange={(e) => setEditOrg(e.target.value)} className="w-full h-9 px-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30" placeholder='ООО «Название»' />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs text-muted-foreground">ИНН</label>
+                      <input value={editInn} onChange={(e) => setEditInn(e.target.value.replace(/\D/g, "").slice(0, 12))} className="w-full h-9 px-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30 font-mono" placeholder="7701234567" maxLength={12} />
+                    </div>
                   </div>
                   <div className="flex items-center gap-2 px-3 py-2.5 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-xl">
                     <Icon name="Info" size={14} className="text-amber-600 dark:text-amber-400 flex-shrink-0" />
@@ -170,7 +179,7 @@ export default function GroupTableRow({
         <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center gap-1">
             <Tip text="Редактировать группу">
-              <button onClick={() => { setEditName(group); setEditOrg(organization); setEditOpen(true); }} className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
+              <button onClick={() => { setEditName(group); setEditOrg(organization); setEditInn(inn); setEditOpen(true); }} className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
                 <Icon name="Pencil" size={16} />
               </button>
             </Tip>

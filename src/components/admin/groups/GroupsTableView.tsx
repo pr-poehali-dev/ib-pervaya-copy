@@ -1,6 +1,7 @@
 import Icon from "@/components/ui/icon";
 import GroupTableRow from "./GroupTableRow";
 import { User } from "@/components/admin/types";
+import { GROUPS_DATA } from "@/data/mockData";
 
 interface GroupsTableViewProps {
   filteredGroups: string[];
@@ -83,12 +84,15 @@ export default function GroupsTableView({
               {filteredGroups.map((group, idx) => {
                 const members = localUsers.filter((u) => u.group === group);
                 const organization = members[0]?.organization ?? "";
+                const groupData = GROUPS_DATA.find((g) => g.name === group);
+                const inn = groupData?.inn ?? "";
                 return (
                   <GroupTableRow
                     key={group}
                     group={group}
                     idx={idx}
                     organization={organization}
+                    inn={inn}
                     members={members}
                     isExpanded={expandedGroups.has(group)}
                     isSelected={selectedGroups.has(group)}
