@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 import Tip from "@/components/ui/tip";
@@ -61,6 +62,10 @@ export default function GroupTableRow({
   onIssueCertificate,
   onToggleAssignment,
 }: GroupTableRowProps) {
+  const [editOpen, setEditOpen] = useState(false);
+  const [editName, setEditName] = useState(group);
+  const [editOrg, setEditOrg] = useState(organization);
+
   const activeAssignments = members.reduce((sum, u) => sum + u.assignments.filter((a) => a.active).length, 0);
   const completedCount = members.filter((u) => u.assignments.some((a) => a.progress === 100)).length;
   const avgGroupProgress = activeAssignments > 0
@@ -70,6 +75,51 @@ export default function GroupTableRow({
 
   return (
     <>
+      {editOpen && (
+        <tr>
+          <td colSpan={99} className="p-0">
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+              <div className="bg-background rounded-2xl border border-border w-full max-w-md shadow-2xl">
+                <div className="flex items-center justify-between p-5 border-b border-border">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl gradient-primary flex items-center justify-center">
+                      <Icon name="Users" size={16} className="text-white" />
+                    </div>
+                    <div>
+                      <h2 className="font-bold text-sm">Редактировать группу</h2>
+                      <p className="text-xs text-muted-foreground">{group}</p>
+                    </div>
+                  </div>
+                  <button onClick={() => setEditOpen(false)} className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground">
+                    <Icon name="X" size={16} />
+                  </button>
+                </div>
+                <div className="p-5 space-y-3">
+                  <div className="space-y-1">
+                    <label className="text-xs text-muted-foreground">Название группы</label>
+                    <input value={editName} onChange={(e) => setEditName(e.target.value)} className="w-full h-9 px-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30" placeholder="ПБ-2024/01" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs text-muted-foreground">Организация</label>
+                    <input value={editOrg} onChange={(e) => setEditOrg(e.target.value)} className="w-full h-9 px-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30" placeholder='ООО «Название»' />
+                  </div>
+                  <div className="flex items-center gap-2 px-3 py-2.5 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-xl">
+                    <Icon name="Info" size={14} className="text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                    <p className="text-xs text-amber-700 dark:text-amber-300">Состав участников и курсы изменяются в разделе управления слушателями</p>
+                  </div>
+                </div>
+                <div className="flex gap-2 p-5 border-t border-border">
+                  <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setEditOpen(false)}>Отмена</Button>
+                  <Button className="flex-1 rounded-xl gradient-primary text-white" onClick={() => setEditOpen(false)} disabled={!editName.trim()}>
+                    <Icon name="Check" size={15} className="mr-1.5" />
+                    Сохранить
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+      )}
       <tr
         className={`border-b border-border transition-colors cursor-pointer hover:bg-muted/20 ${isExpanded ? "bg-violet-50/50 dark:bg-violet-900/10" : ""} ${isSelected ? "bg-violet-50/30 dark:bg-violet-900/10" : ""}`}
         onClick={() => onToggleGroup(group)}
@@ -120,7 +170,7 @@ export default function GroupTableRow({
         <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center gap-1">
             <Tip text="Редактировать группу">
-              <button className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
+              <button onClick={() => { setEditName(group); setEditOrg(organization); setEditOpen(true); }} className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
                 <Icon name="Pencil" size={16} />
               </button>
             </Tip>
