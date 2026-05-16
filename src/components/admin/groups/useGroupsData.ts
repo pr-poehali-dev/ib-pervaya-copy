@@ -2,7 +2,7 @@ import { useState } from "react";
 import { User, CourseAssignment, CourseStatus } from "@/components/admin/types";
 import { today } from "./groupsUtils";
 
-export function useGroupsData(initialUsers: User[]) {
+export function useGroupsData(initialUsers: User[], adminName = "Администратор") {
   const [localUsers, setLocalUsers] = useState<User[]>(initialUsers);
 
   const addCoursesToMember = (userId: number, courseIds: number[], groupId: number) => {
@@ -12,7 +12,7 @@ export function useGroupsData(initialUsers: User[]) {
       if (!enrollment) return u;
       const newAssignments: CourseAssignment[] = courseIds
         .filter((id) => !enrollment.assignments.some((a) => a.courseId === id))
-        .map((id) => ({ courseId: id, active: true, progress: 0, assignedAt: today(), status: "pending" as CourseStatus }));
+        .map((id) => ({ courseId: id, active: true, progress: 0, assignedAt: today(), status: "pending" as CourseStatus, history: [] }));
       return {
         ...u,
         enrollments: u.enrollments.map((e) =>
@@ -28,7 +28,7 @@ export function useGroupsData(initialUsers: User[]) {
       if (!enrollment) return u;
       const newAssignments: CourseAssignment[] = courseIds
         .filter((id) => !enrollment.assignments.some((a) => a.courseId === id))
-        .map((id) => ({ courseId: id, active: true, progress: 0, assignedAt: today(), status: "pending" as CourseStatus }));
+        .map((id) => ({ courseId: id, active: true, progress: 0, assignedAt: today(), status: "pending" as CourseStatus, history: [] }));
       return {
         ...u,
         enrollments: u.enrollments.map((e) =>
@@ -48,7 +48,14 @@ export function useGroupsData(initialUsers: User[]) {
           return {
             ...e,
             assignments: e.assignments.map((a) =>
-              a.courseId !== courseId ? a : { ...a, activatedAt: date ?? today(), active: true, status: "active" as CourseStatus, progress: 0 }
+              a.courseId !== courseId ? a : {
+                ...a,
+                activatedAt: date ?? today(),
+                active: true,
+                status: "active" as CourseStatus,
+                progress: 0,
+                history: [...(a.history ?? []), { date: today(), action: "Курс активирован", by: adminName }],
+              }
             ),
           };
         }),
@@ -66,7 +73,11 @@ export function useGroupsData(initialUsers: User[]) {
           return {
             ...e,
             assignments: e.assignments.map((a) =>
-              a.courseId !== courseId ? a : { ...a, status: "active" as CourseStatus }
+              a.courseId !== courseId ? a : {
+                ...a,
+                status: "active" as CourseStatus,
+                history: [...(a.history ?? []), { date: today(), action: "Курс продлён", by: adminName }],
+              }
             ),
           };
         }),
@@ -84,7 +95,13 @@ export function useGroupsData(initialUsers: User[]) {
           return {
             ...e,
             assignments: e.assignments.map((a) =>
-              a.courseId !== courseId ? a : { ...a, status: "certified" as CourseStatus, progress: 100, completedAt: a.completedAt ?? today() }
+              a.courseId !== courseId ? a : {
+                ...a,
+                status: "certified" as CourseStatus,
+                progress: 100,
+                completedAt: a.completedAt ?? today(),
+                history: [...(a.history ?? []), { date: today(), action: "Выдано удостоверение", by: adminName }],
+              }
             ),
           };
         }),
@@ -101,9 +118,14 @@ export function useGroupsData(initialUsers: User[]) {
           if (groupId !== undefined && e.groupId !== groupId) return e;
           return {
             ...e,
-            assignments: e.assignments.map((a) =>
-              a.courseId !== courseId ? a : { ...a, active: !a.active }
-            ),
+            assignments: e.assignments.map((a) => {
+              if (a.courseId !== courseId) return a;
+              return {
+                ...a,
+                active: !a.active,
+                history: [...(a.history ?? []), { date: today(), action: a.active ? "Курс отключён" : "Курс включён", by: adminName }],
+              };
+            }),
           };
         }),
       };

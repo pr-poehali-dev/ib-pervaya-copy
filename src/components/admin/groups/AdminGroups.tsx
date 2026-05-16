@@ -11,6 +11,7 @@ import GroupsCardsView from "./GroupsCardsView";
 import { User, Group, allCourses } from "@/components/admin/types";
 import { GROUPS_DATA } from "@/data/mockData";
 import { useRole } from "@/contexts/RoleContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { getGroupStatus, getAvgProgress } from "./groupsUtils";
 import { useGroupsData } from "./useGroupsData";
 import { useGroupsSelection } from "./useGroupsSelection";
@@ -24,6 +25,8 @@ type NavLevel = "groups" | "members" | "member";
 
 export default function AdminGroups({ users }: AdminGroupsProps) {
   const { tenantType } = useRole();
+  const { user: authUser } = useAuth();
+  const adminName = authUser ? `${authUser.lastName ?? ""} ${authUser.firstName ?? ""}`.trim() || authUser.email : "Администратор";
   const canIssueCert = tenantType === "training_center";
 
   // ─── Вид и навигация ────────────────────────────────────────────────────────
@@ -57,7 +60,7 @@ export default function AdminGroups({ users }: AdminGroupsProps) {
     issueCertificate,
     toggleAssignment,
     handleActivateAll,
-  } = useGroupsData(users);
+  } = useGroupsData(users, adminName);
 
   const filteredGroups = useMemo((): Group[] => {
     return GROUPS_DATA.filter((g) => {
