@@ -212,10 +212,69 @@ const STATUS_MAP: Record<Invoice["status"], { label: string; cls: string }> = {
 };
 
 function InvoicesTab() {
+  const today = () => { const d = new Date(); return `${String(d.getDate()).padStart(2,"0")}.${String(d.getMonth()+1).padStart(2,"0")}.${d.getFullYear()}`; };
+  const [invoices, setInvoices] = useState<Invoice[]>(MOCK_INVOICES);
+  const [showForm, setShowForm] = useState(false);
+  const [formTenant, setFormTenant] = useState(TENANTS[0]?.name ?? "");
+  const [formSubs, setFormSubs] = useState("");
+  const [formAmount, setFormAmount] = useState("");
+  const [formError, setFormError] = useState("");
+
+  function handleCreate() {
+    if (!formTenant || !formSubs || !formAmount) { setFormError("Заполните все поля"); return; }
+    const subs = parseInt(formSubs);
+    const amount = parseInt(formAmount.replace(/\s/g, ""));
+    if (isNaN(subs) || subs <= 0) { setFormError("Укажите корректное количество подписок"); return; }
+    if (isNaN(amount) || amount <= 0) { setFormError("Укажите корректную сумму"); return; }
+    setInvoices((prev) => [...prev, { id: Date.now(), tenant: formTenant, subscriptions: subs, amount, date: today(), status: "pending" }]);
+    setShowForm(false);
+    setFormTenant(TENANTS[0]?.name ?? "");
+    setFormSubs("");
+    setFormAmount("");
+    setFormError("");
+  }
+
   return (
     <div className="space-y-4">
+      {showForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowForm(false)} />
+          <div className="relative bg-background rounded-2xl shadow-2xl z-10 w-full max-w-sm mx-4 p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="font-semibold text-base">Новый счёт</h2>
+              <button onClick={() => setShowForm(false)} className="text-muted-foreground hover:text-foreground transition-colors">
+                <Icon name="X" size={18} />
+              </button>
+            </div>
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground">Тенант</label>
+                <select value={formTenant} onChange={(e) => setFormTenant(e.target.value)} className="w-full h-9 px-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30">
+                  {TENANTS.map((t) => <option key={t.id} value={t.name}>{t.name}</option>)}
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground">Количество подписок</label>
+                <input type="number" min={1} placeholder="50" value={formSubs} onChange={(e) => setFormSubs(e.target.value)} className="w-full h-9 px-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground">Сумма, ₽</label>
+                <input type="number" min={1} placeholder="45000" value={formAmount} onChange={(e) => setFormAmount(e.target.value)} className="w-full h-9 px-3 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/30" />
+              </div>
+              {formError && <p className="text-xs text-red-500">{formError}</p>}
+            </div>
+            <div className="flex gap-3">
+              <Button variant="outline" className="rounded-xl flex-1" onClick={() => setShowForm(false)}>Отмена</Button>
+              <Button className="rounded-xl gradient-primary text-white flex-1 gap-2" onClick={handleCreate}>
+                <Icon name="FilePlus" size={15} />
+                Выставить
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="flex justify-end">
-        <Button className="gradient-primary text-white rounded-xl gap-2 h-9">
+        <Button className="gradient-primary text-white rounded-xl gap-2 h-9" onClick={() => setShowForm(true)}>
           <Icon name="FilePlus" size={15} />
           Выставить счёт
         </Button>
@@ -233,7 +292,7 @@ function InvoicesTab() {
             </tr>
           </thead>
           <tbody>
-            {MOCK_INVOICES.map((inv) => (
+            {invoices.map((inv) => (
               <tr key={inv.id} className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors">
                 <td className="px-4 py-3 font-medium">{inv.tenant}</td>
                 <td className="px-4 py-3 text-muted-foreground">{inv.subscriptions}</td>
