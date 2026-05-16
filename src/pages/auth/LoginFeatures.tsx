@@ -25,7 +25,7 @@ const FEATURES = [
 
 export default function LoginFeatures() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 sm:space-y-8">
       {/* Логотип */}
       <div className="flex items-center gap-4">
         <div className="w-14 h-14 rounded-2xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-200">

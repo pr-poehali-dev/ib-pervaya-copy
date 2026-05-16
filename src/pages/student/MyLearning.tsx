@@ -135,7 +135,7 @@ export default function MyLearning() {
 
         {/* Список курсов */}
         {filtered.length === 0 ? (
-          <div className="bg-card rounded-2xl border border-border p-8 sm:p-12 text-center">
+          <div className="bg-card rounded-2xl border border-border p-5 sm:p-10 text-center">
             <Icon name="BookOpen" size={40} className="text-muted-foreground mx-auto mb-3" />
             <p className="font-semibold text-lg">Нет курсов в этой категории</p>
             <p className="text-muted-foreground text-sm mt-1">Обратитесь к администратору для назначения курсов</p>

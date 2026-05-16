@@ -69,7 +69,7 @@ export default function Dashboard() {
 
   return (
     <Layout>
-      <div className="space-y-8">
+      <div className="space-y-4 sm:space-y-8">
 
         {/* Заголовок */}
         <div className="flex items-start justify-between gap-3">
@@ -128,7 +128,7 @@ export default function Dashboard() {
           </div>
 
           {activeCourses.length === 0 ? (
-            <div className="bg-card rounded-2xl border border-border p-10 text-center">
+            <div className="bg-card rounded-2xl border border-border p-5 sm:p-10 text-center">
               <div className="w-14 h-14 bg-muted/40 rounded-2xl flex items-center justify-center mx-auto mb-3">
                 <Icon name="BookOpen" size={24} className="text-muted-foreground" />
               </div>
