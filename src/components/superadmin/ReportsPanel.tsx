@@ -8,6 +8,7 @@ import ReportsPeriodSelector, {
   type PeriodMode,
 } from "./ReportsPeriodSelector";
 import ReportsTenantRow, { getWriteoffsForMonths } from "./ReportsTenantRow";
+import CustomReportPanel from "./CustomReportPanel";
 
 // ─── Утилиты ──────────────────────────────────────────────────────────────────
 
@@ -92,8 +93,16 @@ interface ReportsPanelProps {
   tenants?: Tenant[];
 }
 
+type ReportType = "period" | "custom";
+
+const REPORT_TABS: { key: ReportType; label: string; icon: string }[] = [
+  { key: "period", label: "Закрытие периода", icon: "FileSpreadsheet" },
+  { key: "custom", label: "Пользовательский", icon: "SlidersHorizontal" },
+];
+
 export default function ReportsPanel({ tenants: tenantsProp }: ReportsPanelProps = {}) {
   const tenantsList = tenantsProp ?? TENANTS;
+  const [reportType, setReportType] = useState<ReportType>("period");
 
   const { month: curMonth, year: curYear } = getCurrentDate();
 
@@ -127,6 +136,27 @@ export default function ReportsPanel({ tenants: tenantsProp }: ReportsPanelProps
 
   return (
     <div className="space-y-5">
+      {/* Переключатель типа отчёта */}
+      <div className="flex gap-2">
+        {REPORT_TABS.map((t) => (
+          <button
+            key={t.key}
+            onClick={() => setReportType(t.key)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium transition-colors ${
+              reportType === t.key
+                ? "bg-foreground text-background border-foreground"
+                : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/30"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {reportType === "custom" ? (
+        <CustomReportPanel />
+      ) : (
+        <>
       <ReportsPeriodSelector
         periodMode={periodMode}  setPeriodMode={setPeriodMode}
         month={month}            setMonth={setMonth}
@@ -156,6 +186,8 @@ export default function ReportsPanel({ tenants: tenantsProp }: ReportsPanelProps
           />
         ))}
       </div>
+        </>
+      )}
     </div>
   );
 }
