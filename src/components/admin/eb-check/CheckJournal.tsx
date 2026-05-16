@@ -2,6 +2,90 @@ import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import { CheckProtocol, EbOrganization, MOCK_EB_ORGS } from "@/data/ebCheckData";
 
+function downloadProtocolPdf(p: CheckProtocol) {
+  const rows = p.candidates.map((c, idx) => {
+    const r = p.results.find((x) => x.candidateId === c.id);
+    return `
+      <tr>
+        <td>${idx + 1}</td>
+        <td>${c.fio}</td>
+        <td>${c.position}</td>
+        <td>${c.workplace}</td>
+        <td>${c.prevDate || "—"}</td>
+        <td>${c.prevGroup || "—"}</td>
+        <td>${r?.tech || "—"}</td>
+        <td>${r?.safety || "—"}</td>
+        <td>${r?.fire || "—"}</td>
+        <td>${r?.other || "—"}</td>
+        <td><strong>${r?.overall || "—"}</strong></td>
+        <td>${p.finalGroup}</td>
+        <td>${p.nextVerifyDate}</td>
+      </tr>`;
+  }).join("");
+
+  const html = `<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<title>Протокол ${p.id}</title>
+<style>
+  body { font-family: Arial, sans-serif; font-size: 10px; margin: 20px; color: #000; }
+  h2 { font-size: 13px; text-align: center; margin-bottom: 4px; }
+  .sub { font-size: 9px; text-align: center; color: #555; margin-bottom: 16px; }
+  .meta { margin-bottom: 12px; line-height: 1.8; }
+  .meta b { display: inline-block; min-width: 180px; }
+  table { width: 100%; border-collapse: collapse; font-size: 9px; }
+  th, td { border: 1px solid #555; padding: 3px 4px; text-align: center; vertical-align: middle; }
+  th { background: #f0f0f0; font-size: 8px; }
+  td:nth-child(2), td:nth-child(3), td:nth-child(4) { text-align: left; }
+  @media print { body { margin: 10mm; } }
+</style>
+</head>
+<body>
+<h2>ПРОТОКОЛ № ${p.id}</h2>
+<p class="sub">проверки знаний норм и правил работы в электроустановках<br/>
+(Приложение № 4 к Приказу Минэнерго РФ от 15.12.2020 № 1210)</p>
+<div class="meta">
+  <div><b>Организация:</b> ${p.orgName}</div>
+  <div><b>Дата проверки:</b> ${p.verifyDate}</div>
+  <div><b>Основание:</b> ${p.reason}${p.reasonBasis ? " — " + p.reasonBasis : ""}</div>
+  <div><b>Комиссия:</b> ${p.commissionName}</div>
+  <div><b>Напряжение:</b> ${p.voltage}</div>
+  <div><b>НТД:</b> ${p.ntd.join(", ")}</div>
+  <div><b>Следующая проверка:</b> ${p.nextVerifyDate}</div>
+</div>
+<table>
+  <thead>
+    <tr>
+      <th>№</th>
+      <th>ФИО</th>
+      <th>Должность</th>
+      <th>Место работы</th>
+      <th>Пред. дата</th>
+      <th>Пред. гр.</th>
+      <th>Технич.</th>
+      <th>Охрана труда</th>
+      <th>Пожар. безоп.</th>
+      <th>Прочее</th>
+      <th>Итог</th>
+      <th>Гр. ЭБ</th>
+      <th>Следующая</th>
+    </tr>
+  </thead>
+  <tbody>${rows}</tbody>
+</table>
+${p.status === "approved" && p.approvedAt ? `<p style="margin-top:16px;font-size:9px;">Утверждён: ${p.approvedAt}</p>` : ""}
+</body>
+</html>`;
+
+  const w = window.open("", "_blank");
+  if (!w) return;
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+  setTimeout(() => { w.print(); }, 400);
+}
+
 type FilterStatus = "all" | "draft" | "approved";
 type JournalView = { type: "orgs" } | { type: "protocols"; orgId: number };
 
@@ -291,7 +375,7 @@ export default function CheckJournal({
                     </div>
 
                     <div className="flex gap-2 justify-end flex-wrap">
-                      <button className="flex items-center gap-1.5 px-3 py-1.5 border border-border rounded-xl text-xs font-medium hover:bg-muted transition-colors">
+                      <button onClick={() => downloadProtocolPdf(p)} className="flex items-center gap-1.5 px-3 py-1.5 border border-border rounded-xl text-xs font-medium hover:bg-muted transition-colors">
                         <Icon name="FileText" size={12} /> Скачать PDF
                       </button>
                       {p.status === "draft" && (
