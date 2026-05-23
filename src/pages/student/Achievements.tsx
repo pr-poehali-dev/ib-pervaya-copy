@@ -5,6 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import Icon from "@/components/ui/icon";
 import { INITIAL_USERS, COURSE_DIRECTIONS } from "@/data/mockData";
+import { useAuth } from "@/contexts/AuthContext";
 
 // ─── Определение достижений ───────────────────────────────────────────────────
 
@@ -170,7 +171,7 @@ const XP_LEVELS = [
 function calcUserXP(userId: number): number {
   const u = INITIAL_USERS.find((x) => x.id === userId);
   if (!u) return 0;
-  const a = u.assignments ?? [];
+  const a = u.enrollments?.flatMap((e) => e.assignments) ?? u.assignments ?? [];
   const stats: UserStats = {
     completed:  a.filter((x) => x.status === "completed" || x.status === "certified").length,
     certified:  a.filter((x) => x.status === "certified").length,
@@ -193,8 +194,9 @@ export default function Achievements() {
   const navigate = useNavigate();
   const [tab, setTab] = useState<"achievements" | "leaderboard">("achievements");
 
-  const user = INITIAL_USERS[0] ?? null;
-  const assignments = user?.assignments ?? [];
+  const { user: authUser } = useAuth();
+  const user = INITIAL_USERS.find((u) => u.email === authUser?.email) ?? INITIAL_USERS[0] ?? null;
+  const assignments = user?.enrollments?.flatMap((e) => e.assignments) ?? user?.assignments ?? [];
 
   const stats: UserStats = {
     completed:  assignments.filter((a) => a.status === "completed" || a.status === "certified").length,
