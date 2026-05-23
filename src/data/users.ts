@@ -1113,6 +1113,45 @@ export const INITIAL_USERS: User[] = [
     ],
   },
 
+  // ─── Системный слушатель (student@isp.ru) ────────────────────────────────
+  {
+    id: 36,
+    name: "Антон Козлов",
+    lastName: "КОЗЛОВ", firstName: "АНТОН", middleName: "ВИТАЛЬЕВИЧ",
+    phone: "+7 (900) 000-00-04",
+    position: "Инженер",
+    email: "student@isp.ru",
+    initials: "АК",
+    organization: "ООО «ТехноПром»",
+    clientOrganizationId: 1,
+    role: "Студент",
+    assignments: [],
+    enrollments: [
+      {
+        groupId: 1,
+        groupName: "ПБ-2024/01",
+        assignments: [
+          {
+            courseId: 101, active: true, progress: 42, assignedAt: daysAgo(20), activatedAt: daysAgo(18), status: "active", dpoRequired: true,
+            history: [
+              { date: daysAgo(20), action: "Курс назначен", by: "Иванов И.И." },
+              { date: daysAgo(18), action: "Курс активирован", by: "Иванов И.И." },
+            ],
+          },
+          {
+            courseId: 102, active: true, progress: 100, assignedAt: monthsAgo(2), activatedAt: monthsAgo(2), completedAt: monthsAgo(1), status: "certified", testScore: 88, testPassedAt: monthsAgo(1), dpoRequired: true,
+            history: [
+              { date: monthsAgo(2), action: "Курс назначен", by: "Иванов И.И." },
+              { date: monthsAgo(2), action: "Курс активирован", by: "Иванов И.И." },
+              { date: monthsAgo(1), action: "Выдано удостоверение", by: "Иванов И.И." },
+            ],
+          },
+          { courseId: 103, active: false, progress: 0, assignedAt: daysAgo(3), status: "pending", dpoRequired: true },
+        ],
+      },
+    ],
+  },
+
   // ─── Слушатель без группы (эксперт) ──────────────────────────────────────
   {
     id: 22,

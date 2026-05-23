@@ -41,7 +41,8 @@ export default function MyLearning() {
 
   const ME = INITIAL_USERS.find((u) => u.email === user?.email) ?? INITIAL_USERS[0] ?? null;
 
-  const assignments = (ME?.assignments ?? []).map((a) => {
+  const rawAssignments = ME?.enrollments?.flatMap((e) => e.assignments) ?? ME?.assignments ?? [];
+  const assignments = rawAssignments.map((a) => {
     const course =
       ALL_COURSES.find((c) => c.id === a.courseId) ??
       COURSE_DIRECTIONS.flatMap((d) => d.courses).find((c) => c.id === a.courseId);

@@ -33,8 +33,9 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const studentUser = INITIAL_USERS[0] ?? null;
-  const assignments = studentUser?.assignments ?? [];
+  const studentUser = INITIAL_USERS.find((u) => u.email === user?.email) ?? INITIAL_USERS[0] ?? null;
+  const allEnrollmentAssignments = studentUser?.enrollments?.flatMap((e) => e.assignments) ?? [];
+  const assignments = allEnrollmentAssignments.length > 0 ? allEnrollmentAssignments : (studentUser?.assignments ?? []);
 
   const activeAssignments = assignments.filter((a) => a.status === "active");
   const completedAssignments = assignments.filter((a) => a.status === "completed" || a.status === "certified");
